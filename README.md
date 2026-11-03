@@ -1,4 +1,5 @@
 # ROX Adaptive Powder Dosing
+ROX is a Python-based robotic powder-dosing platform that performs geometry-adaptive dosing from laboratory containers. It integrates a web dashboard, TCP gateway, scales, datacode reader, and tilting station, with SQLite for laboratory data.
 
 This project runs the ROX powder dosing workflow used in the lab. It combines:
 
@@ -63,9 +64,9 @@ The application also uses modules such as `sqlite3`, `socket`, `re`, `time`, `ty
 
 If `pip` is missing, install or enable it with the Python installation, for example `python3.11 -m ensurepip --upgrade`.
 
-The project currently imports `telnetlib` for the network scale. With the documented Python 3.11 environment, `telnetlib` is part of the standard library. `telnetlib3` is a windows version and is not used by the current source code . Python 3.13 and later removed `telnetlib`, so use Python 3.11 or update `Shantanu dashboard/classes/scaledevice.py` before moving to a newer Python version.
+The project currently imports `telnetlib` for the network scale. With the documented Python 3.11 environment, `telnetlib` is part of the standard library. `telnetlib3` is a windows version and is not used by the current source code . Python 3.13 and later removed `telnetlib`, so use Python 3.11 or update `Dashboard/classes/scaledevice.py` before moving to a newer Python version.
 
-The current launcher is Linux-specific: `Shantanu dashboard/Main.py` uses `os.geteuid()` and relaunches with `sudo`. Running ROX directly on Windows therefore requires launcher and device-path changes; installing `telnetlib3` alone will not make the application Windows-compatible.
+The current launcher is Linux-specific: `Dashboard/Main.py` uses `os.geteuid()` and relaunches with `sudo`. Running ROX directly on Windows therefore requires launcher and device-path changes; installing `telnetlib3` alone will not make the application Windows-compatible.
 
 ## Fresh setup on a new machine
 
@@ -76,7 +77,7 @@ git clone <repository-url>
 cd ROX
 ```
 
-This project is organized as a single repository with the dashboard and gateway code inside [Shantanu dashboard/](/home/rox/ROX/Shantanu%20dashboard/). There is not a separate install step for each folder.
+This project is organized as a single repository with the dashboard and gateway code inside [Dashboard/](/home/rox/ROX/Shantanu%20dashboard/). There is not a separate install step for each folder.
 
 Then create the Python environment and install the project packages:
 
@@ -109,14 +110,18 @@ python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+or to directly install inside python3.11
 
+```bash
+sudo /usr/local/bin/python3.11 -m pip install -r requirements.txt
+```
 If you are running the hardware serial scale, make sure `pyserial` is installed. It is already included in `requirements.txt`.
 
 ## Configure the project
 
-Most runtime settings are defined in [Shantanu dashboard/Main.py](Shantanu%20dashboard/Main.py).
+Most runtime settings are defined in [Dashboard/Main.py] (Dashboard/Main.py).
 
-Update these values before running:
+Update these values before running :
 
 - `SCALE_IP` and `SCALE_PORT` for the Mettler Toledo XSR303SN network scale
 - `SCALE2_PORT` and `SCALE2_BAUDRATE` for the PCE serial scale
@@ -132,7 +137,7 @@ The default values are designed for the lab network shown in the code. If your d
 Start the full system from the dashboard folder:
 
 ```bash
-cd "/home/rox/ROX/Shantanu dashboard"
+cd "/home/rox/ROX/Dashboard"
 python3.11 Main.py
 ```
 
@@ -160,7 +165,6 @@ By default the system writes:
 
 - `local_lab.db` for the SQLite database
 - `live_weight_log.csv` for live weight logging
-- `validation_logs/` for validation CSV exports
 - `dashboard_exports/` for dashboard-generated SVG exports
 
 Note: because the launcher runs with `sudo`, files created in `validation_logs/` and related outputs may become root-owned if you run the project as root. If you need to clean or edit those files later, prefer running from the same user consistently.
@@ -173,7 +177,7 @@ Note: because the launcher runs with `sudo`, files created in `validation_logs/`
 
 ## Simulation and Python setup notes
 
-The repository also contains simulation and validation helpers under `Shantanu dashboard/Simulation Validations/` and related scripts. Those tools use the same Python environment and package set.
+The repository also contains simulation and validation helpers under `Dashboard/Simulation Validations/` and related scripts. Those tools use the same Python environment and package set.
 
 If you need to build Python 3.11 manually on Ubuntu, the original notes used:
 
