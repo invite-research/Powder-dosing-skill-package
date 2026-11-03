@@ -1,0 +1,80 @@
+def get_weight():
+	socket_open(SERVER_IP,SERVER_PORT)
+	#sleep(0.2)
+	textmsg("socket opened successfully!")
+	socket_send_string("GET_WEIGHT")
+	#sleep(0.2)
+	sync()
+	receiveFromServ = socket_read_ascii_float(1)	
+	#sleep(1)
+	while (receiveFromServ[0] < 1):
+		receiveFromServ = socket_read_ascii_float(1)
+		sleep(0.01)
+	end
+	textmsg("Received weight:", receiveFromServ[1])
+	#sleep(0.2)
+	socket_close()
+	#sleep(0.2)
+	return receiveFromServ[1]
+end
+
+def tare_scale():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("TARE")
+	sleep(2)
+	socket_close()
+end
+
+def zero_scale():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("ZERO")
+	sleep(0.5)
+	socket_close()
+end
+
+def log_weight():	
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("LOG_WEIGHT")
+	sleep(0.5)
+	socket_close()
+end
+
+def send_target_info():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("SET_TARGET:" + to_str(target_weight))
+	sleep(0.2)
+	socket_close()
+end
+def send_powder_info():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("SET_POWDER:" + Pow_name)
+	sleep(0.2)
+	socket_close()
+end
+def send_spatula_info():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("SET_SPATULA:" + spatula)
+	
+	sleep(0.2)
+	socket_close()
+end
+
+def send_level_info():
+	socket_open(SERVER_IP,SERVER_PORT)
+	socket_send_string("SET_LEVEL:" + to_str(level))
+	sleep(0.2)
+	socket_close()
+end
+
+def get_cont_weight():
+  socket_open(SERVER_IP, SERVER_PORT)
+  #rq_open_and_wait()
+  cmd = "GET_CONT_WEIGHT"
+  socket_send_string(cmd)
+  sync()
+  sleep(0.5)
+  receiveFromSer = socket_read_ascii_float(1)
+  socket_close()
+  return receiveFromSer[1]
+end
+	

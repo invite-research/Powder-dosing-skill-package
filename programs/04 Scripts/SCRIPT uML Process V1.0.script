@@ -1,0 +1,18 @@
+
+
+def process_control(navistep, navistepmax, prepstep, prepstepmax, workstep, workstepmax):
+    local STEP_NONE = 0
+    local STEP_NAVIGATION = 1
+    local STEP_PREPARATION = 2
+    local STEP_WORK = 3
+
+    if (0 <= navistep and navistep < navistepmax):
+        return STEP_NAVIGATION
+    elif (0 <= prepstep and prepstep < prepstepmax):
+        return STEP_PREPARATION
+    elif (0 <= workstep and workstep < workstepmax):
+        return STEP_WORK
+    else:
+        return STEP_NONE
+    end
+end

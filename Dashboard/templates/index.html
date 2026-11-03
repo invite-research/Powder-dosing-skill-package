@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Powder Dosing Live Visualization</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/luxon"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon"></script>
+
+<style>
+  body{
+    margin:0;
+    font-family:'Segoe UI',sans-serif;
+    color:#f5f5f5;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    background: linear-gradient(145deg, #1b2337 0%, #121827 40%, #0f1523 100%);
+    background-attachment:fixed;
+  }
+
+  .topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 1001;
+    box-sizing: border-box;
+  }
+
+  .menu-btn {
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 15px;
+    user-select: none;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: -260px;
+    width: 260px;
+    height: calc(100% - 60px);
+    background: #34495e;
+    transition: 0.3s ease;
+    z-index: 1000;
+    overflow-y: auto;
+  }
+
+  .sidebar a {
+    display: block;
+    padding: 14px 20px;
+    color: white;
+    text-decoration: none;
+  }
+
+  .sidebar a:hover {
+    background: #1abc9c;
+  }
+
+  .sidebar.active {
+    left: 0;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 60px);
+    background: rgba(0,0,0,0.4);
+    display: none;
+    z-index: 999;
+  }
+
+  .overlay.active {
+    display: block;
+  }
+
+  h1{
+    text-align:center;
+    margin:0;
+    padding:90px 10px 10px;
+    font-size:2.2rem;
+    color:#ffffff;
+  }
+
+  .log-file-error{
+    max-width:900px;
+    margin:0 auto 12px;
+    padding:12px 18px;
+    color:#fee2e2;
+    background:rgba(127,29,29,.8);
+    border:1px solid #f87171;
+    border-radius:8px;
+  }
+
+  .dashboard{
+    flex:1;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:24px;
+    padding:20px;
+    max-width:1300px;
+    width:100%;
+    box-sizing:border-box;
+    margin:0 auto 10px;
+  }
+
+  .chart-container{
+    flex:1 1 650px;
+    min-width:520px;
+    height:70vh;
+    background:rgba(255,255,255,0.10);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.18);
+    box-shadow:
+      0 18px 28px rgba(0,0,0,0.45),
+      0 0 10px rgba(255,255,255,0.03);
+    backdrop-filter:blur(14px);
+    padding:18px;
+    box-sizing:border-box;
+  }
+
+  .info-panel{
+    width:320px;
+    background:rgba(255,255,255,0.10);
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,0.18);
+    box-shadow:
+      0 18px 28px rgba(0,0,0,0.45),
+      0 0 10px rgba(255,255,255,0.03);
+    backdrop-filter:blur(14px);
+    padding:20px;
+    box-sizing:border-box;
+  }
+
+  .scoop-analysis{
+    width:min(1260px, calc(100% - 40px));
+    margin:0 auto 28px;
+    display:grid;
+    grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr);
+    gap:24px;
+  }
+
+  .scoop-card{
+    background:rgba(255,255,255,0.10);
+    border:1px solid rgba(255,255,255,0.18);
+    border-radius:18px;
+    padding:18px;
+    box-sizing:border-box;
+    box-shadow:0 18px 28px rgba(0,0,0,0.45);
+  }
+
+  .scoop-card h2{ margin:0 0 12px; color:#ffd34e; font-size:1.25rem; }
+  .scoop-chart-container{ height:330px; }
+  .scoop-table-wrap{ max-height:330px; overflow:auto; }
+  .scoop-table{ width:100%; border-collapse:collapse; font-size:.9rem; }
+  .scoop-table th,.scoop-table td{ padding:8px 6px; text-align:right; border-bottom:1px solid rgba(255,255,255,.12); }
+  .scoop-table th:first-child,.scoop-table td:first-child{ text-align:left; }
+  .scoop-empty{ color:#cbd5e1; text-align:center !important; }
+
+  .info-panel h2{
+    font-size:1.3rem;
+    margin:0 0 10px;
+    color:#ffd34e;
+  }
+
+  .info-item{
+    margin:8px 0;
+    font-size:0.98rem;
+    color:#e2e8f0;
+  }
+
+  .legend{
+    margin-top:20px;
+    font-size:0.9rem;
+  }
+
+  .legend h3{
+    margin:0 0 6px;
+    font-size:1rem;
+    color:#e5e7eb;
+  }
+
+  .legend div{
+    display:flex;
+    align-items:center;
+    margin:4px 0;
+  }
+
+  .color-box{
+    width:18px;
+    height:18px;
+    margin-right:8px;
+    border-radius:4px;
+  }
+
+  .footer{
+    text-align:center;
+    margin:0 0 12px;
+    color:#9ca3af;
+    font-size:0.85rem;
+  }
+
+  canvas{
+    width:100% !important;
+    height:100% !important;
+  }
+
+  @media(max-width:900px){
+    .chart-container{
+      min-width:0;
+      height:55vh;
+    }
+
+    .info-panel{
+      width:100%;
+      max-width:460px;
+    }
+
+    .scoop-analysis{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="menu-btn" onclick="toggleMenu()">☰</span>
+    <h3 style="margin:0;">Live Visualization</h3>
+  </div>
+
+  <div id="sidebar" class="sidebar">
+    <a href="/">Home</a>
+    <a href="/powders">Powders</a>
+    <a href="/datacode_registry">Datacode Registry</a>
+    <a href="/containers">Containers</a>
+    <a href="/spatulas">Spatulas</a>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <h1>Powder Dosing Live Visualization</h1>
+  <div id="logFileError" class="log-file-error" role="alert" hidden></div>
+
+  <div class="dashboard">
+    <div class="chart-container">
+      <canvas id="dosingChart"></canvas>
+    </div>
+    
+    <div class="info-panel">
+      <h2>Current Status</h2>
+      <div class="info-item">Powder: <b id="powder">--</b></div>
+      <div class="info-item">Spatula: <b id="spatula">--</b></div>
+      <div class="info-item">Scoop Target: <b id="scoopTarget">--</b> g</div>
+      <div class="info-item">Total Target (red dotted line): <b id="target">--</b> g</div>
+      <div class="info-item">Remaining: <b id="remaining">--</b> g</div>
+      <div class="info-item">Container Level (mint dotted line): <b id="level">--</b> %</div>
+      <div class="info-item">Controller: <b id="controller">--</b></div>
+      <div class="info-item">Status: <b id="state">--</b></div>
+      <div class="legend">
+        <h3>Spatula Colors</h3>
+        <div><div class="color-box" style="background:#007bff"></div>L (Hemispherical Large)</div>
+        <div><div class="color-box" style="background:#ff9800"></div>M (Hemispherical Medium)</div>
+        <div><div class="color-box" style="background:#28a745"></div>S (Hemispherical Small)</div>
+        <div><div class="color-box" style="background:#9c27b0"></div>SPATULA_FLAT_M (Teardrop Medium)</div>
+        <div><div class="color-box" style="background:#e91e63"></div>SPATULA_FLAT_S (Teardrop Small)</div>
+        <div><div class="color-box" style="background:#6c757d"></div>N/A (Unknown Phase)</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="scoop-analysis" aria-label="Scoop dosing analysis">
+    <div class="scoop-card">
+      <h2>Scoop Target vs Actual Dose</h2>
+      <div class="scoop-chart-container"><canvas id="scoopChart"></canvas></div>
+    </div>
+    <div class="scoop-card">
+      <h2>Completed Scoop Metrics</h2>
+      <div class="scoop-table-wrap">
+        <table class="scoop-table">
+          <thead><tr><th>Spatula</th><th>Target (g)</th><th>Actual (g)</th><th>RE (%)</th><th>RSD (%)</th><th>Accuracy (%)</th></tr></thead>
+          <tbody id="scoopTableBody"><tr><td class="scoop-empty" colspan="6">No completed scoops yet.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  
+  <a class="back" href="/">&larr; Back to home</a>
+  <div class="footer">Live dashboard connected to UR Dosing System – INVITE GmbH</div>
+
+  <script>
+    const spatulaColors = {
+      "SPATULA_L":"#007bff",
+      "SPATULA_M":"#ff9800",
+      "SPATULA_S":"#28a745",
+      "SPATULA_FLAT_M":"#9c27b0",
+      "SPATULA_FLAT_S":"#e91e63",
+      "N/A":"#6c757d"
+    };
+
+    function colorFor(sp){
+      return spatulaColors[sp] || '#999';
+    }
+
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("active");
+    }
+
+    document.querySelectorAll(".sidebar a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("sidebar").classList.remove("active");
+        document.getElementById("overlay").classList.remove("active");
+      });
+    });
+
+    const canvas = document.getElementById('dosingChart');
+    const ctx = canvas.getContext('2d');
+
+    const dosingDataset = {
+      label:'Weight',
+      data:[],
+      spatulas:[],
+      borderWidth:2,
+      pointRadius:0,
+      tension:0.25,
+      fill:false,
+      segment:{
+        borderColor:segCtx => {
+          const i = segCtx.p0DataIndex ?? 0;
+          const sp = segCtx.chart.data.datasets[0].spatulas[i] || "N/A";
+          return colorFor(sp);
+        }
+      }
+    };
+
+    const targetDataset = {
+      label:'Target',
+      data:[],
+      borderColor:'#dc3545',
+      borderDash:[6,4],
+      borderWidth:2,
+      pointRadius:0,
+      fill:false,
+      yAxisID:'y'
+    };
+
+    const levelDataset = {
+      label:'Container Level',
+      data:[],
+      borderColor:'#20c997',
+      borderDash:[3,3],
+      borderWidth:2,
+      pointRadius:0,
+      fill:false,
+      yAxisID:'yLevel'
+    };
+
+    let chart = new Chart(ctx,{
+      type:'line',
+      data:{datasets:[dosingDataset,targetDataset,levelDataset]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        spanGaps:true,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{
+            type:'time',
+            time:{unit:'second'},
+            title:{display:true,text:'Time'},
+            ticks:{color:'#e5e7eb'}
+          },
+          y:{
+            position:'left',
+            title:{display:true,text:'Weight (g)'},
+            ticks:{color:'#e5e7eb'},
+            grid:{color:'rgba(148,163,184,0.25)'}
+          },
+          yLevel:{
+            position:'right',
+            title:{display:true,text:'Level (%)'},
+            min:0,
+            max:100,
+            ticks:{color:'#e5e7eb'},
+            grid:{drawOnChartArea:false}
+          }
+        }
+      }
+    });
+
+    const scoopChart = new Chart(document.getElementById('scoopChart').getContext('2d'), {
+      type: 'bar',
+      data: { labels: [], datasets: [
+        { label: 'Scoop target', data: [], backgroundColor: '#ffd34e' },
+        { label: 'Actual dosed', data: [], backgroundColor: '#20c997' }
+      ] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: { ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(148,163,184,0.15)' } },
+          y: { beginAtZero: true, title: { display: true, text: 'Mass (g)' }, ticks: { color: '#e5e7eb' }, grid: { color: 'rgba(148,163,184,0.25)' } }
+        },
+        plugins: { legend: { labels: { color: '#e5e7eb' } } }
+      }
+    });
+
+    let lastKey = "";
+
+    function metric(value) {
+      return value === null || value === undefined ? '--' : Number(value).toFixed(2);
+    }
+
+    async function updateScoopAnalysis() {
+      const res = await fetch('/scoops');
+      if (!res.ok) throw new Error('Scoop metrics request failed');
+      const scoops = (await res.json()).scoops || [];
+      scoopChart.data.labels = scoops.map(s => `Scoop ${s.scoop_number}`);
+      scoopChart.data.datasets[0].data = scoops.map(s => s.scoop_target);
+      scoopChart.data.datasets[1].data = scoops.map(s => s.actual_dosed);
+      scoopChart.update();
+
+      const body = document.getElementById('scoopTableBody');
+      body.replaceChildren();
+      if (!scoops.length) {
+        body.innerHTML = '<tr><td class="scoop-empty" colspan="6">No completed scoops yet.</td></tr>';
+        return;
+      }
+      for (const scoop of scoops) {
+        const row = document.createElement('tr');
+        for (const value of [
+          scoop.spatula,
+          Number(scoop.scoop_target).toFixed(3),
+          Number(scoop.actual_dosed).toFixed(3),
+          metric(scoop.relative_error),
+          metric(scoop.rsd),
+          metric(scoop.accuracy)
+        ]) {
+          const cell = document.createElement('td');
+          cell.textContent = value;
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
+      }
+    }
+
+    async function updateData(){
+      try{
+        const res = await fetch('/data');
+        if (!res.ok) {
+          const error = await res.json();
+          if (res.status === 404 && error.error) {
+            const warning = document.getElementById('logFileError');
+            warning.textContent = error.error;
+            warning.hidden = false;
+            return;
+          }
+          throw new Error('HTTP ' + res.status);
+        }
+
+        document.getElementById('logFileError').hidden = true;
+        const j = await res.json();
+
+        await updateScoopAnalysis();
+
+        if (!j.timestamps || j.timestamps.length === 0){
+          return;
+        }
+
+        const key = (j.timestamps.at(-1) || '') + '_' + (j.weights.at(-1) || '');
+        if (key === lastKey) return;
+        lastKey = key;
+
+        dosingDataset.data = j.timestamps.map((t, i) => ({x:t, y:j.weights[i]}));
+        dosingDataset.spatulas = (j.spatulas || []).map(s => (s || 'N/A').toUpperCase());
+        targetDataset.data = j.timestamps.map(t => ({x:t, y:j.target ?? 0}));
+        levelDataset.data = j.timestamps.map(t => ({x:t, y:j.level ?? 0}));
+
+        chart.update();
+
+        document.getElementById('powder').textContent = j.powder || "--";
+        document.getElementById('spatula').textContent = j.spatula || '--';
+        document.getElementById('scoopTarget').textContent = Number(j.scoop_target ?? 0).toFixed(3);
+        document.getElementById('target').textContent = Number(j.target ?? 0).toFixed(3);
+        document.getElementById('remaining').textContent = Number(j.remaining ?? 0).toFixed(3);
+        document.getElementById('level').textContent = Number(j.level ?? 0).toFixed(1);
+        document.getElementById('controller').textContent = j.controller || "--";
+        document.getElementById('state').textContent = j.state || "--";
+      } catch(e){
+        console.error("Failed to update data:", e);
+      }
+    }
+
+    updateData();
+    setInterval(updateData, 1000);
+  </script>
+</body>
+</html>

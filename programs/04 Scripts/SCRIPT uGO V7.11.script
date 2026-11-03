@@ -1,0 +1,213 @@
+#*****************************************************
+# customer          : 
+# project name      :   Standard Application
+#****************************************************
+# controller        : 
+# software          : 
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   interface for uGo
+# version:      	:   6.0
+# created           :   21.04.2022
+# updated           :   
+#****************************************************
+# modifications     :   add new rpc-functions to interchange more data
+#
+# date              :   2024-02-29
+# name              :   P. Koehnke
+# reason            :   implemtentation of PackML behavoiur in uGO
+#****************************************************
+#****************************************************
+# modifications     :   add reflecting the UID of the uGO task back to uGO
+#
+# date              :   2024-07-02
+# name              :   P. Koehnke
+# reason            :   be sure to finish the right tasks
+#****************************************************
+
+# available rpc-functions:
+#.on('con_check', (err, _params, callback) => callback(err, this.con_check()))
+#.on('read_input', (err, params, callback) => callback(err, this.read_input(params[0], params[1])))
+#.on('write_output', (err, params, callback) => callback(err, this.write_output(params[0], params[1], params[2])))
+#.on('read_status', (err, params, callback) => callback(err, this.read_status(params[0])))
+#.on('write_status', (err, params, callback) => callback(err, this.write_status(params[0], params[1])))
+#.on('send_template', (err, params, callback) => callback(err, this.receive_state(params[0])))
+#.on('receive_event', (err, params, callback) => callback(err, this.send_event()))
+#.on('send_state', (err, params, callback) => callback(err, this.receive_state(params[0])))
+#.on('send_error', (err, params, callback) => callback(err, this.receive_error(params[0])))
+#.on('NotFound', (methodCalled, params) => LOG.warn('Method "', methodCalled, '" does not exist. ', { params }));
+
+# =======================================================================
+local IDX_CMD_STOP = 0
+local IDX_CMD_RESET = 1
+local IDX_CMD_START = 2
+local IDX_CMD_HOLD = 3
+local IDX_CMD_UNHOLD = 4
+local IDX_CMD_SUSPEND = 5
+local IDX_CMD_UNSUSPEND = 6
+local IDX_CMD_ABORT = 7
+local IDX_CMD_CLEAR = 8
+local IDX_FNC_FREEDRIVE = 9
+
+# uGo specific declarations
+global UGO_Request_ID = ""
+global UGO_UNIT_Task = ""
+global UGO_Task_ID = 0
+global UGO_Event = ""
+local UGO_Enable_Control = False
+local UGO = rpc_factory("xmlrpc", "http://192.168.12.120:8080")
+local UGO_Ctrl_Cmd = [False, False, False, False, False, False, False, False, False, False]
+
+local UGO_AMR_Pos = struct(position_identifier=0, x1=0, x2=0, y1=0, y2=0, theta1=0, theta2=0)
+local UGO_EOAT = struct(object_picked=False)
+
+def ugo_init(enable=True, rpc_address="http://192.168.12.120:8080"):
+    # connection with uGo
+    if enable:
+        UGO = rpc_factory("xmlrpc", rpc_address)
+        UGO_Enable_Control = True
+    else:
+        UGO_Enable_Control = False
+    end
+end
+
+def ugo_event_controller():
+    # interpret the given command and map it to the internal commands
+    if UGO_Enable_Control:
+        UGO_Event = UGO.receive_event()
+    end
+
+    UGO_Ctrl_Cmd[IDX_CMD_STOP] = (UGO_Event == "stop")
+    UGO_Ctrl_Cmd[IDX_CMD_RESET] = (UGO_Event == "reset")
+    UGO_Ctrl_Cmd[IDX_CMD_START] = (UGO_Event == "start")
+    UGO_Ctrl_Cmd[IDX_CMD_HOLD] = (UGO_Event == "hold")
+    UGO_Ctrl_Cmd[IDX_CMD_UNHOLD] = (UGO_Event == "un_hold")
+    UGO_Ctrl_Cmd[IDX_CMD_SUSPEND] = (UGO_Event == "suspend")
+    UGO_Ctrl_Cmd[IDX_CMD_UNSUSPEND] = (UGO_Event == "un_suspend")
+    UGO_Ctrl_Cmd[IDX_CMD_ABORT] = (UGO_Event == "abort")
+    UGO_Ctrl_Cmd[IDX_CMD_CLEAR] = (UGO_Event == "clear")
+    UGO_Ctrl_Cmd[IDX_FNC_FREEDRIVE] = (UGO_Event == "freedrive")
+
+    return UGO_Ctrl_Cmd
+end
+
+def ugo_translate_pml_state():
+    # translate the current PML State to a string
+    if (STATE == 1): 
+        return "STOPPING"
+    elif (STATE == 2): 
+        return "STOPPED"
+    elif (STATE == 3): 
+        return "RESETTING"
+    elif (STATE == 4): 
+        return "IDLE"
+    elif (STATE == 5): 
+        return "STARTING"
+    elif (STATE == 6): 
+        return "EXECUTE"
+    elif (STATE == 7): 
+        return "COMPLETING"
+    elif (STATE == 8): 
+        return "COMPLETE"
+    elif (STATE == 9): 
+        return "HOLDING"
+    elif (STATE == 10): 
+        return "HELD"
+    elif (STATE == 11): 
+        return "UNHOLDING"
+    elif (STATE == 12): 
+        return "SUSPENDING"
+    elif (STATE == 13): 
+        return "SUSPENDED"
+    elif (STATE == 14): 
+        return "UNSUSPENDING"
+    elif (STATE == 15): 
+        return "ABORTING"
+    elif (STATE == 16): 
+        return "ABORTED"
+    elif (STATE == 17): 
+        return "CLEARING"
+    else:
+        return "UNKNOWN"
+    end
+end
+
+def ugo_update_outputs():
+    #Update the outputs to uGo via xmplrpc service
+    UGO.write_status("ROB_Skill", UGO_UNIT_Task)
+    UGO.write_status("ROB_Battery", AMR_Battery)
+    UGO.write_status("ROB_Gripper", OBJ_Picked)
+    UGO.send_state(ugo_translate_pml_state(), UGO_UNIT_Task)
+    UGO.send_error(ERR_ID)
+    #UGO.send_position(AMR_Position)
+end
+
+def ugo_get_task():
+    # get the actual task to work on
+    # added: reflecting the UID of the task back to uGO
+    UGO_UNIT_Task = UGO.read_status("DSH_Workflow")
+    if (UGO_UNIT_Task != ""):
+        UGO_Request_ID = str_sub(UGO_UNIT_Task, 0, 39)
+        UGO_Task_ID = to_num(str_sub(UGO_UNIT_Task, 40, 2))
+        ugo_tasks()
+        return UGO_Task_ID
+    else:
+        return 0
+    end
+end
+
+def ugo_pml_stopping():
+    return True
+end
+
+def ugo_pml_resetting():
+    ugo_get_task()
+    if (UGO_UNIT_Task == ""):
+        UGO_Request_ID = ""
+        UGO_Task_ID = 0
+        return True
+    end
+    return False
+end
+
+def ugo_pml_starting():
+    #UGO_Task_Content = UGO.receive_task()
+    return (UGO_UNIT_Task != "")
+end
+
+def ugo_pml_holding():
+    return True
+end
+
+def ugo_pml_unholding():
+    return True
+end
+
+def ugo_pml_suspending():
+    return True
+end
+
+def ugo_pml_unsuspending():
+    return True
+end
+
+def ugo_pml_completing():
+    return True
+end
+
+def ugo_pml_aborting():
+    return True
+end
+
+def ugo_pml_clearing():
+    return True
+end
+
+# =======================================================================
+# end of uGO script
+# =======================================================================

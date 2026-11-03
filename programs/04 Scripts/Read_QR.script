@@ -1,0 +1,64 @@
+global SERVER_IP   = "192.168.12.111"
+global SERVER_PORT = 3002
+
+global qr_container_id = 0
+global qr_chemical_id  = 0
+global qr_H_mm         = 0
+global qr_H_c_mm         = 0
+global qr_neck_d_mm    = 0
+global qr_neck_sh_mm   = 0
+global qr_length_mm    = 0
+global qr_diameter_mm  = 0
+global qr_empty_weight_g  = 0
+global qr_volume_ml    = 0
+global qr_shape_code   = 0
+global shape = ""
+global cent_edge = 0
+global pick_2_base = 0.2 # distance from tcp to base of picking table
+#global place_2_counter = 0.18775 # distance from base of holders on robot platform  to TCP
+#global tcp_2_qr = 0.0347425 #TCP to tcp checker tip, 34.7425 mm precise clearance
+
+
+
+def read_qr_db_data():
+  
+  socket_open(SERVER_IP, SERVER_PORT)
+  sleep(0.5)
+  socket_send_string("GET_QR_FLOATS")
+  sleep(5)
+
+  local fl = socket_read_ascii_float(11)
+  socket_close()
+
+  global qr_container_id = fl[1]
+  global qr_chemical_id = fl[2]
+  global qr_H_mm         = fl[3]/1000
+  global qr_H_c_mm         = fl[4]/1000
+  global qr_neck_d_mm    = fl[5]/1000
+  global qr_neck_sh_mm   = fl[6]/1000
+  global qr_length_mm    = fl[7]/1000
+  global qr_diameter_mm  = fl[8]/1000
+  global qr_empty_weight_g = fl[9]
+  global qr_volume_ml    = fl[10]
+  global qr_shape_code   = fl[11]
+
+  if (qr_shape_code == 1.0): 
+	shape = "cylindrical"
+	cent_edge = qr_diameter_mm
+  else:
+	shape = "cubical"
+	cent_edge = qr_length_mm
+  end
+
+  textmsg("container_id = ", qr_container_id)
+  textmsg("chemical_id = ", qr_chemical_id)
+  textmsg("h_mm = ", qr_H_mm)
+  textmsg("H_c_mm = ", qr_H_c_mm)
+  textmsg("neck_d_mm = ", qr_neck_d_mm)
+  textmsg("neck_sh_mm = ", qr_neck_sh_mm)
+  textmsg("length_mm = ", qr_length_mm)
+  textmsg("diameter_mm = ", qr_diameter_mm)
+  textmsg("empty_weight_g = ", qr_empty_weight_g)
+  textmsg("volume_ml = ", qr_volume_ml)
+  textmsg("shape_code = ", qr_shape_code)
+end

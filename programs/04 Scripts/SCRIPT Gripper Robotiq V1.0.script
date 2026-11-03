@@ -1,0 +1,37 @@
+#*****************************************************
+# customer          :   tbd
+# project name      :   tbd
+#****************************************************
+# controller        :   
+# software          :   
+#****************************************************
+# author            :   E. Petrichenko
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   gripper functions for the application
+# version:      	:   1
+# created           :   22-04-2023
+# updated           :   
+#****************************************************
+# modifications     :  
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+def get_gripped_obj_number(min_prm_dst_1obj, min_prm_dst_2obj):
+    Grip_Distan=rq_current_pos_mm()
+    if (Grip_Distan>min_prm_dst_2obj):
+        Obj_Gripped=2
+    elif (Grip_Distan>min_prm_dst_1obj):
+        Obj_Gripped=1
+    else:
+        Obj_Gripped=0 
+    end
+    return Obj_Gripped
+end
+

@@ -1,0 +1,461 @@
+#*****************************************************
+# customer          :   INTERNAL
+# project name      :   
+#****************************************************
+# controller        :   UR
+# software          :   5.13
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   transition between workareas
+# version:      	:   1.2
+# created           :   28.02.2024
+# updated           :   
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+######################### further development #########################
+#   - that the robot can switch the configuration, if necessary
+#   - introduction of structs
+#######################################################################
+
+######################### to be adjusted #########################
+local WORKAREA_1 = [-0.290,-0.560,-0.001, 0.290, 0.100, 1.000]    # workarea 1 (platform)
+local WORKAREA_2 = [-1.000,-1.000,-1.000,-0.290, 0.100, 1.000]    # workarea 2 (front right)
+local WORKAREA_3 = [-1.000, 0.100,-1.000, 0.000, 1.000, 1.000]    # workarea 3 (back right)
+local WORKAREA_4 = [ 0.000, 0.100,-1.000, 1.000, 1.000, 1.000]    # workarea 4 (back left)
+local WORKAREA_5 = [ 0.290,-1.000,-1.000, 1.000, 0.100, 1.000]    # workarea 5 (front left)
+local WORKAREA_6 = [-0.290,-1.000,-1.000, 0.290,-0.560, 1.000]    # workarea 6 (front front)
+local WORKAREA_7 = [0,0,0,0,0,0]    # reserved
+local WORKAREA_8 = [0,0,0,0,0,0]    # reserved
+local WORKAREA_9 = [0,0,0,0,0,0]    # reserved
+local WORKAREA_10 = [0,0,0,0,0,0]   # reserved
+
+local PSE_WA_1 = p[ 0.000,-0.400, 0.300, 0.000, 0.000, 0.000]
+local PSE_WA_2 = p[-0.300,-0.300, 0.300, 0.000, 0.000, d2r(-90)]
+local PSE_WA_3 = p[-0.300, 0.300, 0.300, 0.000, 0.000, d2r(-135)]
+local PSE_WA_4 = p[ 0.300, 0.300, 0.300, 0.000, 0.000, d2r(135)]
+local PSE_WA_5 = p[ 0.300,-0.300, 0.300, 0.000, 0.000, d2r(90)]
+local PSE_WA_6 = p[ 0.000,-0.600, 0.300, 0.000, 0.000, 0.000]       # reserved
+local PSE_WA_7 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+local PSE_WA_8 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+local PSE_WA_9 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+local PSE_WA_10 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]      # reserved
+
+local JNT_STANDARD_C1 = [ 1.57,-1.57, 1.57,-1.57,-1.57,0]
+local JNT_STANDARD_C2 = [-1.57,-1.57,-1.57,-1.57, 1.57,0]
+local CLEARANCE_STANDARD = [-0.500,-0.900,-1.000, 0.500, 0.900, 1.000]  # desired free space around the base
+local DISTANCE_TO_CLEARANCE = 0.300
+local RADIUS_HELPER_POSES = 0.250
+local RADIUS_TRANSITION_POSES = 0.400
+local workareas = [WORKAREA_1, WORKAREA_2, WORKAREA_3, WORKAREA_4, WORKAREA_5, WORKAREA_6, WORKAREA_7, WORKAREA_8, WORKAREA_9, WORKAREA_10]
+local poses = [PSE_WA_1, PSE_WA_2, PSE_WA_3, PSE_WA_4, PSE_WA_5, PSE_WA_6, PSE_WA_7, PSE_WA_8, PSE_WA_9, PSE_WA_10]
+
+######################### end of adjustment #########################
+
+local pi = 3.14159265
+local axis_config_current = 0
+local axis_config_new = 0
+local workarea_current = 0
+local workarea_new = 0
+local reverse_rotation = False
+local yaw_locked =  0
+local pose_start = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0])
+local pose_help = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0])
+local pose_target = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0])
+local pose = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0])
+
+def get_tool_free_pose(pose_ref=get_actual_tcp_pose(), dir=[0,0,0], move_in_base_frame=False):
+    # get a recovery pose 
+    # dir is providing the direction and distance in X, Y and Z
+    # if 'move_in_base_frame' is set, dir will be interpreted as absolute values for a movement in base frame
+
+    local pose_target = pose_ref
+    local i = 0
+
+    if (move_in_base_frame):
+        while (i<3):
+            # move only, 
+            # if the demanded position is bigger than zero and the current position is below the demanded one or
+            # if the demanded position is smaller than zero and the current position is above the demanded one
+            if ((dir[i]>0 and pose_ref[i]<dir[i]) or (dir[i]<0 and pose_ref[i]>dir[i])):
+                pose_target[i] = dir[i]
+            end
+            i = i + 1
+        end
+    else:
+        pose_target = pose_trans(pose_ref, p[dir[0], dir[1], dir[2], 0, 0, 0])
+    end
+
+    return pose_target
+end
+
+def check_workarea(reference_pose):
+    # the actual TCP position is compared to predefined areas (cubic) to determine in which area the robot arm is
+    # a workarea is defined as a list of coordinates, where the first 3 values are X, Y, and Z with the smallest values and 
+    # the next 3 values specify X, Y and Z for the biggest values
+
+    local data_size = size(workareas)
+    local i = 0
+    local size_workarea = p[0,0,0,0,0,0]
+    local pose_workarea = p[0,0,0,0,0,0]
+
+    while (i < data_size[0]):
+        pose_workarea = pose_trans(inv(p[workareas[i, 0], workareas[i, 1], workareas[i, 2], 0, 0, 0]), reference_pose)
+        size_workarea = pose_sub(p[workareas[i, 3], workareas[i, 4], workareas[i, 5], 0, 0, 0], p[workareas[i, 0], workareas[i, 1], workareas[i, 2], 0, 0, 0])
+        if  ((pose_workarea[0]>0 and pose_workarea[0]<size_workarea[0]) and 
+            (pose_workarea[1]>0 and pose_workarea[1]<size_workarea[1]) and 
+            (pose_workarea[2]>0 and pose_workarea[2]<size_workarea[2])):
+            return i + 1
+        end
+        i = i + 1
+    end
+    return 0
+end
+
+def check_current_axis_config():
+    # function determnines, if the arm is oriented in one or the other configuration.
+    # it means, that the ellbow joint is flipped and so are the wrist joints.
+
+    local jnt_current = get_actual_joint_positions()
+
+    # ellbow has positiv angle
+    if (jnt_current[2]> 0):
+        return 1
+    # ellbow has negativ angle
+    elif (jnt_current[2]< 0):
+        return 2
+    # angle is 0
+    else:
+        return 0
+    end
+end
+
+def switch_axis_config(axis_config):
+    # function to switch betwwen the axis configuration 1 and 2.
+
+    if (axis_config == 1):
+        return 2
+    elif (axis_config ==2):
+        return 1
+    end
+end
+
+def get_transition_pose_by_workarea(workarea, axis_config, closest=False, keep_xyz=[False, False, False]):
+    # get the correspondig pose from the list of poses
+
+    local jnt_current = get_actual_joint_positions()
+    local pose_current = get_actual_tcp_pose()
+    local i = 0
+    
+    pose.crt = poses[workarea-1]
+    # if wanted, the pose will take the current position as desired x, y and z
+    while (i < 3):
+        if keep_xyz[i]:
+            pose.crt[i] = pose_current[i]
+        end
+        i = i + 1
+    end
+
+    if (axis_config == 1):
+        pose.q = JNT_STANDARD_C1
+    elif (axis_config == 2):
+        pose.q = JNT_STANDARD_C2
+    end
+
+    if closest:
+        pose.q[0] = jnt_current[0]
+    end
+
+    if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+        pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+    else:
+        popup("no solution found for the transition pose", blocking= True)
+    end
+
+    return pose
+end
+
+def get_transition_pose_by_reference_pose(ref, radius, axis_config, closest=False):
+    # get the correspondig pose from the list of poses
+
+    local jnt_current = get_actual_joint_positions()
+    local yaw_current = get_yaw_too_base(ref)
+
+    #pose.crt = get_tool_free_pose(pose_ref=ref, dir=[0, 0, DISTANCE_TO_CLEARANCE], move_in_base_frame=True)
+
+    if (axis_config == 1):
+        pose.q = JNT_STANDARD_C1
+    elif (axis_config == 2):
+        pose.q = JNT_STANDARD_C2
+    end
+
+    if closest:
+        pose.q[0] = jnt_current[0]
+    end
+
+    # get coordinates of the circle with the same angle as the given pose to the 
+    if ref == p[0,0,0,0,0,0]:
+        pose.crt = PSE_WA_1
+    else:
+        pose.crt = 
+        p[radius * cos(yaw_current-pi/2),
+        radius * sin(yaw_current-pi/2),
+        DISTANCE_TO_CLEARANCE,
+        0,
+        0,
+        yaw_current + get_locked_yaw()]
+    end
+
+    if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+        pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+        #return pose
+    else:
+        popup("no solution found for the transition pose", blocking= True)
+    end
+
+    return pose
+end
+
+def get_rounded_mm(value):
+    if (value < 0):
+        return ceil(value*1000)
+    elif (value >= 0):
+        return floor(value*1000)
+    end
+end
+
+def get_yaw_too_base(pose):
+    # get the yaw relative to the base frame
+    local pose_x_mm = 0
+    local pose_y_mm = 0
+    local yaw = 0
+
+    pose_x_mm = get_rounded_mm(pose[0])
+    pose_y_mm = get_rounded_mm(pose[1])
+
+    if (pose_x_mm == 0 and pose_y_mm < 0):
+        yaw = 0
+    elif (pose_x_mm == 0 and pose_y_mm > 0):
+        yaw = pi
+    elif (pose_x_mm < 0 and pose_y_mm == 0):
+        yaw = -pi/2
+    elif (pose_x_mm > 0 and pose_y_mm == 0):
+        yaw = pi/2
+    else:
+        yaw = atan2(pose[0], pose[1])
+        if (-pi < yaw) and (yaw < 0):
+            yaw = - yaw - pi
+        elif (0 < yaw) and (yaw < pi):
+            yaw = - yaw + pi
+        else:
+            yaw = pi
+        end
+    end
+    return yaw
+end
+
+def get_helper_pose():
+    # get the helper pose, as described
+
+    local m_line = 0                    # slope of the line between base and circle point
+    local n = 0                         # shift on the ordinate axis
+    local m_normal = 0                  # slope of the normal of the line between base and circle point
+    local x_p1 = 0                      # x coordinate of first circle point
+    local x_p2 = 0                      # x coordinate of second circle point
+    local y_p1 = 0                      # y coordinate of first circle point
+    local y_p2 = 0                      # y coordinate of second circle point
+    local jnt_help_1 = [0,0,0,0,0,0]
+    local jnt_help_2 = [0,0,0,0,0,0]
+
+    if (pose_start.crt != pose_target.crt):
+        if (pose_start.crt[0] == pose_target.crt[0]):
+            m_normal = 0
+        elif (pose_start.crt[0] != pose_target.crt[0]):
+            m_line = (pose_target.crt[1]-pose_start.crt[1])/(pose_target.crt[0]-pose_start.crt[0])    # calculation of the slope between start and target
+            n = pose_start.crt[1] - m_line * pose_start.crt[0]
+        end
+        if (-0.00001 > m_line or m_line > 0.00001):
+            m_normal = -1/m_line
+        end
+        
+        # using p-q-formula for getting the crossing points
+        x_p1 = sqrt(pow(RADIUS_HELPER_POSES, 2)/(pow(m_normal, 2)+1)) * -1
+        x_p2 = sqrt(pow(RADIUS_HELPER_POSES, 2)/(pow(m_normal, 2)+1))
+        y_p1 = m_normal * x_p1
+        y_p2 = m_normal * x_p2
+        pose.q = pose_start.jnt
+        
+        if (point_dist(pose_start.crt, p[x_p1, y_p1,0,0,0,0]) < point_dist(pose_start.crt, p[x_p2, y_p2,0,0,0,0])):
+            if reverse_rotation:
+                pose_help.crt[0] = x_p2
+                pose_help.crt[1] = y_p2
+                pose.q = pose_target.jnt
+            else:
+                pose_help.crt[0] = x_p1
+                pose_help.crt[1] = y_p1
+                pose.q = pose_start.jnt
+            end
+        elif (point_dist(pose_start.crt, p[x_p1, y_p1,0,0,0,0]) > point_dist(pose_start.crt, p[x_p2, y_p2,0,0,0,0])):
+            if reverse_rotation:
+                pose_help.crt[0] = x_p1
+                pose_help.crt[1] = y_p1
+                pose.q = pose_target.jnt
+            else:
+                pose_help.crt[0] = x_p2
+                pose_help.crt[1] = y_p2
+                pose.q = pose_start.jnt
+            end
+        elif (point_dist(pose_start.crt, p[x_p1, y_p1,0,0,0,0]) == point_dist(pose_start.crt, p[x_p2, y_p2,0,0,0,0])):
+            jnt_help_1 = get_inverse_kin(p[x_p1, y_p1,pose_start.crt[2],pose_start.crt[3],pose_start.crt[4],pose_start.crt[5]], qnear=pose.q)
+            jnt_help_2 = get_inverse_kin(p[x_p2, y_p2,pose_start.crt[2],pose_start.crt[3],pose_start.crt[4],pose_start.crt[5]], qnear=pose.q)
+            if (pose_start.jnt[0]<jnt_help_1[0] and jnt_help_1[0]<pose_target.jnt[0]) or (pose_start.jnt[0]>jnt_help_1[0] and jnt_help_1[0]>pose_target.jnt[0]):
+                pose_help.crt[0] = x_p1
+                pose_help.crt[1] = y_p1
+            elif (pose_start.jnt[0]<jnt_help_2[0] and jnt_help_2[0]<pose_target.jnt[0]) or (pose_start.jnt[0]>jnt_help_2[0] and jnt_help_2[0]>pose_target.jnt[0]):
+                pose_help.crt[0] = x_p2
+                pose_help.crt[1] = y_p2
+            end
+            pose.q = pose_start.jnt
+        end
+
+        pose_help.crt[2] = 0.5 * (pose_start.crt[2] + pose_target.crt[2])
+        
+        if ((pose_start.crt[1] < 0 and pose_target.crt[1] > 0) or (pose_start.crt[1] > 0 and pose_target.crt[1] < 0)):
+            if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+                pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+            else:
+                popup("no solution found for the helper pose", blocking= True)
+            end
+        end
+    end
+    return pose
+end
+
+def adjust_transition_poses(pose_identifier):
+    # adjust the orientation of the transition poses by determining the the current orientation
+
+    local pose_current = get_actual_tcp_pose()
+    local jnt_current = get_actual_joint_positions()
+    local rpy_current = rotvec2rpy([pose_current[3],pose_current[4],pose_current[5]])
+    local rotvec_new = [0,0,0]
+
+    if (pose_identifier == "start"):
+        pose.q = pose_start.jnt
+        pose.crt = get_forward_kin(pose_start.jnt)
+    elif (pose_identifier == "helper"):
+        pose.q = pose_help.jnt
+        pose.crt = get_forward_kin(pose_help.jnt)
+    elif (pose_identifier == "target"):
+        pose.q = pose_target.jnt
+        pose.crt = get_forward_kin(pose_target.jnt)
+    end
+
+    rotvec_new = rpy2rotvec([rpy_current[0], rpy_current[1], get_yaw_too_base(pose.crt) + yaw_locked])
+    pose.crt = p[pose.crt[0], pose.crt[1], pose.crt[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+
+    pose.q[3] = jnt_current[3]
+    pose.q[4] = jnt_current[4]
+    pose.q[5] = jnt_current[5]
+    if get_inverse_kin_has_solution(pose.crt, qnear=pose.q) and is_within_safety_limits(pose.crt):
+        pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+    else:
+        popup(str_cat("no solution for ", pose_identifier), error=True, blocking=True)
+    end
+    return pose.jnt
+end
+
+def get_locked_yaw():
+    local pose_current = get_actual_tcp_pose()
+    local rpy_current = rotvec2rpy([pose_current[3],pose_current[4],pose_current[5]])
+    local rotvec_new = rpy2rotvec([rpy_current[0], rpy_current[1], get_yaw_too_base(pose_current)])
+    local pose_reference = p[pose_current[0], pose_current[1], pose_current[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+    local pose_to_reference = pose_trans(pose_inv(pose_reference), get_actual_tcp_pose())
+    yaw_locked = pose_to_reference[5]
+
+    return yaw_locked
+end
+
+def do_transition(reference_pose=p[0,0,0,0,0,0], mode=2, keep_xyz=[False, False, False], keep_rxry=False, a=1.4, v=1.05, r=0.100):
+    # the robot will evaluate the current and target workarea
+    # after that, the robot will move between the workareas automatically.
+    # parameters:
+    # reference_pose:   a pose/frame were the robot should work next. If nothing is given, base frame will be used as target
+    # keep_rxry:        if true, the robot will keep the orientation of the tool during the movement
+
+    ################# checking #################
+    axis_config_current = check_current_axis_config()           # 0: unknown, 1: config 1, 2: config 2
+    workarea_current = check_workarea(get_actual_tcp_pose())    # between 0 and the amount of defined workareas
+    workarea_new = check_workarea(reference_pose)               # between 0 and the amount of defined workareas
+    
+    if (workarea_current != 0 and workarea_new != 0) and (workarea_current != workarea_new) or (workarea_new == 1):
+        ################# get axisvalues #################
+        if (mode == 1):
+            pose_start = get_transition_pose_by_workarea(workarea_current, axis_config_current, closest=not reverse_rotation, keep_xyz=keep_xyz)
+        elif (mode == 2):
+            pose_start = get_transition_pose_by_reference_pose(get_actual_tcp_pose(), RADIUS_TRANSITION_POSES, axis_config_current, closest=not reverse_rotation)
+        end
+        if (workarea_current == 3 and workarea_new == 4) or (workarea_current == 4 and workarea_new == 3):
+            if (mode == 1):
+                pose_target = get_transition_pose_by_workarea(workarea_new, axis_config_current, closest=True)
+            elif (mode == 2):
+                pose_target = get_transition_pose_by_reference_pose(reference_pose, RADIUS_TRANSITION_POSES, axis_config_current, closest=True)
+            end
+            reverse_rotation = True
+        else:
+            if (mode == 1):
+                pose_target = get_transition_pose_by_workarea(workarea_new, axis_config_current, closest=(workarea_current == workarea_new))
+            elif (mode ==2):
+                pose_target = get_transition_pose_by_reference_pose(reference_pose, RADIUS_TRANSITION_POSES, axis_config_current, closest=(workarea_current == workarea_new))
+            end
+            if reverse_rotation:
+                reverse_rotation = False
+            end
+        end
+        # pose_help = get_helper_pose()
+
+        ################# adjustments #################
+        if (keep_rxry):
+            get_locked_yaw()
+            if (pose_start.jnt == pose_target.jnt):
+                pose_target.jnt = adjust_transition_poses("target")
+                pose_start.jnt = pose_target.jnt
+            else:
+                pose_start.jnt = adjust_transition_poses("start")
+                pose_target.jnt = adjust_transition_poses("target")
+            end
+            if (pose_help.jnt != [0,0,0,0,0,0]):
+                pose_help.jnt = adjust_transition_poses("helper")
+            end
+        end
+
+        global A_Start = pose_start.crt
+        global A_Help = pose_help.crt
+        global A_End = pose_target.crt
+
+        ################# movements #################
+
+        if point_dist(pose_start.crt, pose_target.crt) > r:
+            movej(pose_start.jnt, a=a, v=v, r=r)
+        end
+        if (pose_help.jnt != [0,0,0,0,0,0]):
+            movej(pose_help.jnt, a=a, v=v, r=r)
+        end
+        movej(pose_target.jnt, a=a, v=v)
+    else:
+        # define error
+    end
+
+    ################# checking #################
+    axis_config_current = check_current_axis_config()           # 0: unknown, 1: config 1, 2: config 2
+    workarea_current = check_workarea(get_actual_tcp_pose())    # between 0 and the amount of defined workareas
+end

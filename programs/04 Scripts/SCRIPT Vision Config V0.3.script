@@ -1,0 +1,82 @@
+def get_landmark_id_from_item_id(itm_id,jig_id):
+    # only for Essen
+    if (itm_id == 2):
+        if(jig_id == 3):
+            return 2
+        else:
+            return 1
+        end
+    elif (itm_id == 3):
+        if(jig_id == 1 or jig_id == 2):
+            return 3
+        else:
+            return 4
+        end
+    elif (itm_id == 4):
+        return 5
+    elif (itm_id == 5):
+        return 6
+    elif (itm_id == 6):
+        return 7
+    elif (itm_id == 7):
+        return 8
+    elif (itm_id == 8):
+        return 9
+    elif (itm_id == 9):
+        return 10
+    end
+end
+
+CAM_LM = struct(landmark_id=0, marker_identifier=0, type="", size=0, related_itm=0, capture_relation="")
+
+def create_landmark(landmark_id=0,marker_identifier=0, type="", size=0, related_itm=0, capture_relation=""):
+    return struct(landmark_id=landmark_id,marker_identifier=marker_identifier, type=type, size=size, related_itm=related_itm, capture_relation=capture_relation)
+end
+
+CAM_LMs = [
+  create_landmark(landmark_id=1,marker_identifier=0, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="front_left"),
+  create_landmark(landmark_id=2,marker_identifier=0, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="left"),
+  create_landmark(landmark_id=3,marker_identifier=1, type="aruco_7x7", size=0.1, related_itm=3, capture_relation="right"),
+  create_landmark(landmark_id=4,marker_identifier=2, type="aruco_7x7", size=0.1, related_itm=3, capture_relation="left"),
+  create_landmark(landmark_id=5,marker_identifier=0, type="aruco_7x7", size=0.1, related_itm=4, capture_relation="left"),
+  create_landmark(landmark_id=6,marker_identifier=3, type="aruco_7x7", size=0.1, related_itm=5, capture_relation="straight_left"),
+  create_landmark(landmark_id=7,marker_identifier=1, type="aruco_7x7", size=0.1, related_itm=6, capture_relation="straight_left"),
+  create_landmark(landmark_id=8,marker_identifier=2, type="aruco_7x7", size=0.1, related_itm=7, capture_relation="left"),
+  create_landmark(landmark_id=9,marker_identifier=0, type="aruco_7x7", size=0.1, related_itm=8, capture_relation="left"),
+  create_landmark(landmark_id=10,marker_identifier=3, type="aruco_7x7", size=0.1, related_itm=9, capture_relation="straight_left")
+]
+
+
+def set_marker_id(landmrk_id):
+    rb_set_config("marker_id", to_str(CAM_LMs[(landmrk_id-1)].marker_identifier))
+end
+
+CAM_Capture_Poses = struct(
+  front_left = p[0.350,-0.330,0.500,0.353,-0.323,-1.458],
+  left = p[0.350,0.000,0.500,0.353,-0.323,-1.458],
+  back_left = p[0.350,0.220,0.500,0.353,-0.323,-1.458],
+  back_right = p[-0.350,0.000,0.500,0.579,0.240,0.760],
+  right = p[-0.350,-0.300,0.500,0.206,0.206,1.561],
+  front_right = p[-0.350,-0.400,0.500,0.242,0.903,2.480],
+  straight_left = p[0.375,-0.000,0.500,0.815,-0.815,-1.412],
+  front = p[0,0,0,0,0,0]
+)
+
+def get_capture_pose(lm):
+    if (lm.capture_relation == "front_left"):
+        return CAM_Capture_Poses.front_left
+    elif (lm.capture_relation == "left"):
+        return CAM_Capture_Poses.left
+    elif (lm.capture_relation == "back_left"):
+        return CAM_Capture_Poses.back_left
+    elif (lm.capture_relation == "back_right"):
+        return CAM_Capture_Poses.back_right
+    elif (lm.capture_relation == "right"):
+        return CAM_Capture_Poses.right
+    elif (lm.capture_relation == "straight_left"):
+       return CAM_Capture_Poses.straight_left
+    else:
+        # error
+        return get_actual_tcp_pose()
+    end
+end

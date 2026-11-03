@@ -1,0 +1,279 @@
+
+#****************************************************
+# product           : uLabMobile
+# language          : urscript
+#****************************************************
+# author            :   D.Kreugel
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   led controls for uLabMobile
+# version:      	:   1.1
+# created           :   24.05.2024
+# updated           :   
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+#Set PB_Start_LED=On
+
+# HARDWARE CONFIGURATION************************************
+LED_GREEN = struct(type="CO",id=5)
+LED_RED = struct(type="CO",id=6)
+LED_BLUE = struct(type="CO",id=7)
+
+PB_LED_Start = struct(type="DO",id=0)
+PB_LED_Stop = struct(type="DO", id=1)
+
+PB_Start = struct(type="DI",id=0)
+PB_Stop = struct(type="DI", id=1)
+
+local cmd_stop_active = False
+
+def set_output(type,id,state=True):
+    if(type=="CO"):
+        set_configurable_digital_out(id,state)
+    elif(type=="DO"):
+        set_standard_digital_out(id,state)
+    end
+end
+
+def get_input(type,id):
+    if(type=="CI"):
+      return get_configurable_digital_in(id)
+    elif(type=="DI"):
+      return get_standard_digital_in(id)
+    end
+end
+
+
+def led_red_on():
+    set_output(LED_RED.type,LED_RED.id,True)
+end
+
+def led_red_off():
+    set_output(LED_RED.type,LED_RED.id,False)
+end
+
+def led_green_on():
+    set_output(LED_GREEN.type,LED_GREEN.id,True)
+end
+
+def led_green_off():
+    set_output(LED_GREEN.type,LED_GREEN.id,False)
+end
+
+def led_blue_on():
+    set_output(LED_BLUE.type,LED_BLUE.id,True)
+end
+
+def led_blue_off():
+    set_output(LED_BLUE.type,LED_BLUE.id,False)
+end
+
+def PB_LED_start_on():
+    set_output(PB_LED_Start.type,PB_LED_Start.id,True)
+end
+
+def PB_LED_start_off():
+    set_output(PB_LED_Start.type,PB_LED_Start.id,False)
+end
+
+def PB_LED_stop_on():
+    set_output(PB_LED_Stop.type,PB_LED_Stop.id,True)
+end
+
+def PB_LED_stop_off():
+    set_output(PB_LED_Stop.type,PB_LED_Stop.id,False)
+end
+
+
+# COLOR MIX ************************************
+def color_blue():
+    led_blue_on()
+    led_green_off()
+    led_red_off()
+end
+
+def color_red():
+    led_blue_off()
+    led_green_off()
+    led_red_on()
+end
+
+def color_green():
+    led_blue_off()
+    led_green_on()
+    led_red_off()
+end
+
+def color_yellow():
+    led_blue_off()
+    led_green_on()
+    led_red_on()
+end
+
+def color_lightblue():
+    led_blue_on()
+    led_green_on()
+    led_red_off()
+end
+
+def color_violet():
+    led_blue_on()
+    led_green_off()
+    led_red_on()
+end
+
+def color_white():
+    led_blue_on()
+    led_green_on()
+    led_red_on()
+end
+
+def led_off():
+    led_blue_off()
+    led_green_off()
+    led_red_off()
+end
+
+
+
+# COLOR FOR STATES ************************************
+thread Thread_Lights():
+    while(True):
+        #always when program is running 
+        PB_LED_start_on()
+        # Stopping
+        if (STATE == 1):
+            color_red()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Stopped
+        elif (STATE == 2):
+            color_red()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Resetting
+        elif (STATE == 3):
+            color_white()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            cmd_stop_active = False
+            PB_LED_stop_off()
+        # Idle
+        elif (STATE == 4):
+            color_white()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Starting
+        elif (STATE == 5):
+            color_lightblue()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Execute
+        elif (STATE == 6):
+            if (cmd_stop_active == False):
+                PB_LED_stop_off()
+            else:
+                PB_LED_stop_on()
+            end
+
+            if (PROCESS_Step == 1):
+                color_lightblue()
+            else:
+                color_green()
+            end 
+            sleep(0.5)
+        # Completing
+        elif (STATE == 7):
+            color_green()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Complete
+        elif (STATE == 8):
+            color_green()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Holding
+        elif (STATE == 9):
+            color_red()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Held
+        elif (STATE == 10):
+            color_red()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Unholding
+        elif (STATE == 11):
+            color_red()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Suspending
+        elif (STATE == 12):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Suspended
+        elif (STATE == 13):
+            color_yellow()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Unsuspending
+        elif (STATE == 14):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_off()
+        # Aborting
+        elif (STATE == 15):
+            color_red()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Aborted
+        elif (STATE == 16):
+            color_red()
+            sleep(0.5)
+            PB_LED_stop_on()
+        # Clearing
+        elif (STATE == 17):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+            sleep(0.5)
+            PB_LED_stop_on()
+        end
+
+        if (get_input(PB_Stop.type,PB_Stop.id)):
+            cmd_stop_active = True
+            PB_LED_stop_on()
+        end
+
+        sync()
+    end
+end
+
+thread_lights_handler = run Thread_Lights()

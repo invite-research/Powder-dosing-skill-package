@@ -1,0 +1,179 @@
+# ############ SCRIPT Device Robotiq Greifer ###############
+# **********************************************************
+# Customer          :   URG
+# Product Name      :   uLabMobile
+# **********************************************************
+# Controller/Robot  :   UR5e
+# Software          :   5.17
+# Dependencies      :   Logs Script, Robotiq Gripper and Gripper Datastructure for args (Factory Script), URCAP Robotiq
+# **********************************************************
+# Author            :   D.Kreugel, P.Köhnke
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+# *********************************************************
+# Description       :   Gripper Robotiq Device Interface for Robotiq E-Hand Gripper
+# Version           :   0.2
+# Created           :   18.07.2024
+# Updated           :   
+# *********************************************************
+# Modifications     :   
+#
+# Date              :  
+# Name              :   
+# Reason            :   
+# *********************************************************
+# TODO              :   documentation
+ 
+# RobotiQ Gripper
+ROBOTIQ_GRP_CLOSE = 0
+ROBOTIQ_GRP_OPEN = 40
+
+# #############FORCEMODE###############
+ROBOTIQ_GRP_FORCE = struct(FULL=100, HALF=50, LOW=25, NONE=0)
+
+# #############SPEED###################
+ROBOTIQ_GRP_SPEED = struct(FAST=100, MEDIUM=50, SLOW=20)
+
+# ############VALIDATION###############
+ROBOTIQ_GRP_VALIDATION = struct(ON=1, OFF=0, SKIP=-1)
+
+# struct(prepick=0, pick=0, place=0, force=0, speed=0, validation=0, object_type=0, description="default")
+def gripper_robotiq_activate():
+    return rq_activate_and_wait()
+end
+
+def gripper_robotiq_reset_and_activate():
+    return rq_reset_and_activate()
+    #return rq_reset()
+end
+
+def gripper_robotiq_is_activated():
+    return rq_is_gripper_activated() 
+end
+
+def gripper_robotiq_get_current_pos_mm():
+    return rq_current_pos_mm()
+end
+# Function to check if the RobotiQ gripper has an object
+def gripper_robotiq_has_object():
+    result = rq_is_object_detected()
+    if result == False:
+        log_error("No object detected by the gripper")
+    end
+    return result
+end
+
+def gripper_robotiq_move_to_mm(mm):
+    if(gripper_robotiq_is_activated() == False):
+        gripper_robotiq_activate()
+    end
+    return rq_move_and_wait_mm(mm)
+end
+
+def gripper_robotiq_close():
+    if(gripper_robotiq_is_activated() == False):
+        gripper_robotiq_activate()
+    end
+    return rq_close_and_wait()
+end
+
+def gripper_robotiq_open():
+    if(gripper_robotiq_is_activated() == False):
+        gripper_robotiq_activate()
+    end
+    return rq_open_and_wait() 
+end
+
+def gripper_robotiq_set_force(force):
+    return rq_set_force_norm(force)
+end
+
+def gripper_robotiq_set_speed(velocity):
+    return rq_set_speed_norm(velocity)
+end
+# Function to initialize the RobotiQ gripper
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_robotiq_init(args):
+    log_info("args:"+to_str(args))
+    gripper_robotiq_set_force(args.force)
+    gripper_robotiq_set_speed(args.speed)
+    if(gripper_robotiq_is_activated() == False):
+        gripper_robotiq_activate()
+    end
+    log_info("Robotiq Gripper Initialized with arguments:" + to_str(args))
+    return True
+end
+# Function to prepare the RobotiQ gripper for picking
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_robotiq_prepick(args):
+    gripper_robotiq_init(args)
+
+    if(args.width.prepick <= ROBOTIQ_GRP_CLOSE):
+        rq_close_and_wait()
+    elif(args.width.prepick >= ROBOTIQ_GRP_OPEN):
+        rq_open_and_wait()
+    else:
+        rq_move_and_wait_mm(args.width.prepick)
+    end
+
+    log_info("Robotiq Gripper prepick with arguments:" + to_str(args))
+    return True
+end
+
+# Function to place an object using the RobotiQ gripper
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_robotiq_place(args):
+    gripper_robotiq_init(args)
+
+    if(args.width.place <= ROBOTIQ_GRP_CLOSE):
+        rq_close_and_wait()
+    elif(args.width.place >= ROBOTIQ_GRP_OPEN):
+        rq_open_and_wait()
+    else:
+        rq_move_and_wait_mm(args.width.place)
+    end
+
+    log_info("Gripper Place with arguments:"+ to_str(args))
+    return True
+end
+
+# Function to pick an object using the RobotiQ gripper
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_robotiq_pick(args):
+    gripper_robotiq_init(args)
+
+    if(args.width.pick <= ROBOTIQ_GRP_CLOSE):
+        rq_close_and_wait()
+    elif(args.width.pick >= ROBOTIQ_GRP_OPEN):
+        rq_open_and_wait()
+    else:
+        rq_move_and_wait_mm(args.width.pick)
+    end
+    
+    log_info("Gripper Pick with arguments:" + to_str(args))
+    
+    if args.validation == ROBOTIQ_GRP_VALIDATION.ON:
+        if gripper_robotiq_has_object() == False:
+            log_error("Validation failed, no object detected")
+            return False
+        end
+    end
+
+    return True
+end
+
+
+# def gripper_robotiq_close_and_validate():
+#     rq_close_and_wait()
+#     if gripper_robotiq_has_object() == False:
+#         log_error("Validation failed, no object detected")
+#         return False
+#     else:
+#         return True
+#     end
+# end
+
+
+

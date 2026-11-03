@@ -1,0 +1,89 @@
+# ------------------------------------------------------------
+# Theoretical W_FULL from Cylinder Volume + Density
+# (Eliminates manual W_FULL; keeps W_EMPTY + W_now for level)
+# ------------------------------------------------------------
+# -------------------------
+# 1) Define container geometry (cylindrical inner dimensions)
+# -------------------------
+# Use mm for readability; we convert internally.
+global D_INNER_MM   = 66.0     # inner diameter of container (mm)
+global H_FILL_MM    = 125.0    # usable fill height up to "full" (mm)
+
+# -------------------------
+# 2) Define powder density
+# -------------------------
+# Density is directly set for now (as per your requirement).
+# Use g/mL (common lab bulk density style).
+#global RHO_G_PER_ML = 0.40     # example: 0.55 g/mL (replace per powder)
+
+# ------------------------------------------------------------
+# Spatula volumes (manufacturer specified)
+# ------------------------------------------------------------
+
+# Large spatula
+global SPATULA_L_VOL_ML = 5.0        # 1 teaspoon = 5 mL
+
+# Medium spatula
+global SPATULA_M_VOL_ML = 1.25       # 1/4 teaspoon = 1.25 mL
+
+# Small spatula
+global SPATULA_S_VOL_ML = 0.15625    # 1/32 teaspoon = 0.15625 mL
+
+global SPATULA_FLAT_M_VOL_ML  = 2.2
+global SPATULA_FLAT_S_VOL_ML  = 1.2   #based on caluclations using rho = m/V
+
+# -------------------------
+# 4) Utility functions
+# -------------------------
+
+
+def cyl_volume_mL(d_mm, h_mm):
+  # Converts mm -> m, computes cylinder volume in m^3, converts to mL
+  # V = π * r^2 * h
+  local d_m  = d_mm / 1000.0
+  local h_m  = h_mm / 1000.0
+  local r_m  = d_m / 2.0
+  local v_m3 = 3.141592653589793 * r_m * r_m * h_m
+  global v_mL = v_m3 * 1000000.0     # 1 m^3 = 1,000,000 mL
+  return v_mL
+end
+
+def compute_W_full_theoretical():
+  V_mL = cyl_volume_mL(D_INNER_MM, H_FILL_MM)
+  local M_powder_g = density * V_mL
+  global W_FULL = W_EMPTY + M_powder_g
+  return W_FULL
+end
+
+
+# ------------------------------------------------------------
+# Function: Theoretical scoop weight from volume
+# ------------------------------------------------------------
+def scoop_weight_from_volume(vol_mL, density):
+  return vol_mL * density
+end
+
+# ------------------------------------------------------------
+# Function: Get scoop weight based on spatula type
+# ------------------------------------------------------------
+def get_scoop_weight(spatula):
+  local vol = 0.0
+
+  if (spatula == "spatula_L"):
+    vol = SPATULA_L_VOL_ML
+  elif (spatula == "spatula_M"):
+    vol = SPATULA_M_VOL_ML
+  elif (spatula == "spatula_S"):
+    vol = SPATULA_S_VOL_ML
+  elif (spatula == "spatula_flat_M"):
+    return SPATULA_FLAT_M_VOL_ML
+  elif (spatula == "spatula_flat_S"):
+    return SPATULA_FLAT_S_VOL_ML
+  else:
+    textmsg("Unknown spatula type")
+    return 0.0
+  end
+
+  global target_g =  scoop_weight_from_volume(vol, density)
+  return target_g
+end

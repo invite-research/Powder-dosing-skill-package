@@ -1,0 +1,151 @@
+#*****************************************************
+# customer          : 
+# project name      :   Standard Application
+#****************************************************
+# controller        : 
+# software          : 
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   interface for uGo
+# version:      	:   6.0
+# created           :   21.04.2022
+# updated           :   
+#****************************************************
+# modifications     :   add new rpc-functions to interchange more data
+#
+# date              :   2024-02-29
+# name              :   P. Koehnke
+# reason            :   implemtentation of PackML behavoiur in uGO
+#****************************************************
+
+# navigate 
+# transfer
+
+# inside robot
+# navigate
+# prepare
+# work
+# Wenn ich an bestimmten Zielpositionen angekommen bin (die Stationen - Liste) muss ich #prepare 
+# selbsttätig triggern und z.B. die Landmark lesen
+# in work gibt es keinen Loop mehr, nur maximal eine Ausführung
+
+# in starting legen wir den Prozessschritt fest. 
+# 1 bei charge und navigate
+# 2 zusammen mit transfer
+# 3 bei transfer
+ITM_UML = 1
+ITM_CENTRIFUGE = 5
+
+ACT_OPEN_HATCH = 5
+ACT_CLOSE_HATCH = 6
+ACT_START_CENTRIFUGE = 9
+ACT_ROTATE_CENTRIFUGE = 23
+
+UGO_TASK_CHARGE = 1
+UGO_TASK_NAVIGATION = 2
+UGO_TASK_TRANSFER = 3
+UGO_TASK_OPEN_HATCH = 4
+UGO_TASK_CLOSE_HATCH = 5
+UGO_TASK_START_CENTRIFUGE = 6
+
+OBJ_CENT_RACK = 1
+OBJ_SARST_RACK = 2
+OBJ_BOX = 3
+
+global OBJ_CNT=struct(
+        CentRack = 0,
+        SarstRack = 0,
+        Boxes = 0)
+
+NAVI=struct(
+    target=0, 
+    footprint=0, 
+    protectiveOff=0, 
+    dock=0)
+
+WORK=struct(
+    ITM_ID_Src = 0, 
+    JIG_ID_Src = 0, 
+    OBJ_Nbr_Src = 0, 
+    ACT_Src = 0, 
+    ITM_ID_Tgt = 0,
+    JIG_ID_Tgt = 0,
+    OBJ_Nbr_Tgt = 0,
+    ACT_Tgt = 0,
+    OBJ_Type = 0)
+
+
+
+
+def ugo_tasks():
+    # ask ugo for needed parameters and give them back to the calling routine
+    if (UGO_Task_ID == 0):
+        # warning
+    elif (UGO_Task_ID == UGO_TASK_CHARGE):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # charge
+        NAVI.target = 1
+        NAVI.footprint = 1
+        NAVI.protectiveOff = 0
+        NAVI.dock = 0
+        TASK.NAVI = NAVI
+    elif (UGO_Task_ID == UGO_TASK_NAVIGATION):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # navigate
+        NAVI.target = UGO.read_input("00", "AMR_PosTarget")
+        NAVI.footprint = UGO.read_input("00", "AMR_Footprint")
+         textmsg("footprint=",NAVI.footprint)
+        NAVI.protectiveOff = UGO.read_input("00", "AMR_ProtectOff")
+        NAVI.dock = UGO.read_input("00", "AMR_Dock")
+        TASK.NAVI = NAVI
+    elif (UGO_Task_ID == UGO_TASK_TRANSFER):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # transfer
+        WORK=struct(
+            ITM_ID_Src = UGO.read_input("00", "ITM_ID_Src"), 
+            JIG_ID_Src = UGO.read_input("00", "JIG_ID_Src"), 
+            OBJ_Nbr_Src = UGO.read_input("00", "OBJ_Nbr_Src"), 
+            ACT_Src = UGO.read_input("00", "ACT_Src"), 
+            ITM_ID_Tgt = UGO.read_input("00", "ITM_ID_Tgt"),
+            JIG_ID_Tgt = UGO.read_input("00", "JIG_ID_Tgt"),
+            OBJ_Nbr_Tgt = UGO.read_input("00", "OBJ_Nbr_Tgt"),
+            ACT_Tgt = UGO.read_input("00", "ACT_Tgt"),
+            OBJ_Type = UGO.read_input("00", "OBJ_Type"))
+        TASK.WORK = WORK
+    elif (UGO_Task_ID == UGO_TASK_OPEN_HATCH):
+        WORK.ITM_ID_Src = ITM_UML
+        WORK.ITM_ID_Tgt = ITM_CENTRIFUGE
+        WORK.ACT_Tgt = ACT_OPEN_HATCH
+        TASK.WORK = WORK
+    elif (UGO_Task_ID == UGO_TASK_CLOSE_HATCH):
+        WORK.ITM_ID_Src = ITM_UML
+        WORK.ITM_ID_Tgt = ITM_CENTRIFUGE
+        WORK.ACT_Tgt = ACT_CLOSE_HATCH
+        TASK.WORK = WORK
+    elif (UGO_Task_ID == UGO_TASK_START_CENTRIFUGE):
+        WORK.ITM_ID_Src = ITM_UML
+        WORK.ITM_ID_Tgt = ITM_CENTRIFUGE
+        WORK.ACT_Tgt = ACT_START_CENTRIFUGE
+        TASK.WORK = WORK
+    end
+end
+
+def count_objects(object_type):
+  if (object_type == OBJ_CENT_RACK):
+    OBJ_CNT.CentRack = OBJ_CNT.CentRack + 1
+  elif (object_type == OBJ_SARST_RACK):
+    OBJ_CNT.SarstRack = OBJ_CNT.SarstRack + 1
+  elif (object_type == OBJ_BOX):
+    OBJ_CNT.Boxes = OBJ_CNT.Boxes + 1
+end
+
+def clear_objects():
+  OBJ_CNT.CentRack = 0
+  OBJ_CNT.SarstRack = 0
+  OBJ_CNT.Boxes = 0
+end

@@ -1,0 +1,369 @@
+ Program
+   Variables Setup
+   BeforeStart
+     Script: 001 SCRIPT Errors and Warnings Deifnes V0.2.script
+     Script: SCRIPT Transitions V5.2.script
+     Script: SCRIPT Utility V5.1.script
+     PRC_Target≔0
+     PRC_Target≔1
+     Action≔1
+     Action≔2
+     Action≔7
+     ITM_ID≔2
+     JIG≔1
+     JIG_Slot≔2
+   Robot Program
+     PreSettings
+       init poses
+         PSE_A≔p[0,0,0,0,0,0]
+         PSE_A_H≔p[0,0,0,0,0,0]
+         PSE_T≔p[0,0,0,0,0,0]
+         PSE_T_H≔p[0,0,0,0,0,0]
+         PSE_G≔p[0,0,0,0,0,0]
+         PSE_G_H≔p[0,0,0,0,0,0]
+         PSE_R≔p[0,0,0,0,0,0]
+         PSE_R_H≔p[0,0,0,0,0,0]
+         JNT_A≔[0,0,0,0,0,0]
+         JNT_S≔[0,0,0,0,0,0]
+         JNT_Q≔[0,0,0,0,0,0]
+       PROCESS_Info≔"work at target, Table"
+       PRM_TubHghtDiff≔-0.024
+       Gripping parameters
+         GRP_Open_Pos≔45
+         GRP_Close_Pos≔100
+         rq_set_force_norm(20)
+         rq_set_speed_norm(80)
+       Switch ITM_ID
+         Case 1
+           uML
+             Switch JIG
+               Case 2
+                 biorad rack tubes
+                   GRP_Open_Pos≔60
+                   FRM_Reference≔uLM_BradRckTubs
+                   Tubes_in_Rack≔6
+                   PSE_T≔pose_RPY2RotVec(p[0.02*(JIG_Slot%Tubes_in_Rack),-0.04365*floor(JIG_Slot/Tubes_in_Rack),0.003,0,0,-90])
+                   'PSE_T[2]=PSE_T[2]+PRM_TubHghtDiff'
+                   If (JIG_Slot%Tubes_in_Rack)>1
+                     PSE_T[0]=PSE_T[0]+0.0165
+                     If (JIG_Slot%Tubes_in_Rack)>4
+                       PSE_T[0]=PSE_T[0]+0.0235
+                       'If (JIG_Slot%10)>6'
+                   PSE_R≔pose_add(PSE_T, p[0,0,0.2500,0,0,0])
+                   PSE_A≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+               Case 4
+                 centrifuge rack tubes
+                   GRP_Open_Pos≔60
+                   FRM_Reference≔uLM_CentTubes
+                   PSE_T≔pose_RPY2RotVec(p[0.0975*(JIG_Slot%4),0,0.002,0,0,0])
+                   'PSE_T[2]=PSE_T[2]+PRM_TubHghtDiff'
+                   If JIG_Slot>3 and JIG_Slot≤7
+                     PSE_T[1]=0.06
+                     PSE_T[0]=PSE_T[0]+0.06
+                   ElseIf JIG_Slot>7 and JIG_Slot≤11
+                     PSE_T[0]=PSE_T[0]+0.06
+                   ElseIf JIG_Slot>11 and JIG_Slot≤15
+                     PSE_T[1]=0.06
+                   PSE_R≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+                   PSE_A≔pose_add(PSE_T, p[0,0,0.15,0,0,0])
+                   JNT_Q≔[-1.4,-1.89,-1.4,-1.42,1.57,0.18]
+               Case 5
+                 3finger gripper
+                   define poses
+                     'Place in 3finger'
+                     FRM_Reference = uML_3fingergrip
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0.003,0,0,0])
+                     PSE_T[2]=PSE_T[2]+PRM_TubHghtDiff
+                     If Action≟5
+                       PSE_T≔pose_RPY2RotVec(p[0,0,0.018,0,0,0])
+                       PSE_T_H≔pose_trans(PSE_T, p[0,0,0.02,0,0,0])
+                     If Action≟3
+                       PSE_T[5]=PSE_T[5]+d2r(155)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.060,0,0,0])
+               Case 6
+                 Caps bin
+                   define poses
+                     'Drop cap'
+                     FRM_Reference=uML_CapBin
+                     'PSE_T≔pose_RPY2RotVec(p[0.037,0,0.005,0,0,0])'
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0.005,0,0,0])
+                     PSE_T_H≔pose_trans(PSE_T, p[0,0,-0.008,0,0,0])
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 7
+                 define poses Manual
+                   GRP_Open_Pos≔60
+                   FRM_Reference≔uLM_Manual
+                   If Action≟1
+                     'PSE_T≔pose_RPY2RotVec(p[0.0202*(JIG_Slot%10),0.0202*(floor(JIG_Slot/10)),0,0,0,0])'
+                     PSE_T≔pose_RPY2RotVec(p[0.0248*(JIG_Slot%8),0.0258*(floor(JIG_Slot/8)),0,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+                   ElseIf Action≟2
+                     'PSE_T≔pose_RPY2RotVec(p[0.0202*(JIG_Slot%10),0.0202*(floor(JIG_Slot/10)),0,0,0,-62])'
+                     PSE_T≔pose_RPY2RotVec(p[0.0248*(JIG_Slot%8),0.0258*(floor(JIG_Slot/8)),0,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                   PSE_T[2]=PSE_T[2]+PRM_TubHghtDiff
+                   PSE_A≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+         Case 2
+           Biorad
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             Gripping parameters
+               GRP_Open_Pos≔45
+               GRP_Close_Pos≔100
+               rq_set_force_norm(80)
+               rq_set_speed_norm(100)
+             If PRC_Target≟0
+               FRM_Reference = uML_BradRacks
+               PSE_T≔pose_RPY2RotVec(p[0.04365*JIG_Slot,0,0,0,0,180])
+               If Action≟2
+                 'PSE_T[2]=PSE_T[2]+0.008'
+                 PSE_T[2]=PSE_T[2]+0.002
+               PSE_A≔pose_add(PSE_T, p[0,0,0.18,0,0,0])
+               PSE_R≔pose_add(PSE_T, p[0,0,0.18,0,0,0])
+             Else
+               FRM_Reference = FRM_BioradMachn
+               Switch Action
+                 Case 1
+                   PSE_T≔pose_RPY2RotVec(p[0.125-0.056*JIG_Slot,0.07,0.139,-90,0,0])
+                   PSE_A≔pose_add(PSE_T, p[0,0.1,0,0,0,0])
+                   PSE_R≔pose_add(PSE_T, p[0,0.05,0.1,0,0,0])
+                 Case 2
+                   PSE_T≔pose_RPY2RotVec(p[0.125-0.056*JIG_Slot,0.07,0.08,-90,0,0])
+                   PSE_T_H≔pose_RPY2RotVec(p[0.125-0.056*JIG_Slot,0.072,0.238,-90,0,0])
+                   PSE_A≔pose_add(PSE_T_H, p[0,0.1,0,0,0,0])
+                   PSE_R≔pose_add(PSE_T_H, p[0,0.1,0,0,0,0])
+                 Case 7
+                   PSE_T≔pose_RPY2RotVec(p[0.124-0.056*JIG_Slot,0.084,0.008,-55,0,0])
+                   PSE_T_H≔pose_RPY2RotVec(p[0.125-0.056*JIG_Slot,0.084,0.284,-55,0,0])
+                   PSE_A≔pose_add(PSE_T_H, p[0,0.05,0.05,0,0,0])
+                   PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+                   'JNT_Q≔[0.108,-1.505,-1.993,-0.886,1.488,3.189]'
+                 Case 8
+                   PSE_T_H≔pose_RPY2RotVec(p[0.124-0.056*JIG_Slot,0.092,0.049,-72,0,0])
+                   PSE_T≔pose_RPY2RotVec(p[0.125-0.056*JIG_Slot,0.092,0.316,-72,0,0])
+                   PSE_R≔pose_add(PSE_T, p[0,0.05,0,0,0,0])
+                   PSE_A≔pose_add(PSE_T_H, p[0,0,0.1,0,0,0])
+                   JNT_Q≔[0.108,-1.505,-1.993,-0.886,1.488,3.189]
+                   If JIG_Slot≟0
+                     PSE_T[0]=PSE_T[0]-0.002
+                     PSE_T_H[0]=PSE_T_H[0]-0.002
+         Case 4
+           Centrifuge
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             Gripping parameters
+               GRP_Open_Pos≔45
+               GRP_Close_Pos≔100
+               rq_set_force_norm(80)
+               rq_set_speed_norm(100)
+             If PRC_Target≟0
+               FRM_Reference = uLM_CentRacks
+               Switch Action
+                 Case 1
+                   PSE_T≔pose_RPY2RotVec(p[0.0975*(JIG_Slot%4),0,-0.015,0,0,0])
+                 Case 2
+                   PSE_T≔pose_RPY2RotVec(p[0.0975*(JIG_Slot%4),0,0.01,0,0,0])
+               PSE_A≔pose_add(PSE_T, p[0,0,0.15,0,0,0])
+               PSE_R≔pose_add(PSE_T, p[0,0,0.15,0,0,0])
+             Else
+               FRM_Reference = FRM_Centrifuge
+               Switch Action
+                 Case 1
+                   PSE_T≔pose_RPY2RotVec(p[0,0,-0.02,0,0,0])
+                 Case 2
+                   PSE_T≔pose_RPY2RotVec(p[0,0,0.015,0,0,0])
+               PSE_A≔pose_add(PSE_T, p[0,0,0.2,0,0,0])
+               PSE_R≔pose_add(PSE_T, p[0,0,0.25,0,0,0])
+       Additional check
+         If  not is_reachable(FRM_Reference,[PSE_A,PSE_A_H,PSE_T,PSE_T_H,PSE_R,PSE_R_H])
+           set_error(1002)
+           Action≔0
+     Switch Action
+       Case 1
+         Pick
+           Action_Info≔"Pick Rack/Probe"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           If  not OBJ_Picked
+             rq_move_and_wait_norm(GRP_Open_Pos)
+           If JNT_Q≠JNT_Z
+             movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q))
+           Else
+             MoveJ
+               PSE_A
+           If ITM_ID≟4 and PRC_Target≟1
+             execute_cent_action(eACT_Inspect,(JIG_Slot+1))
+           MoveL
+             PSE_T
+             rq_set_force_norm(50)
+             'rq_move_and_wait_norm(GRP_Close_Pos)'
+             Gripper Close (1)
+             OBJ_Picked≔rq_is_object_detected()
+             textmsg("Obj_Picked=",OBJ_Picked)
+             If OBJ_Picked
+               If PSE_T_H≠PSE_Z
+                 PSE_T_H
+               PSE_R
+             Else
+               set_error(1010)
+       Case 2
+         Place
+           Action_Info≔"place object"
+           'do_transition(keep_rxry=OBJ_Picked)'
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           If JNT_A≠[0,0,0,0,0,0]
+             MoveJ
+               JNT_A
+           Else
+             MoveJ
+               PSE_A
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             If ITM_ID≟4 and PRC_Target≟1
+               execute_cent_action(eACT_Inspect,(JIG_Slot+1))
+             If  not ERROR.FLAG
+               If (ITM_ID≟1 and (JIG≟4 or JIG≟2)) or ITM_ID≟2 or ITM_ID≟4
+                 PSE_T
+               Else
+                 PSE_T
+                   Until (tool_contact_detection)
+                 Force
+                   PSE_T
+               rq_move_and_wait_norm(GRP_Open_Pos)
+               Wait: 0.2
+               PSE_R
+           'PRC_Task_Boxes≔PRC_Task_Boxes+GRP_Boxes_Numb'
+       Case 3
+         Pick decapped probe from 3finger
+           Action_Info≔"Pick Rack/Probe"
+           MoveJ
+             PSE_A
+           rq_move_and_wait_norm(GRP_Open_Pos)
+           MoveL
+             'PSE_T[2]=PSE_T[2]-0.005'
+             PSE_T
+             'Force'
+             'ADD OPEN GRIPPER'
+             rq_set_force_norm(20)
+             rq_set_speed_norm(30)
+             rq_move_and_wait_norm(GRP_Close_Pos)
+           Set Open3FG=On
+           Wait: 0.3
+           MoveL
+             PSE_R
+       Case 4
+         Place probe in 3finger
+           Action_Info≔"place object"
+           MoveJ
+             PSE_A
+           Set Open3FG=On
+           MoveL
+             PSE_T
+               Until (tool_contact_detection)
+           Set Open3FG=Off
+           Wait: 0.5
+           'If Task_ID≟12'
+       Case 5
+         'Decapping'
+         Decapping
+           Action_Info≔"decapping"
+           Set EN_3FG=On
+           Set DecapTurn=On
+           action_manipulator_decapping()
+           Set EN_3FG=Off
+           Set DecapTurn=Off
+           MoveL
+             PSE_R
+       Case 6
+         'Drop the cap'
+         Drop
+           rq_set_speed_norm(100)
+           MoveJ
+             PSE_A
+           MoveL
+             PSE_T
+             Gripper Move11mm (1)
+             PSE_T_H
+             rq_move_and_wait_norm(GRP_Open_Pos)
+             Wait: 0.2
+             PSE_R
+       Case 7
+         Load
+           Action_Info≔"load object in the machine"
+           'do_transition(keep_rxry=OBJ_Picked)'
+           If JNT_Q≠JNT_Z
+             movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.05)
+           Else
+             MoveJ
+               PSE_A
+           MoveL
+             'PSE_T'
+             'Force'
+             PSE_T_H
+             Gripper Close (1)
+             Wait: 0.2
+             PSE_T
+             PSE_R
+       Case 8
+         UnLoad
+           Action_Info≔"unload object in the machine"
+           'do_transition(keep_rxry=OBJ_Picked)'
+           If JNT_Q≠JNT_Z
+             'movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.01)'
+             movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q))
+           Else
+             MoveJ
+               PSE_A
+           MoveL
+             'PSE_T'
+             'Force'
+             rq_move_and_wait_norm(GRP_Open_Pos)
+             PSE_T_H
+             Gripper Close (1)
+             Wait: 0.2
+             OBJ_Picked≔rq_is_object_detected()
+             If OBJ_Picked
+               PSE_T
+               rq_move_and_wait_norm(GRP_Open_Pos)
+               PSE_R
+             Else
+               set_error(1010)
+       Case 16
+         Scan the barcode
+           Action_Info≔"scan the barcode"
+           Barc_scan_succs≔ False 
+           First check
+             Set BarcodeTrigger=On
+             Wait: 0.1
+             Barc_scan_succs≔BarcodeSignal
+           If Barc_scan_succs
+             Set EN_3FG=On
+             Set CapTurn=On
+             Loop Barc_scan_succs
+               Barc_scan_succs≔BarcodeSignal
+               Wait: 0.05
+             Set EN_3FG=Off
+             Set CapTurn=Off
+             Set BarcodeTrigger=Off
+           Else
+             Timer_Barc_scan: Reset
+             Timer_Barc_scan: Start
+             Set DecapTurn=On
+             Set EN_3FG=On
+             Loop  not Barc_scan_succs and  not CMD_Stop and Timer_Barc_scan<60
+               'If Timer_Barc_scan>1.5'
+               Set BarcodeTrigger=On
+               Barc_scan_succs≔BarcodeSignal
+               Wait: 0.05
+             Set EN_3FG=Off
+             Set DecapTurn=Off
+             Set BarcodeTrigger=Off
+             Timer_Barc_scan: Stop
+             If Timer_Barc_scan≥60
+               set_error(5200)
+     '=========='
+     textmsg("Action=",Action)
+     PostSettings
+       OBJ_Picked≔rq_is_object_detected()
+       If OBJ_Picked
+         rq_set_force_norm(50)

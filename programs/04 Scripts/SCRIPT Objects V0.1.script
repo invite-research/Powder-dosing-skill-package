@@ -1,0 +1,70 @@
+#*****************************************************
+# customer          :   INTERNAL
+# project name      :   
+#****************************************************
+# controller        :   UR
+# software          :   5.17.3
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   object database
+# version:      	:   0.1
+# created           :   09.10.2024
+# updated           :   
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+def create_object_2(id=0, name="", type=0, dimension=struct(length=0, width=0, height=0, diameter=0), gripper_offset=p[0,0,0,0,0,0]):
+    return struct(id=id, name=name, type=type, dimension=dimension, gripper_offset=gripper_offset)
+end
+
+OBJ = create_object_2()
+OBJs = make_list(0, create_object_2(), 50)
+
+OBJs.append(create_object_2(id=1, name="rack centrifuge", type=1, dimension=struct(length=0, width=0, height=0.106, diameter=0.020), gripper_offset=p[0,0,0.095,0,0,2.356]))
+OBJs.append(create_object_2(id=2, name="sample tube 1", type=2, dimension=struct(length=0, width=0, height=0.106, diameter=0.015), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=3, name="rack sarstedt", type=3, dimension=struct(length=0, width=0, height=0.100, diameter=0.020), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=4, name="Lab bottle", type=4, dimension=struct(length=0, width=0, height=0.100, diameter=0.030), gripper_offset=p[0,0,0.2,0,0,0]))
+OBJs.append(create_object_2(id=5, name="Vial", type=5, dimension=struct(length=0, width=0, height=0.100, diameter=0.0275), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=6, name="Container", type=6, dimension=struct(length=0.0, width=0.0, height=0, diameter=0.0), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=7, name="Target_container", type=7, dimension=struct(length=0.06, width=0.06, height=0.134, diameter=0.05), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=8, name="Spatula", type=8, dimension=struct(length=0.03, width=0.03, height=0.23, diameter=0.05), gripper_offset=p[0,0,0,0,0,0]))
+OBJs.append(create_object_2(id=9, name="rack pipet", type=9, dimension=struct(length=0.03, width=0.03, height=0.23, diameter=0.05), gripper_offset=p[0,0,0,0,0,0]))
+
+def create_jig_2(id=0, name="", type=0, capacity=0, jig_offset=p[0,0,0,0,0,0]):
+    # iformation about used jigs
+    return struct(id=id, name=name, type=type, capacity=capacity, jig_offset=jig_offset)
+end
+
+JIG2 = create_jig_2()
+JIGs = make_list(0, create_jig_2(), 20)
+
+JIGs.append(create_jig_2(id=1, name="3FG", type=1, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=2, name="jig input", type=2, capacity=1, jig_offset=p[0,0,0,0,0,-3.927]))
+JIGs.append(create_jig_2(id=3, name="jig output", type=3, capacity=1, jig_offset=p[0,0,0,0,0,0.78]))
+JIGs.append(create_jig_2(id=6, name="jig bin", type=6, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=7, name="jig sarstedt racks", type=7, capacity=1, jig_offset=p[0,0,-0.02,0,0,0]))
+JIGs.append(create_jig_2(id=8, name="NoK Bin", type=8, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=9, name="Pick bott jig", type=9, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=10, name="Place bott jig", type=10, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=11, name="bottle shake jig", type=11, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=12, name="Pick Vial jig", type=12, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=13, name="Place Vial jig", type=13, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=14, name="Liquid transfer jig", type=14, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=15, name="Pick station jig", type=15, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=16, name="Place station jig", type=16, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=17, name="Weigh station jig", type=17, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=18, name="Pick station 1", type=18, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=19, name="Pick station 2", type=19, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=20, name="Pick station 3", type=20, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=21, name="Tilt station jig", type=21, capacity=1, jig_offset=p[0,0,0,0,0,0]))
+JIGs.append(create_jig_2(id=22, name="Swab station jig", type=22, capacity=1, jig_offset=p[0,0,0,0,0,0]))

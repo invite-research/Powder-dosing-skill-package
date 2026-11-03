@@ -1,0 +1,12 @@
+# Flask Framework
+Flask==3.0.3
+
+# Serial Communication
+pyserial==3.5
+
+# Data Processing
+numpy==2.0.1
+pandas==2.2.2
+openpyxl==3.1.5
+scipy==1.14.0
+matplotlib==3.9.2

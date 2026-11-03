@@ -1,0 +1,183 @@
+# ============================
+# Recipe Dosing URScript (3 powders)
+# Keeps final mixture ratio even after 1st powder overshoot
+# ============================
+
+# --- Handoff variables (used by other skills) ---
+global Pow_name = ""
+global target_weight = 0.0
+global last_dose_error = 0.0
+
+# --- Internal recipe data ---
+global powder_names = ["", "", ""]
+global powder_ratios = [0.0, 0.0, 0.0]      # fractions 0..1
+global powder_targets = [0.0, 0.0, 0.0]     # target weights for each
+global powder_actuals = [0.0, 0.0, 0.0]     # measured after dosing
+global powder_order = [0, 1, 2]             # order sorted by ratio
+global total_weight = 0.0
+global current_powder_index = 0
+global ratio_adjusted = False
+global dose_start_weight = 0.0
+#global W_now = 200.0
+#global powder_position == ""
+
+# --- Helper to sort by ascending ratio ---
+def sort_powders_by_ratio():
+  global powder_order = [0, 1, 2]
+  if (powder_ratios[powder_order[1]] < powder_ratios[powder_order[0]]): swap_order(0, 1) end
+  if (powder_ratios[powder_order[2]] < powder_ratios[powder_order[1]]): swap_order(1, 2) end
+  if (powder_ratios[powder_order[1]] < powder_ratios[powder_order[0]]): swap_order(0, 1) end
+end
+
+def swap_order(i, j):
+  local temp = powder_order[i]
+  powder_order[i] = powder_order[j]
+  powder_order[j] = temp
+end
+
+# --- Initialize recipe (called once from Task 57 inputs) ---
+def recipe_init(powA, powB, powC, total, ratioA, ratioB, ratioC):
+  global powder_names = [powA, powB, powC]
+  global powder_ratios = [ratioA, ratioB, ratioC]      # already divided by 100
+  global total_weight = total
+  global powder_targets = [total*ratioA, total*ratioB, total*ratioC]
+  global powder_actuals = [0.0, 0.0, 0.0]
+  global current_powder_index = 0
+  global ratio_adjusted = False
+  sort_powders_by_ratio()
+  send_powder_labels(powA,powB,powC)
+end
+
+# --- Before each dosing run ---
+def get_position_for_powder(Pow_name):
+	if pos1_powder == Pow_name:
+		return "Position1"
+	elif pos2_powder == Pow_name:
+		return "Position2"
+	elif pos3_powder == Pow_name:
+		return "Position2"
+	else:
+		return -1
+	end
+end
+
+def extract_powder_name(raw_str):
+
+    # 1. find "(" and ")"
+    local idx_open  = str_find(raw_str, "(")
+    local idx_close = str_find(raw_str, ")")
+
+    if (idx_open < 0) or (idx_close < 0):
+        return raw_str
+    end
+
+    # 2. Build the string inside parentheses manually
+    # Example: "005,CCS"
+    local inside = ""
+    local i = idx_open + 1
+    while i < idx_close:
+        inside = str_cat(inside, str_at(raw_str, i))
+        i = i + 1
+    end
+
+    # 3. Find the comma
+    local idx_comma = str_find(inside, ",")
+
+    if idx_comma < 0:
+        return inside     # no comma found
+    end
+
+    # 4. Extract everything after comma (powder name)
+    local powder = ""
+    local j = idx_comma + 1
+    while j < str_len(inside):
+        powder = str_cat(powder, str_at(inside, j))
+        j = j + 1
+    end
+
+    return powder
+end
+def recipe_next():
+	if (current_powder_index >= 3): return False end
+  	local i = powder_order[current_powder_index]
+  	global Pow_name = powder_names[i]
+  	global target_weight = powder_targets[i]
+	powder_position = get_position_for_powder(Pow_name)
+  	if (Pow_name == "CCS"):
+  		#powder_position ="Position1"
+		W_now = 200.0
+	elif (Pow_name == "lactose_loose"):
+		#powder_position = "Position2"
+		W_now = 137.0
+	else:
+		#powder_position = "Position3"
+		W_now = 100.0
+	end
+  return True
+end
+
+def dosing_start():
+	global dose_start_weight = get_weight()
+  	global switch_spat_M = True
+	global switch_spat_S = True
+	global switch_spat_F_S = True
+end
+
+def dosing_end():
+  local idx = powder_order[current_powder_index]
+  local weight_after = get_weight()
+  local actual_weight = weight_after - dose_start_weight
+
+  # update powder_actuals[idx]
+  local tmp_actuals = powder_actuals
+  tmp_actuals[idx] = actual_weight
+  global powder_actuals = tmp_actuals
+
+  # error for the just-finished powder
+  global last_dose_error = actual_weight - powder_targets[idx]
+
+  # --- one-time correction after first powder ---
+  if ((current_powder_index == 0) and (not ratio_adjusted)):
+    local j = powder_order[1]
+    local k = powder_order[2]
+
+    # Recompute TOTAL so that the first powder's actual mass matches its ratio
+    # T' = actual / ratio_of_first
+    local ratio_first = powder_ratios[idx]
+    if (ratio_first <= 0.0):
+      # degenerate case, nothing to distribute
+      local ttmp = powder_targets
+      ttmp[j] = 0.0
+      ttmp[k] = 0.0
+      global powder_targets = ttmp
+    else:
+    local new_total = actual_weight / ratio_first
+    if (new_total < 0.0):
+    	new_total = 0.0
+    end
+
+      # Update targets for ALL powders according to the unchanged recipe ratios
+      # (first powder’s target becomes its actual, but we won’t use it again)
+      local ttmp = powder_targets
+      ttmp[idx] = actual_weight
+      ttmp[j]   = new_total * powder_ratios[j]
+      ttmp[k]   = new_total * powder_ratios[k]
+      global powder_targets = ttmp
+
+      # Store the new total
+      global total_weight = new_total
+    end
+
+    global ratio_adjusted = True
+  end
+
+
+  global current_powder_index = current_powder_index + 1
+end
+
+def get_response_from_camera(target):
+	movel(target, a=0.1, v=0.12, r=0)
+	visor_trigger("1","3.0","arm")
+	global response = visor_getResponse(1)
+end
+

@@ -1,0 +1,45 @@
+def place_and_dose():
+    origin_stepper = get_actual_tcp_pose()      # origin of QR code
+    
+    place_container_approach_point_t  = p[0.1991, 0.208141, 0.236232, 0, 0, 0]
+    place_container_approach_point_r  = p[0, 0, 0, 0.42, 0, 0]
+    place_container_point_t  = p[0.1991, 0.21583, 0.163817, 0, 0, 0]
+    place_container_point_r  = p[0, 0, 0, 0.42, 0, 0]
+    
+    approach_dosing_point_t = p[-0.1991, 0.005614, 0.159733, 0, 0, 0]    # approach and dispensing point
+    approach_dosing_point_r = p[0, 0, 0, 1.464, 0, 0]    # approach and dispensing point
+    dosing_point_t = p[-0.1991, -0.193213, 0.071463, 0, 0, 0]   # point inside container
+    dosing_point_r = p[-0, 0, 0, 1.464, 0, 0]   # point inside container
+
+    place_container_approach_pose_i  = pose_trans(origin_stepper, place_container_approach_point_t)
+    place_container_approach_pose   = pose_trans(place_container_approach_pose_i, place_container_approach_point_r)
+
+    place_container_pose_i  = pose_trans(origin_stepper, place_container_point_t)
+    place_container_pose  = pose_trans(place_container_pose_i, place_container_point_r)
+
+    approach_dosing_pose_i   = pose_trans(origin_stepper, approach_dosing_point_t)
+    approach_dosing_pose   = pose_trans(approach_dosing_pose_i, approach_dosing_point_r)
+
+    dosing_pose_i   = pose_trans(origin_stepper, dosing_point_t)
+    dosing_pose   = pose_trans(dosing_pose_i, dosing_point_r)
+
+    tilt_pose = pose_trans(dosing_pose, p[0, 0, 0, 0, 1.5708, 0])
+
+    movej(place_container_approach_pose, a=0.1, v=0.12)
+    movel(place_container_pose, a=0.1, v=0.12)
+
+    set_tool_digital_out(0,True)        # opens gripper
+
+    movel(place_container_approach_pose, a=0.1, v=0.12)
+
+    # Grip spatula and update TCP
+
+    movej(approach_dosing_pose, a=0.1, v=0.12)
+    movel(dosing_pose, a=0.1, v=0.12)
+
+    movel(approach_dosing_pose, a=0.1, v=0.12)
+
+    movel(tilt_pose, a=0.1, v=0.12)
+
+    # Degrip spatula
+end    

@@ -1,0 +1,1273 @@
+ Program
+   Variables Setup
+   BeforeStart
+     Scripts
+       Script: 001 SCRIPT Errors and Warnings Deifnes V0.2.script
+       Script: SCRIPT uGO V7.11.1.script
+       'Script: SCRIPT Centrifuge Actions V0.3.script'
+       Script: SCRIPT PackML V1.2.1.script
+       Script: SCRIPT Utility V5.4.script
+       Script: SCRIPT uML Lights V1.2.script
+       Script: SCRIPT Transitions V8.0.script
+       Script: SCRIPT Logs V1.2.script
+       Script: SCRIPT Statistics V1.1.script
+       Script: SCRIPT Vision Config V0.2.script
+       Script: SCRIPT uLM Factory.script
+       Script: SCRIPT uLM Defines v0.2.script
+       Script: SCRIPT Device Robotiq Greifer v0.2.script
+       Script: SCRIPT uLM Gripperconfig v0.6.script
+       Script: SCRIPT uLM Projectconfig 0.2.script
+       Script: SCRIPT Objects V0.1.script
+     BeforeStarts
+       uLM
+         CMD_Stop≔ False 
+         CMD_Abort≔ False 
+         CMD_Clear≔ False 
+         STATE≔1
+         STATE_Info≔""
+         ARM_Referenced≔ False 
+         zero_ftsensor()
+         poses init
+           PSE_A≔p[0,0,0,0,0,0]
+           PSE_A_H≔p[0,0,0,0,0,0]
+           PSE_R≔p[0,0,0,0,0,0]
+           PSE_R_H≔p[0,0,0,0,0,0]
+           PSE_T≔p[0,0,0,0,0,0]
+           PSE_T_H≔p[0,0,0,0,0,0]
+           PSE_C_E≔p[0,0,0,0,0,0]
+           PSE_C_H≔p[0,0,0,0,0,0]
+           PSE_C_S≔p[0,0,0,0,0,0]
+         init_home_by_cartesian_pose(p[0,-0.400,0.300,0,0,0])
+       Clearing
+         reset_error()
+         reset_warning()
+       uGo
+         'ugo_init( True ,"http://192.168.12.240:10001")'
+         ugo_init( True ,"http://192.168.12.120:10001")
+         ugo_update_outputs()
+       App
+         'ADD APPLICATION SPECIFIC COMMANDS'
+       Tools
+         OBJ_Picked≔gripper_has_object()
+         If OBJ_Picked
+           Gripper Activate
+         Else
+           Gripper Reset and Activate
+         zero_ftsensor()
+         EXTT
+           Set GRP_3F_Enable=Off
+           Set BarcodeTrigger=Off
+           Set GRP_3F_Decap=Off
+           Set GRP_3F_Cap=Off
+           Set GRP_3F_Open=Off
+         PSE_T≔get_tool_free_pose(dir=[0,0,0.150], move_in_base_frame=True)
+         If is_reachable(Base_const, [PSE_T])
+           MoveL
+             PSE_T
+   Robot Program
+     MAIN
+       command_manager(external_control="uGO", cond_suspend=(ITM_Manipulated and AMR_AtTarget and AMR_Charging and AMR_Battery<40), cond_unsuspend=(AMR_Battery≟60))
+       log_state(STATE_Info)
+       Switch STATE
+         Case 1
+           Stopping
+             STATE_Info≔"Stopping"
+             end_freedrive_mode()
+             Set
+             PSE_T≔get_tool_free_pose(dir=[0,0,0.150], move_in_base_frame=True)
+             If is_reachable(Base_const, [PSE_T])
+               MoveL
+                 PSE_T
+             do_transition(keep_rxry=OBJ_Picked, r=0)
+             Decapper
+               Set GRP_3F_Enable=Off
+               Set BarcodeTrigger=Off
+               Set GRP_3F_Decap=Off
+               Set GRP_3F_Cap=Off
+               Set GRP_3F_Open=Off
+             'Centrifuge'
+             Call Sub_AMR_MiR_V3
+             If stopping() and AMR_Done
+               STATE≔2
+               ugo_update_outputs()
+         Case 2
+           Stopped
+             STATE_Info≔"Stopped"
+             Call Sub_AMR_MiR_V3
+             If CMD_Reset
+               STATE≔3
+               ugo_update_outputs()
+         Case 3
+            Resetting
+             STATE_Info≔"Resetting"
+             uML
+               reset_error()
+               reset_warning()
+               PROCESS_Step≔0
+               PROCESS_Info≔""
+               ARM_Referenced≔ False 
+               WRK_Done≔ False 
+               ITM_Prepared≔ False 
+               ITM_Manipulated≔ False 
+               STP≔0
+               Action≔0
+               Action_Info≔""
+               ITM_ID≔0
+               JIG≔0
+               JIG_Slot≔0
+               Task_info≔""
+               Set
+             App
+               'ADD APPLICATION SPECIFIC COMMANDS'
+               OBJ_Type≔0
+               OBJ_Nbr≔0
+               If CNT_Rack_Output≥50
+                 CNT_Rack_Output≔0
+               TASK≔struct(ID=0, NAVI=struct(target=0, footprint=0, protectiveOff=0, dock=0), WORK=struct(ITM_ID_Src=0, JIG_ID_Src=0, OBJ_Nbr_Src=0, ACT_Src=0, ITM_ID_Tgt=0, JIG_ID_Tgt=0, OBJ_Nbr_Tgt=0, ACT_Tgt=0, OBJ_Type=0))
+             Call Sub_AMR_MiR_V3
+             If resetting() and AMR_Done
+               STATE≔4
+               ugo_update_outputs()
+         Case 4
+           Idle
+             STATE_Info≔"Idle"
+             If CMD_Start
+               STATE≔5
+               ugo_update_outputs()
+         Case 5
+           Starting
+             STATE_Info≔"Starting"
+             'ADD COMMANDS WHAT TO START WITH'
+             Call Sub_AMR_MiR_V3
+             get ugo data
+               Assign Tasks
+                 TASK.ID = ugo_get_task()
+                 If TASK.ID≟1
+                   Task_info≔"Charge"
+                   Parameters
+                     AMR_PosTarget≔1
+                 ElseIf TASK.ID≟9
+                   'Pick Sarstedt Rack from Variable source'
+                   Task_info≔"Navigate to Target"
+                   Parameters
+                     AMR_PosTarget≔UGO.read_input("00","ITM_ID")
+                 ElseIf TASK.ID≟10
+                   'Pick Sarstedt Rack from Variable source'
+                   Task_info≔"Pick Rack"
+                   AMR_PosTarget≔AMR_PosActual
+                   Parameters
+                     ITM_ID≔UGO.read_input("00","ITM_ID")
+                     JIG≔UGO.read_input("00","JIG_ID")
+                     OBJ_Type≔3
+                   'ITM_ID≔1'
+                 ElseIf TASK.ID≟11
+                   'Place Sarstedt Rack on Variable target'
+                   Task_info≔"Place Rack"
+                   Parameters
+                     ITM_ID≔UGO.read_input("00","ITM_ID")
+                     JIG≔UGO.read_input("00","JIG_ID")
+                     OBJ_Type≔3
+                   'ITM_ID≔1'
+                 'ElseIf TASK.ID≟12'
+                 ElseIf TASK.ID≟13
+                   Task_info≔"Empty racks"
+                   Parameters
+                     ITM_ID≔1
+                     AMR_PosTarget≔AMR_PosActual
+                 ElseIf TASK.ID≟14
+                   Task_info≔"Decap"
+                   Parameters
+                     ITM_ID≔1
+                     OBJ_Type≔2
+                     JIG≔7
+                     AMR_PosTarget≔AMR_PosActual
+                 ElseIf TASK.ID≟99
+                   Task_info≔"Decapping and barcode alignment"
+                   Parameters
+                     PRC_TubNumber≔UGO.read_input("00","TubesNb")
+                     PRC_TubCounter≔0
+                     ITM_ID≔1
+                     AMR_PosTarget≔AMR_PosActual
+                 'ElseIf TASK.ID≟14'
+                 ElseIf TASK.ID≟15
+                   Task_info≔"Unoad Centrifuge"
+                   Parameters
+                     PRC_RackCounter≔0
+                     TASK.WORK.ITM_ID_Src=2
+                     TASK.WORK.ITM_ID_Tgt=1
+                     AMR_PosTarget≔4
+                     AMR_FootprintID≔1
+                 'ElseIf TASK.ID≟99'
+                 'ElseIf TASK.ID≟99'
+                 Else
+                   set_error(ERROR_WRONG_ORDER)
+             test ugo
+               Wait: 0.2
+               ugo_update_outputs()
+             If starting() and AMR_Done
+               log_message(Task_info, "New Task: ")
+               log_message(to_str(TASK.ID), "Task_ID: ")
+               do_transition(keep_rxry=OBJ_Picked)
+               STATE≔6
+               ugo_update_outputs()
+         Case 6
+           Execute
+             STATE_Info≔"Execute"
+             If  not CMD_Hold and not CMD_Suspend
+               Switch PROCESS_Step
+                 Case 0
+                   PROCESS_Info≔"process control"
+                   log_process(PROCESS_Info)
+                   process control
+                     If  not AMR_AtTarget
+                       PROCESS_Step≔1
+                     ElseIf (( not ITM_Prepared and  not WRK_Done) or (ITM_Prepared and WRK_Done))
+                       PROCESS_Step≔2
+                     ElseIf  not WRK_Done
+                       PROCESS_Step≔3
+                     Else
+                       task finished
+                         PROCESS_Info≔""
+                         STATE≔7
+                         ugo_update_outputs()
+                 Case 1
+                   navigate
+                     'MOVING THE uML'
+                     PROCESS_Info≔"move to target"
+                     log_process(PROCESS_Info)
+                     If TASK.ID≟1
+                       Action≔51
+                     Else
+                       Action≔52
+                     Call Sub_AMR_MiR_V3
+                     If AMR_Done
+                       PROCESS_Step≔0
+                 Case 2
+                   prepare
+                     'THINGS THAT HAVE TO BE DONE ONCE IN A SEQUENCE,WORKFLOW'
+                     PROCESS_Info≔"prepare for work"
+                     log_process(PROCESS_Info)
+                     If TASK.WORK.ITM_ID_Src>1
+                       ITM_ID≔TASK.WORK.ITM_ID_Src
+                     ElseIf TASK.WORK.ITM_ID_Tgt>1
+                       ITM_ID≔TASK.WORK.ITM_ID_Tgt
+                     If  not ARM_Referenced and (ITM_ID≠0)
+                       STP≔1
+                     ElseIf ARM_Referenced or (ITM_ID≟0)
+                       STP≔2
+                     Switch STP
+                       Case 1
+                         reference
+                           STP_Info≔"reference at target position"
+                           log_step(STP_Info)
+                           If ITM_ID≟1
+                             CAM_Done≔ True 
+                           Else
+                             Action≔131
+                             Call Sub_Vision_V18
+                             'CAM_Done≔ True '
+                           If CAM_Done and  not ERROR.FLAG
+                             log_step("ARM referenced")
+                             ARM_Referenced≔ True 
+                       Case 2
+                         manipulate
+                           STP_Info≔"manipulate item"
+                           log_step(STP_Info)
+                           'In case pressing button is needed'
+                           If found_in_list(ITM_ID, ITM_ID_List)
+                             Switch ITM_ID
+                               Case 0
+                                 ITM_Manipulated≔ not ITM_Manipulated
+                               Case 1
+                                 ITM_Manipulated≔ not ITM_Manipulated
+                               Case 2
+                                 'centrifuge'
+                               Default Case
+                                 ITM_Manipulated≔ not ITM_Manipulated
+                     ITM_Prepared≔(ITM_Manipulated or  not found_in_list(ITM_ID, ITM_ID_List)) and (ARM_Referenced or ITM_ID≟0) and  not WRK_Done
+                     STP≔0
+                     STP_Info≔""
+                     PROCESS_Step≔0
+                 Case 3
+                   work
+                     'ADD EVERY MACHINE, OBJECT, STATION TO WORK ON'
+                     Switch ITM_ID
+                       Case 1
+                         uLM
+                           If TASK.ID≟12
+                             fill racks
+                               Action≔151
+                               Call Sub_Vision_V18
+                               If  not ERROR.FLAG
+                                 Actions for the task
+                                   Action≔1
+                                   JIG≔2
+                                   JIG_Slot≔CAM_Result[0]
+                                   OBJ_Nbr≔CAM_Result[0]
+                                   OBJ_Type≔2
+                                   Call Sub_Action_V4
+                                   If OBJ_Picked
+                                     CAM_Result.remove(0)
+                                     PRC_TubCounter≔PRC_TubCounter+1
+                                     If PRC_TubCounter%4≟0
+                                       JIG_Slot≔4
+                                     Else
+                                       JIG_Slot≔PRC_TubCounter%4
+                                     OBJ_Nbr≔ceil(PRC_TubCounter/4)
+                                     Action≔2
+                                     JIG≔4
+                                     Call Sub_Action_V4
+                                     Action≔151
+                                     Call Sub_Vision_V18
+                               If (CAM_Captures≥CAM_PRM_Retries) or (PRC_TubCounter≥32)
+                                 PROCESS_Step≔0
+                                 WRK_Done≔ True 
+                             'Transfering'
+                           ElseIf TASK.ID≟10
+                             Pick Rack
+                               Action≔131
+                               Call Sub_Vision_V18
+                               Action≔1
+                               Call Sub_Action_V4
+                               PROCESS_Step≔0
+                               WRK_Done≔ True 
+                           ElseIf TASK.ID≟11
+                             Place Rack
+                               Action≔2
+                               Call Sub_Action_V4
+                               PROCESS_Step≔0
+                               WRK_Done≔ True 
+                           ElseIf TASK.ID≟13
+                             empty racks
+                               pick
+                                 Action≔1
+                                 JIG≔4
+                                 If PRC_TubCounter%4≟0
+                                   JIG_Slot≔4
+                                 Else
+                                   JIG_Slot≔PRC_TubCounter%4
+                                 OBJ_Nbr≔ceil(PRC_TubCounter/4)
+                                 OBJ_Type≔2
+                                 Call Sub_Action_V4
+                                 If OBJ_Picked
+                                   Action≔2
+                                   JIG≔3
+                                   JIG_Slot≔1
+                                   CNT_Rack_Output≔CNT_Rack_Output + 1
+                                   OBJ_Nbr≔CNT_Rack_Output
+                                   Call Sub_Action_V4
+                                   If  not ERROR.FLAG
+                                     PRC_TubCounter≔PRC_TubCounter - 1
+                                 If CNT_Rack_Output≥50 or PRC_TubCounter≤0
+                                   PROCESS_Step≔0
+                                   WRK_Done≔ True 
+                           ElseIf TASK.ID≟14
+                             'Action≔131'
+                             'Call Sub_Vision_V18'
+                             samples≔ True 
+                             Loop samples≟ True 
+                               'JIG≔7'
+                               'Action≔151'
+                               'Call Sub_Vision_V18'
+                               'Action≔1'
+                               'Call Sub_Action_V4'
+                               JIG≔1
+                               Action≔11
+                               Call Sub_Action_V4
+                               Action≔12
+                               Call Sub_Action_V4
+                               Action≔2
+                               JIG≔6
+                               Call Sub_Action_V4
+                               Action≔13
+                               Call Sub_Action_V4
+                               Action≔1
+                               JIG≔1
+                               Call Sub_Action_V4
+                               'JIG≔7'
+                               'Action≔2'
+                               'Call Sub_Action_V4'
+                       Case 2
+                         'Centrfiuge'
+                       Case 20
+                         'Biorad rack'
+                       Default Case
+                         WRK_Done≔ True 
+                         PROCESS_Step≔0
+             If CMD_Hold
+               STATE≔9
+               ugo_update_outputs()
+             ElseIf CMD_Suspend
+               STATE≔12
+               ugo_update_outputs()
+         Case 7
+           Completing
+             STATE_Info≔"Completing"
+             'ADD COMMANDS FOR COMPLETING THE PROCESS'
+             do_transition(keep_rxry=OBJ_Picked)
+             Call Sub_AMR_MiR_V3
+             If completing() and AMR_Done
+               STATE≔8
+               ugo_update_outputs()
+         Case 8
+           Complete
+             STATE_Info≔"Complete"
+             If CMD_Reset
+               STATE≔3
+               ugo_update_outputs()
+         Case 9
+           Holding
+             STATE_Info≔"Holding"
+             stopl(0.5)
+             Call Sub_AMR_MiR_V3
+             If holding() and AMR_Done
+               STATE≔10
+               ugo_update_outputs()
+         Case 10
+           Held
+             STATE_Info≔"Held"
+             If CMD_Unhold
+               end_freedrive_mode()
+               STATE≔11
+               ugo_update_outputs()
+             ElseIf FNC_Freedrive
+               freedrive_mode()
+             Else
+               end_freedrive_mode()
+         Case 11
+           Unholding
+             STATE_Info≔"Unholding"
+             Clearing
+               Switch ERROR.ID
+                 Case 1002
+                   AMR_AtTarget≔ False 
+                   ARM_Referenced≔ False 
+                   ITM_Prepared≔ False 
+                   PROCESS_Step≔1
+                 Case 2007
+                   PROCESS_Step≔1
+               reset_error()
+               reset_warning()
+               OBJ_Picked≔gripper_has_object()
+             Call Sub_AMR_MiR_V3
+             If unholding() and AMR_Done
+               STATE≔6
+               ugo_update_outputs()
+         Case 12
+           Suspending
+             STATE_Info≔"Suspending"
+             PROCESS_Info≔str_cat(PROCESS_Info, " suspended")
+             If suspending()
+               STATE≔13
+               ugo_update_outputs()
+         Case 13
+           Suspended
+             STATE_Info≔"Suspended"
+             Call Sub_AMR_MiR_V3
+             If CMD_Unsuspend
+               STATE≔14
+               ugo_update_outputs()
+         Case 14
+           Unsuspending
+             STATE_Info≔"Unsuspending"
+             PROCESS_Step≔0
+             If unsuspending()
+               STATE≔6
+               ugo_update_outputs()
+         Case 15
+           Aborting
+             STATE_Info≔"Aborting"
+             If aborting()
+               STATE≔16
+               ugo_update_outputs()
+         Case 16
+           Aborted
+             STATE_Info≔"Aborted"
+             If CMD_Clear
+               STATE≔17
+               ugo_update_outputs()
+         Case 17
+           Clearing
+             STATE_Info≔"Clearing"
+             Clearing
+               reset_warning()
+               reset_error()
+             If clearing()
+               STATE≔2
+               ugo_update_outputs()
+       log_state(STATE_Info)
+       log_warning(WARNING.MSG)
+       log_error(ERROR.MSG)
+       Times
+         Switch STATE
+           Case 1
+             TM_St_Stopping≔get_time(STATE_Times[STATE-1])
+           Case 2
+             TM_St_Stopped≔get_time(STATE_Times[STATE-1])
+           Case 3
+             TM_St_Resetting≔get_time(STATE_Times[STATE-1])
+           Case 4
+             TM_St_Idle≔get_time(STATE_Times[STATE-1])
+           Case 5
+             TM_St_Starting≔get_time(STATE_Times[STATE-1])
+           Case 6
+             TM_St_Execute≔get_time(STATE_Times[STATE-1])
+           Case 7
+             TM_St_Completin≔get_time(STATE_Times[STATE-1])
+           Case 8
+             TM_St_Complete≔get_time(STATE_Times[STATE-1])
+           Case 9
+             TM_St_Holding≔get_time(STATE_Times[STATE-1])
+           Case 10
+             TM_St_Held≔get_time(STATE_Times[STATE-1])
+           Case 11
+             TM_St_Unholding≔get_time(STATE_Times[STATE-1])
+           Case 12
+             TM_St_Suspendin≔get_time(STATE_Times[STATE-1])
+           Case 13
+             TM_St_Suspended≔get_time(STATE_Times[STATE-1])
+           Case 14
+             TM_St_Unsuspend≔get_time(STATE_Times[STATE-1])
+           Case 15
+             TM_St_Aborting≔get_time(STATE_Times[STATE-1])
+           Case 16
+             TM_St_Aborted≔get_time(STATE_Times[STATE-1])
+           Case 17
+             TM_St_Clearing≔get_time(STATE_Times[STATE-1])
+       'sync()'
+       Wait: 0.1
+   Thread_1
+     BS_Error≔IHskAndErr
+     'Set OTriggerBarcode=HI:Pulse 1.0'
+     BS_Busy≔IBusy
+     'If BS_Terminal≟ True '
+     BS_Complete≔ICmdExctd
+     'If BS_Complete≟ True '
+     'Folder'
+     'Wait: 4.0'
+     'Set OClearResult=On'
+   Sub_Vision_V18
+     PreSettings
+       CAM_LM_Detected≔ False 
+       CAM_Captures≔0
+       CAM_Pose≔p[0,0,0,0,0,0]
+       CAM_LM_Refinmnt≔ False 
+       CAM_LM_Refined≔ False 
+       CAM_LM_Deviatn≔p[0,0,0,0,0,0]
+       CAM_LM_ID≔0
+       CAM_Done≔ False 
+       CAM_CNT_Obj≔0
+       CAM_Result = []
+       OBJ_Detected≔ False 
+       FRM_Reference≔p[0,0,0,0,0,0]
+     '=========='
+     Switch Action
+       Case 13
+         'Read'
+       Case 15
+         'Detect'
+       Case 131
+         Read (SensoPart)
+           Action_Info≔"search for landmark"
+           CAM_LM≔CAM_LMs[ITM_ID-1]
+           CAM_Relation≔CAM_LM.capture_relation
+           go to capture pose
+             'PSE_T≔get_capture_pose(CAM_LM)'
+             'PSE_T≔pose_RPY2RotVec(p[-0.425, 0.125, 0.500, 2.13, -2.13, -0.186])'
+             If ITM_ID≟1 and JIG≟7
+               PSE_T≔ULM_Cap_SSRack
+             ElseIf ITM_ID≟5 and JIG≟7
+               PSE_T≔FRM_Cap_SSTable
+             do_transition(PSE_T, keep_rxry=False)
+             Set
+             MoveJ
+               PSE_T
+             CAM_Pose≔get_actual_tcp_pose()
+           Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop
+             adjust capture pose
+               If CAM_LM_Detected and CAM_LM_Refinmnt
+                 PSE_T≔p[0,0,0.300,0,0,0]
+                 CAM_Pose≔PSE_T
+                 If  not is_reachable(FRM_Reference,[PSE_T])
+                   Error
+                     set_error(ERROR_POSE_NOT_REACHABLE)
+                 If  not ERROR.FLAG
+                   MoveJ
+                     PSE_T
+                   CAM_LM_Refined≔ True 
+               ElseIf  not CAM_LM_Detected and CAM_Captures>0
+                 MoveL
+                   If FRM_Reference≟p[0,0,0,0,0,0]
+                     PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="cubic", range_max=[0.150,0.150,0.015])
+                     'PSE_T≔CAM_Pose'
+                     'PSE_T[0] = PSE_T[0]+floor(random()*10-5)/100'
+                     'PSE_T[1] = PSE_T[1]+floor(random()*10-5)/100'
+                     'PSE_T[2] = PSE_T[2]+floor(random()*10-5)/100'
+                   Else
+                     PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+                     CAM_LM_Refined≔ True 
+                   If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))
+                     Comment
+                     PSE_T
+                   Else
+                     'If random pose is out of reach, set the initial cam pose'
+                     PSE_T≔CAM_Pose
+             Wait: 2.0
+             trigger
+               # 1 VISOR Trigger
+               'init'
+               TM_3D_Found≔visor_partsFound(1)
+               If TM_3D_Found>0
+                 CAM_LM_Detected≔ True 
+                 CAM_Captures≔0
+               Else
+                 CAM_LM_Detected≔ False 
+                 CAM_Captures≔CAM_Captures+1
+               'CAM_LM_Deviatn≔visor_getPose3d(1, 0)'
+               'If CAM_LM_Deviatn≠PSE_Z'
+             result
+               If CAM_LM_Detected
+                 If (CAM_LM_Refinmnt and CAM_LM_Refined) or  not CAM_LM_Refinmnt
+                   'Switch CAM_LM.id'
+                   If ITM_ID≟1 and JIG≟7
+                     'LM_REF≔p[0.17625,-0.34401,0.125,d2r(179.2),d2r(2.6),d2r(-91.1)]'
+                     'LM_REF≔pose_RPY2RotVec(p[0.23852,-0.32950,0.12490,-179.-1,2.6,87.7])'
+                     'LM_Dist≔pose_trans(pose_inv(LM_REF), ULM_SS_Rack)'
+                     'LM_Dev≔pose_sub(LM_REF, CAM_LM_Deviatn)'
+                     'LM_CALC≔pose_trans(CAM_LM_Deviatn, pose_trans(pose_inv(LM_REF), ULM_SS_Rack))'
+                     'ULM_SS_Rack[0]=LM_CALC[0]'
+                     'ULM_SS_Rack[1]=LM_CALC[1]'
+                     ULM_SS_Rack≔visor_getPose3d(1, 0)
+                     'ULM_SS_Rack≔pose_trans(CAM_LM_Deviatn, ULM_SS_Rack)'
+                     'ULM_SS_Rack[2]=CAM_LM_Deviatn[2]'
+                   ElseIf ITM_ID≟5 and JIG≟7
+                     'FRM_Centrifuge≔pose_trans(CAM_LM_Deviatn, FRM_Centrifuge)'
+                     FRM_SS_SSTable[0]=CAM_LM_Deviatn[0]
+                     FRM_SS_SSTable[1]=CAM_LM_Deviatn[1]
+                   CAM_Done≔ True 
+               ElseIf  not CAM_LM_Detected and CAM_Captures<CAM_PRM_Retries
+                 CAM_LM_Refined≔ False 
+               ElseIf CAM_Captures≥CAM_PRM_Retries
+                 CAM_Done≔ True 
+                 Error
+                   set_error(ERROR_NO_LANDMARK)
+       Case 151
+         Detect (SensoPart)
+           go to capture pose
+             FRM_Reference≔ULM_Input
+             'PSE_T≔p[0.0905,0.0405,0.500,0,0,3.1415]'
+             PSE_T≔ULM_Cap_SSRack
+             do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=False)
+             JNT_Q≔get_actual_joint_positions()
+             JNT_Q≔[JNT_Q[0], JNT_Q[1], JNT_Q[2], JNT_Q[3], JNT_Q[4], 0]
+             Set
+             movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_T), qnear=JNT_Q))
+             CAM_Pose≔pose_trans(pose_inv(FRM_Reference), get_actual_tcp_pose())
+           Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop
+             If  not OBJ_Detected and CAM_Captures>0
+               MoveL
+                 If FRM_Reference≟p[0,0,0,0,0,0]
+                   'PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="cubic", range_max=[0.020,0.020,0.020])'
+                   PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[15,15,0])
+                 Else
+                   PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+                 If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))
+                   PSE_T
+                 Else
+                   'If random pose is out of reach, set the initial cam pose'
+                   PSE_T≔CAM_Pose
+                   PSE_T
+             Wait: 0.5
+             Set
+             # 1 VISOR Trigger
+             If visor_isResponseOk(1)
+               CAM_CNT_Obj≔visor_partsFound(1)
+               CAM_OBJ_Pose≔visor_getPose3d(1, 0)
+               If CAM_CNT_Obj>0
+                 CAM_OBJ_Color≔visor_getAdditionalData(1, 0)
+                 CAM_DetectScore≔to_num(visor_getAdditionalData(1, 1))/1000
+                 OBJ_Detected≔ True 
+             Else
+               CAM_Captures≔CAM_Captures+1
+             If OBJ_Detected
+               Get object data
+                 PRC_CntDetect≔0
+                 Loop PRC_CntDetect<CAM_CNT_Obj
+                   get object and jig number
+                     If ITM_ID≟1 and JIG≟7
+                       FRM_Reference≔ULM_Cap_SSRack
+                     ElseIf ITM_ID≟5 and JIG≟7
+                       FRM_Reference≔FRM_Cap_SSTable
+                     'Else'
+                     PSE_T≔pose_trans(pose_inv(FRM_Reference), CAM_OBJ_Pose)
+                     CAM_Result.append(get_pattern_counter(PSE_T, "X", pattern=[10, 5], patternsize=[0.181, 0.081]))
+                     'CAM_Result.append(PRC_CntDetect+1)'
+                   PRC_CntDetect≔PRC_CntDetect+1
+               CAM_Done≔ True 
+             ElseIf CAM_Captures≥CAM_PRM_Retries
+               CAM_Done≔ True 
+             Else
+               CAM_Captures≔CAM_Captures+1
+     '=========='
+     PostSettings
+       FRM_Reference≔p[0,0,0,0,0,0]
+       Set
+       CAM_Pose≔p[0,0,0,0,0,0]
+       Action≔0
+       Action_Info≔""
+   Sub_AMR_MiR_V3
+     PreSettings
+       AMR_TargetList≔[1,2,3,4,5,21,22,23,24,31,32,33,34,35,36,37,38,41]
+       AMR_Done≔ False 
+       AMR_PosActual≔T2O_Current_Pos
+       AMR_Attemps≔T2O_Nav_Attemps
+       AMR_Battery≔MiR_Battery_Lvl
+       AMR_Charging≔(T2O_Charging≟1)
+       AMR_Position≔struct(position_identifier=T2O_Current_Pos, x1=MiR_Position_X1, x2=MiR_Position_X2, y1=MiR_Position_Y1, y2=MiR_Position_Y2, theta1=MiR_Theta_1, theta2=MiR_Theta_2) 
+       If MiR_Mode≠7
+         Error
+           set_error(ERROR_AMR_WRONG_MODE)
+         AMR_Done≔ True 
+     '=========='
+     Switch STATE
+       Case 1
+         stopping
+           If T2O_Done≟1 and O2T_Acknowledge≟0
+             Set O2T_Acknowledge=1
+           Set MiR_CMD_Stop=On
+           AMR_Position.position_identifier = 0
+           AMR_Done≔ True 
+       Case 2
+         stopped
+           If MiR_State≠3 and MiR_State≠5
+             Set MiR_CMD_Stop=Off
+       Case 3
+         resetting
+           Set O2T_Mis_Main=Off
+           Set O2T_Mis_Charge=Off
+           If MiR_Mis_Queue>0
+             Set MiR_CMD_Clear_Q=On
+             Wait MiR_Mis_Queue≟0
+             Set MiR_CMD_Clear_Q=Off
+           If MiR_Error_ID≠0
+             Set MiR_CMD_Clear_E=On
+             Wait MiR_Error_ID≟0
+             Set MiR_CMD_Clear_E=Off
+           Set O2T_Action=0
+           Set O2T_Acknowledge=0
+           Set O2T_Target_Pos=0
+           Set O2T_Footprint=0
+           Set O2T_ProtectOff=0
+           Set O2T_Dock=0
+           AMR_Attemps≔0
+           AMR_PosTarget≔0
+           AMR_Step≔0
+           AMR_AtTarget≔ False 
+           If MiR_State≟4 or MiR_State≟3 or MiR_State≟10
+             AMR_Done≔ True 
+       Case 5
+         starting
+           If MiR_State≟4
+             Set MiR_CMD_Start=On
+             Wait MiR_State≠4
+             Set MiR_CMD_Start=Off
+             AMR_Done≔ True 
+           ElseIf MiR_State≟10
+             'MiR in protective stop. Wait'
+             AMR_Done≔ True 
+           ElseIf MiR_State≟3
+             AMR_Done≔ True 
+       Case 6
+         execute
+           AMR_AtTarget≔(AMR_PosActual≟AMR_PosTarget)
+           Switch AMR_Step
+             Case 0
+               If  not AMR_AtTarget
+                 AMR_Step≔1
+               Else
+                 AMR_Done≔ True 
+             Case 1
+               general Settings
+                 Set O2T_Acknowledge=0
+               check for error
+                 If OBJ_Picked and MiR_State≟10
+                   Error
+                     set_error(ERROR_ROBOT_ARM_NOT_IN_HOME_POSE)
+                   Action≔0
+                 ElseIf  not found_in_list(AMR_PosTarget, AMR_TargetList)
+                   Error
+                     set_error(ERROR_UNKNOWN_POSE)
+                   Action≔0
+               If MiR_State≟3
+                 Set MiR_CMD_Start=Off
+                 Switch Action
+                   Case 51
+                     Charge
+                       'trigger the charging mission'
+                       'target pos is predefined'
+                       Set O2T_Footprint=0
+                       Set O2T_Action=1
+                   Case 52
+                     Navigate
+                       'trigger the standard missoin'
+                       Set O2T_Footprint=AMR_FootprintID
+                       Set O2T_Target_Pos=AMR_PosTarget
+                       Set O2T_Action=2
+                 If MiR_Mis_Queue≟0
+                   Set O2T_Mis_Main=On
+                   Wait MiR_Mis_Queue≥1
+                   Set O2T_Mis_Main=Off
+               ElseIf MiR_State≟4
+                 Set MiR_CMD_Start=On
+               ElseIf MiR_State≟5
+                 AMR_Step≔2
+               ElseIf MiR_State≟10
+                 'AMR still in safeguard stop'
+             Case 2
+               acknowledge handshake
+                 If T2O_Done≟1 and O2T_Acknowledge≟0
+                   Set O2T_Acknowledge=1
+                 ElseIf T2O_Done≟0 and O2T_Acknowledge≟1
+                   Set O2T_Acknowledge=0
+                   AMR_AtTarget≔(AMR_PosActual≟AMR_PosTarget)
+                   AMR_Done≔ True 
+           translate errors
+             If AMR_Done
+               Switch T2O_Error_ID
+                 Case 2003
+                   error
+                     set_error(ERROR_NOT_DOCKED)
+                 Case 2007
+                   error
+                     set_error(ERROR_NOT_REACHABLE_TARGET)
+                 Case 2008
+                   error
+                     set_error(ERROR_CHARGING_NOT_STARTED)
+       Case 7
+         completing
+           If MiR_Mis_Queue>0
+             Set MiR_CMD_Abort=On
+             Wait MiR_Mis_Queue≟0
+             Set MiR_CMD_Abort=Off
+           If MiR_State≟3 or MiR_State≟10
+             AMR_Done≔ True 
+       Case 9
+         holding
+           Set MiR_CMD_Abort=On
+           If MiR_State≟3 or MiR_State≟10
+             Set MiR_CMD_Abort=Off
+             AMR_Done≔ True 
+       Case 11
+         unholding
+           Set MiR_CMD_Start=On
+           If MiR_State≠4
+             Set MiR_CMD_Start=Off
+             AMR_Step≔0
+             AMR_Done≔ True 
+       Case 12
+         suspending
+           'none'
+       Case 14
+         unsuspending
+           'none'
+       Case 15
+         aborting
+           Set MiR_CMD_Abort=On
+           Wait MiR_State≟3
+           Set MiR_CMD_Abort=Off
+       Case 17
+         clearing
+           If MiR_Error_ID≠0
+             Set MiR_CMD_Clear_E=On
+             Wait MiR_Error_ID≟0
+             Set MiR_CMD_Clear_E=Off
+           If MiR_Error_ID≟0
+             AMR_Done≔ True 
+     '=========='
+     PostSettings
+       AMR_Position≔struct(position_identifier=T2O_Current_Pos, x1=MiR_Position_X1, x2=MiR_Position_X2, y1=MiR_Position_Y1, y2=MiR_Position_Y2, theta1=MiR_Theta_1, theta2=MiR_Theta_2) 
+   Sub_Action_V4
+     PreSettings
+       init poses
+         PSE_A≔p[0,0,0,0,0,0]
+         PSE_A_H≔p[0,0,0,0,0,0]
+         PSE_T≔p[0,0,0,0,0,0]
+         PSE_T_H≔p[0,0,0,0,0,0]
+         PSE_G≔p[0,0,0,0,0,0]
+         PSE_G_H≔p[0,0,0,0,0,0]
+         PSE_R≔p[0,0,0,0,0,0]
+         PSE_R_H≔p[0,0,0,0,0,0]
+         JNT_Q≔[0,0,0,0,0,0]
+         JNT_S≔[0,0,0,0,0,0]
+       Gripping parameters
+         OBJ = find_object_by_type(OBJs, OBJ_Type)
+         GRP_Open_Pos≔OBJ.dimension.diameter * 1000 + 6
+         GRP_Offset≔OBJ.gripper_offset
+         rq_set_force_norm(50)
+         rq_set_speed_norm(50)
+       Switch ITM_ID
+         Case 1
+           uML
+             JIG2 = find_object_by_type(JIGs, JIG)
+             JIG_Offset≔JIG2.jig_offset
+             Switch JIG
+               Case 1
+                 3FG
+                   define poses
+                     FRM_Reference≔ULM_3FG
+                     JNT_Q≔JNT_HOME
+                     PSE_T≔pose_trans(GRP_Offset, JIG_Offset)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.100,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 2
+                 Input
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   define poses
+                     FRM_Reference≔ULM_Input
+                     PSE_T≔pose_trans(pose_trans(get_pattern_pos_rectangle(OBJ_Nbr, "X", [10,5], patternsize=[0.181,0.081]), GRP_Offset), JIG_Offset)
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 3
+                 Output
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   define poses
+                     FRM_Reference≔ULM_Output
+                     PSE_T≔pose_trans(pose_trans(get_pattern_pos_rectangle(OBJ_Nbr, "X", [10,5], patternsize=[0.181,0.081]), GRP_Offset), JIG_Offset)
+                     'PSE_T_H≔...'
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 4
+                 jig centrifuge racks
+                   define poses
+                     FRM_Reference≔ULM_Cent_Racks
+                     PSE_T≔get_pattern_pos_rectangle(JIG_Slot, "X", [4,1], patternsize=[0.291,0])
+                     If OBJ_Nbr≠0
+                       PSE_T≔pose_trans(pose_trans(PSE_T, get_pattern_pos_rectangle(OBJ_Nbr, "X", [3,3], patternsize=[0.060,0.060])),p[-0.030, -0.030,0,0,0,3.927])
+                     PSE_T≔pose_trans(PSE_T, GRP_Offset)
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 6
+                 Caps bin
+                   define poses
+                     'Drop cap'
+                     FRM_Reference=ULM_Cap_Bin
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_T_H≔pose_add(PSE_T, p[0,0,-0.011,0,0,0])
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 7
+                 Sarstedt
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   'Gripping parameters'
+                   If TASK.ID≟10
+                     Frame & Position Params
+                       FRM_Reference = ULM_SS_Rack
+                       'MoveL'
+                       'PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])'
+                       'PSE_T≔pose_trans(PSE_T, GRP_Offset)'
+                       PSE_T≔uLM_SS_PickPlc
+                       PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+                   ElseIf TASK.ID≟11
+                     FRM_Reference = uLM_SS_PickPlc
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_T≔pose_trans(PSE_T, GRP_Offset)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.2,0,0,0])
+         Case 2
+           Centrifuge
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             define poses
+               FRM_Reference≔FRM_Centrifuge
+               PSE_T≔GRP_Offset
+               If Action≟8
+                 PSE_R≔pose_add(PSE_T, p[0,0,0.250,0,0,0])
+                 PSE_A≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+               ElseIf Action≟7
+                 PSE_R≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+                 PSE_A≔pose_add(PSE_T, p[0,0,0.250,0,0,0])
+         Case 3
+           Output
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             define poses
+               FRM_Reference≔Base_const
+               PSE_T≔p[0,0,0,0,0,0]
+               PSE_A≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+               PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+         Case 5
+           Sarstedt Pickup Table
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             Switch JIG
+               Case 7
+                 Sarstedt Rack
+                   'Gripping parameters'
+                   Frame & Position Params
+                     FRM_Reference = FRM_SS_SSTable
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_T≔pose_trans(PSE_T, GRP_Offset)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+       Additional check
+         If  not is_reachable(FRM_Reference,[PSE_A,PSE_A_H,PSE_T,PSE_T_H,PSE_R,PSE_R_H])
+           Error
+             set_error(ERROR_POSE_NOT_REACHABLE)
+           Action≔0
+     '=========='
+     Switch Action
+       Case 1
+         Pick
+           Action_Info≔"pick object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EOAT
+             If  not OBJ_Picked
+               rq_move_and_wait_mm(GRP_Open_Pos)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+             EOAT
+               rq_set_force_norm(50)
+               rq_close_and_wait()
+               OBJ_Picked≔rq_is_object_detected()
+               If  not OBJ_Picked
+                 set_error(ERROR_NO_OBJECT_TO_PICK)
+             EXTT
+               Switch JIG
+                 Case 1
+                   3FG
+                     If OBJ_Picked
+                       Set GRP_3F_Open=On
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 2
+         Place
+           Action_Info≔"place object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EXTT
+             Switch JIG
+               Case 1
+                 3FG
+                   If OBJ_Picked
+                     Set GRP_3F_Open=On
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+               Until (tool_contact_detection)
+             Force
+               PSE_T
+             EXTT
+               Switch JIG
+                 Case 1
+                   3FG
+                     If OBJ_Picked
+                       Set GRP_3F_Open=Off
+                       Wait: 0.2
+             EOAT
+               rq_move_and_wait_mm(GRP_Open_Pos)
+               OBJ_Picked≔rq_is_object_detected()
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 3
+         Push
+           Action_Info≔"push"
+       Case 4
+         Pull
+           Action_Info≔"pull"
+       'Case 5'
+       Case 6
+         'Drop the cap'
+       Case 7
+         Load
+           Action_Info≔"load object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+               Until (tool_contact_detection)
+             Force
+               PSE_T
+             EOAT
+               rq_move_and_wait_mm(GRP_Open_Pos)
+               OBJ_Picked≔rq_is_object_detected()
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 8
+         Unload
+           Action_Info≔"pick object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EOAT
+             If  not OBJ_Picked
+               rq_move_and_wait_mm(GRP_Open_Pos)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+             Force
+               EOAT
+                 rq_set_force_norm(50)
+                 rq_close_and_wait()
+                 OBJ_Picked≔rq_is_object_detected()
+                 If  not OBJ_Picked
+                   set_error(ERROR_NO_OBJECT_TO_PICK)
+               If PSE_R_H≠PSE_Z
+                 PSE_R
+                 PSE_R_H
+               Else
+                 PSE_R
+       Case 11
+         Place
+           Action_Info≔"place object without gripper opening"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EXTT
+             Switch JIG
+               Case 1
+                 3FG
+                   If OBJ_Picked
+                     Set GRP_3F_Open=On
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+               Until (tool_contact_detection)
+             Force
+               PSE_T
+             EXTT
+               Switch JIG
+                 Case 1
+                   3FG
+                     If OBJ_Picked
+                       Set GRP_3F_Open=Off
+                       Wait: 0.2
+             EOAT
+               Comment
+       Case 12
+         Decap
+           Action_Info≔"decapping"
+           Set GRP_3F_Enable=On
+           Set GRP_3F_Decap=On
+           Force
+             check_decapping(offset=0.015, timeout=5, abort=CMD_Hold)
+           Set GRP_3F_Decap=Off
+           Set GRP_3F_Enable=Off
+           MoveL
+             PSE_R
+       Case 13
+         'Read'
+         TMR_Barcode: Reset
+         Read
+           TMR_Barcode: Start
+           If TMR_Barcode<PRM_TO_Read_BC
+             KeyenceTrigger
+               Set OClearResult=HI:Pulse 0.2
+               Wait: 0.5
+               Set OTriggerBarcode=Off
+               Wait: 0.5
+               Set OTriggerBarcode=On
+               Wait: 0.5
+             Preorient
+               TMR_Barcode: Reset
+               If ICmdExctd
+                 Set GRP_3F_Decap=On
+                 Set GRP_3F_Enable=On
+                 Loop ICmdExctd
+                   KeyenceTrigger
+                     Set OClearResult=HI:Pulse 0.1
+                     Wait: 0.3
+                     Set OTriggerBarcode=Off
+                     Wait: 0.3
+                     Set OTriggerBarcode=On
+                     Wait: 0.1
+               If  not ICmdExctd
+                 Set GRP_3F_Decap=On
+                 Set GRP_3F_Enable=On
+                 Wait ICmdExctd=HI
+             Set GRP_3F_Decap=Off
+             Set GRP_3F_Enable=Off
+           Else
+             exeption
+               error
+                 set_error(6000)
+           Set GRP_3F_Decap=Off
+           Set GRP_3F_Enable=Off
+           Set OTriggerBarcode=Off
+       Case 15
+         Detect
+           Action_Info≔"detect"
+     '=========='
+     PostSettings
+       'ADD ADDITIONAL CHECKS'
+   'Sub_Action_V1'
+   'Sub_Action_V2'

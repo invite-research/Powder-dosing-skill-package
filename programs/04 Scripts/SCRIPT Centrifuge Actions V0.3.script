@@ -1,0 +1,165 @@
+#*****************************************************
+# customer          :   UK Essen
+# project name      :   P1132
+#****************************************************
+# controller        :
+# software          :
+#****************************************************
+# author            :   E.Petrichenko
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   centrifuge actions for the application
+# version:      	:   0.1
+# created           :   22.08.2024
+# updated           :
+#****************************************************
+# modifications     :
+#
+# date              :
+# name              :
+# reason            :
+#****************************************************
+
+
+#################################### VARIABLES DEFINITIONS ###################################
+CNT_RESET_LOAD_TIMER = 60
+CNT_Rotate_Error = False
+CNT_Error = ""
+CNT_LidState = 0
+CNT_Timer_Start = 0
+CNT_Timer_Counting = False
+CNT_Hatch_State = 0
+global CNT_State_Actual  = 0
+CNT_KeyState = 0
+Cent=rpc_factory("xmlrpc","http://192.168.12.125:50002")
+
+ACTION_OPEN_HATCH = 5
+ACTION_CLOSE_HATCH = 6
+ACTION_START = 9
+ACTION_INSPECT = 16
+ACTION_ROTATE = 23
+
+CNT_STATES_INIT = struct (
+    UNSTARTABLE = 1,
+    STOPPED = 2,
+    STOPPED_UNSTARTABLE = 3,
+    RUN_UP = 4,
+    RUNNING = 8)
+
+
+KEY_STATE_INIT = struct (
+    TEACH = 1,
+    LOCKED = 2,
+    MIDDLE = 3)
+
+LID_STATE_INIT = struct (
+    CLOSED = 0,
+    OPENED = 1)
+#stopped_unstartable happens when lid or hatch is open
+
+#################################### THREADS ###################################
+
+thread Timer_CentThread():
+    while (True):
+        if (CNT_Timer_Counting):
+            CNT_Timer_Start = CNT_Timer_Start + get_steptime()
+        end
+        sync()
+    end
+end
+thread_timer_cent = run Timer_CentThread()
+
+thread Cent_Thread():
+    while (True):
+        CNT_Hatch_State = Cent.hatchstate()
+        CNT_State_Actual  = Cent.state()
+        log_hatch_state(CNT_Hatch_State)
+        log_centrifuge_state(CNT_State_Actual)
+        sleep(0.5)
+    end
+end
+run Cent_Thread()
+
+#################################### FUNCTIONS ###################################
+
+
+
+def cent_error_check():
+    CNT_Error = Cent.geterror()
+    CNT_KeyState = Cent.keystate()
+    CNT_LidState = Cent.lidstate()
+
+    if (CNT_Error == "88888888"):
+        set_error(ERROR_CENTRIFUGE_POWER)
+    elif (CNT_Error != "00000000"):
+        set_error(ERROR_CENTRIFUGE)
+        textmsg("CNT_Error:",CNT_Error)
+    elif (CNT_KeyState != KEY_STATE_INIT.LOCKED):
+        set_error(ERROR_WRONG_KEY_POSE)
+    elif (CNT_LidState == LID_STATE_INIT.OPENED):
+      set_error(ERROR_CENTRIFUGE_LID)
+    end
+    
+end
+
+
+def execute_cent_action(cent_action, cent_slot = 0):
+
+    if (cent_action == ACTION_OPEN_HATCH):
+        local cnt_hatch_moved = 0
+        if (CNT_State_Actual  == 2):
+            cnt_hatch_moved = Cent.move_hatch(2)
+            if (cnt_hatch_moved == -1):
+                set_error(ERROR_CANNOT_OPEN_HATCH)
+            end
+        elif (CNT_State_Actual  == 3):
+            textmsg("WARNING: Centrifuge is already opened", True)
+        else:
+            set_error(ERROR_WRONG_ORDER)
+            textmsg("ERROR: Centrifuge state is not corresponded with the required task", True)
+        end
+
+    elif (cent_action == ACTION_CLOSE_HATCH):
+        cnt_hatch_moved = Cent.move_hatch(1)
+        if (cnt_hatch_moved == -1):
+            set_error(ERROR_CANNOT_CLOSE_HATCH)
+        end
+
+    elif (cent_action == ACTION_START):
+        Cent.start()
+        CNT_Timer_Start = 0
+        CNT_Timer_Counting = True
+        while ((CNT_State_Actual  != CNT_STATES_INIT.RUN_UP and CNT_State_Actual  != CNT_STATES_INIT.RUNNING) and CNT_Timer_Start < CNT_RESET_LOAD_TIMER and not CMD_Stop and not CMD_Hold):
+            sleep(0.5)
+            
+        end        
+CNT_Timer_Counting = False
+        if (CNT_Timer_Start >= CNT_RESET_LOAD_TIMER ):
+            set_error(ERROR_CANNOT_START)
+            if (CNT_State_Actual == CNT_STATES_INIT.UNSTARTABLE or CNT_State_Actual == CNT_STATES_INIT.STOPPED_UNSTARTABLE):
+                set_error(ERROR_WRONG_ORDER)
+                textmsg("ERROR: Centrifuge state is not corresponded with the required task", True) 
+            end
+        end
+    elif (cent_action == ACTION_INSPECT):
+        if (CNT_Rotate_Error == False):
+            set_error(ERROR_CANNOT_ROTATE)
+        else:
+            CNT_Rotate_Error = Cent.posreached(6 *(cent_slot-1) + 1)
+            if (CNT_Rotate_Error == False):
+              set_error(ERROR_CANNOT_ROTATE)
+            end
+        end
+        
+        
+    elif (cent_action == ACTION_ROTATE):
+        CNT_Rotate_Error = False
+        CNT_Rotate_Error = Cent.move_rotor(6 *(cent_slot-1) + 1)
+        return CNT_Rotate_Error
+    else:
+        set_error(ERROR_WRONG_ORDER)
+    end
+end

@@ -1,0 +1,26 @@
+ Program
+   Variables Setup
+   Robot Program
+     Home (Safe)
+     'MoveJ'
+     'VISOR Easy Pick'
+     'VISOR Easy Pick'
+     VISOR Easy Pick
+       # 1 Setup
+       Process
+         Image Acquisition Pose
+         Object Detected
+           Open Gripper
+             Gripper Move40mm (1)
+           Approach Pose
+           Target Pose
+           Close Gripper
+             Gripper Close (1)
+           Exit Pose
+         No Object Detected
+           Popup: No object detected
+     MoveJ
+       Waypoint_5
+       Waypoint_6
+     Home (Safe)
+     Gripper Open (1)

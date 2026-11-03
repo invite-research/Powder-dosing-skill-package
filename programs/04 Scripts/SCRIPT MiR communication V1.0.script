@@ -1,0 +1,24 @@
+mirRestHandle = rpc_factory("xmlrpc", "http://192.168.12.20:34567")
+
+def getMirPlcRegister(register):
+    if (register < 1 or register > 200):
+        popup("Register for getMirPlcRegister must be between 1 and 200", title="MiR integration", blocking=True, error=True)
+        return 0
+    end
+    return mirRestHandle.get_register(register)
+end
+
+def setMirPlcRegister(register, value):
+    if (register < 1 or register > 200):
+        popup("Register for getMirPlcRegister must be between 1 and 200", title="MiR integration", blocking=True, error=True)
+        return 0
+    end
+    return mirRestHandle.write_register(register, value)
+end
+
+
+def write_mir_plc_register(name, value):
+    if name == "T2O_Current_Pos":
+        mirRestHandle.write_register(1, value)
+    end
+end

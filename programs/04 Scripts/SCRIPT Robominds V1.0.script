@@ -1,0 +1,45 @@
+#*****************************************************
+# customer          : 
+# project name      :   
+#****************************************************
+# controller        : 
+# software          : 
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   utility programs for the application
+# version:      	  :   1.9
+# created           :   16.12.2021
+# updated           :   07.06.2022
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+def RobMinds_get_input(frame,dx = 0.0202, dy = 0.0202):
+  global length1 = rb_get_attr_int("detections.length()")
+  global Pose_FRM_InputRack = p[0,0,0,0,0,0]
+  global Cam_Next_Pick = p[0,0,0,0,0,0]
+  global PickIdx=length1-1
+  while PickIdx>=0:
+              Cam_Next_Pick = rb_get_attr_pose("detections[" + to_str(PickIdx) + "].pose")
+	global next_cap_col = rb_get_attr_string("detections[" + to_str(PickIdx) + "].name")
+              if (next_cap_col == "green"):
+	      next_probe_height = Cam_Next_Pick[2]*1000 - 163+88-11
+	     Pose_FRM_InputRack = pose_inv(pose_trans(pose_inv(Cam_Next_Pick), frame))
+                    X_FRM_InputRack = Pose_FRM_InputRack[0] + dx/2 
+                    Y_FRM_InputRack = Pose_FRM_InputRack[1] + dy/2
+	     Idx_X = floor(norm(X_FRM_InputRack) / dx)
+	     Idx_Y = floor(norm(Y_FRM_InputRack) / dy)
+	     CamRackResult[Idx_X + Idx_Y *10] = next_probe_height
+              end
+              PickIdx = PickIdx - 1
+  end 
+end

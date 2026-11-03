@@ -1,0 +1,101 @@
+#*****************************************************
+# customer          : 
+# project name      :   Standard Application
+#****************************************************
+# controller        : 
+# software          : 
+#****************************************************
+# author            :   P. Koehnke
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   interface for uGo
+# version:      	:   6.0
+# created           :   21.04.2022
+# updated           :   
+#****************************************************
+# modifications     :   add new rpc-functions to interchange more data
+#
+# date              :   2024-02-29
+# name              :   P. Koehnke
+# reason            :   implemtentation of PackML behavoiur in uGO
+#****************************************************
+
+# navigate 
+# transfer
+
+# inside robot
+# navigate
+# prepare
+# work
+# Wenn ich an bestimmten Zielpositionen angekommen bin (die Stationen - Liste) muss ich #prepare 
+# selbsttätig triggern und z.B. die Landmark lesen
+# in work gibt es keinen Loop mehr, nur maximal eine Ausführung
+
+# in starting legen wir den Prozessschritt fest. 
+# 1 bei charge und navigate
+# 2 zusammen mit transfer
+# 3 bei transfer
+
+def ugo_tasks():
+    # ask ugo for needed parameters and give them back to the calling routine
+    if (UGO_Task_ID == 0):
+        # warning
+    elif (UGO_Task_ID == 1):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # charge
+        NAVI=struct(target=0, 
+            footprint=0, 
+            protectiveOff=0, 
+            dock=0)
+        NAVI.target = 1
+        NAVI.footprint = 1
+        NAVI.protectiveOff = 0
+        NAVI.dock = 0
+        TASK.NAVI = NAVI
+    elif (UGO_Task_ID == 2):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # navigate
+        NAVI=struct(target=0, 
+            footprint=0, 
+            protectiveOff=0, 
+            dock=0)
+        NAVI.target = UGO.read_input("00", "AMR_PosTarget")
+        NAVI.footprint = UGO.read_input("00", "AMR_Footprint")
+         textmsg("footprint=",NAVI.footprint)
+        NAVI.protectiveOff = UGO.read_input("00", "AMR_ProtectOff")
+        NAVI.dock = UGO.read_input("00", "AMR_Dock")
+        TASK.NAVI = NAVI
+    elif (UGO_Task_ID == 3):
+        # tbd - maybe a general struct for the order (packtag related?)
+        # transfer
+        WORK=struct(
+            ITM_ID_Src = UGO.read_input("00", "ITM_ID_Src"), 
+            JIG_ID_Src = UGO.read_input("00", "JIG_ID_Src"), 
+            OBJ_Nbr_Src = UGO.read_input("00", "OBJ_Nbr_Src"), 
+            ACT_Src = UGO.read_input("00", "ACT_Src"), 
+            ITM_ID_Tgt = UGO.read_input("00", "ITM_ID_Tgt"),
+            JIG_ID_Tgt = UGO.read_input("00", "JIG_ID_Tgt"),
+            OBJ_Nbr_Tgt = UGO.read_input("00", "OBJ_Nbr_Tgt"),
+            ACT_Tgt = UGO.read_input("00", "ACT_Tgt"),
+            OBJ_Type = UGO.read_input("00", "OBJ_Type"))
+        TASK.WORK = WORK
+    end
+end
+
+def get_landmark_id_from_item_id(itm_id):
+    # only for Marburg
+    if (itm_id == 1):
+        return 1
+    elif (itm_id == 2):
+        return 2
+    elif (itm_id == 3):
+        return 3
+    elif (itm_id == 4):
+        return 4
+    elif (itm_id == 5):
+        return 5
+    end
+end 

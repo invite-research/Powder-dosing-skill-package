@@ -1,0 +1,214 @@
+# ############### SCRIPT uLM Factory ##################
+# *****************************************************
+# Customer          :   URG
+# Product Name      :   uLabMobile
+# ****************************************************
+# Controller/Robot  :   UR5e
+# Software          :   URSCRIPT
+# Dependencies      :   Defines Script but mainly independend
+# How To            :   is used by projectconfig to create list of structs full of projectrelated information which are used across the scripts
+# ****************************************************
+# Author            :   D.Kreugel
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+# ****************************************************
+# Description       :   definition of the datastructures used by the uLM, gives functionality to create a predefined datastructure, is assigned to a global list in projectconfig
+# Version           :   0.2
+# Created           :   18.07.2024
+# Updated           :   
+# ****************************************************
+# Modifications     :   
+#
+# Date              :  
+# Name              :   
+# Reason            :   
+# ****************************************************
+# TODO              : cleanup useless info and add all other factorys from the other scripts here to have one place to search for such things, documentation
+
+# DO NOT TOUCH THE DATASTRUCTURES IF YOU DON'T KNOW WHAT YOU DO!
+MAX_ACTIONS=6
+POS_Z=p[0,0,0,0,0,0]
+def create_pattern(id=0, name="", pattern_width=[0, 0], pattern_size=[0, 0], blocked=[-1, -1, -1], direction="X", transpose=False, invert=False, description="default"):
+    return struct(
+        id = id,
+        name = name,
+        pattern_width = pattern_width,
+        pattern_size = pattern_size,
+        blocked = blocked,
+        direction = direction,
+        transpose = transpose,
+        invert = invert,
+        description = description
+    )
+end
+
+# item model stores frame related inner and outer patterns
+def create_item_model(inner="", outer="", description="default"):
+    return struct(
+        inner = inner, 
+        outer = outer, 
+        description = description
+        )
+end
+
+# creates a fixed length list cause structs cannot deal with dynamic lists at the moment and an item can have different amount of actions assigned to it
+def create_action_list(values):
+    local list = make_list(MAX_ACTIONS, 0, MAX_ACTIONS+1)
+    local i = 0
+    while (i < values.length()):
+        list[i] = values[i]
+        i = i + 1
+    end
+    return list
+end
+
+def create_item(id=0, ls_item="default", frame=p[0,0,0,0,0,0], actionlist=create_action_list([]), item_model=create_item_model(), lm_id=0, description="default"):
+    return struct(
+        id = id,
+        ls_item = ls_item,
+        frame = frame,
+        actionlist = create_action_list(actionlist),
+        item_model = item_model,
+        lm_id = lm_id,
+        description = description
+    )
+end
+
+def create_object(id=0, obj_name=0, height=0, width=0, obj_type = 0, description="default"):
+    return struct(
+        id = id,
+        obj_name = obj_name,
+        obj_type = obj_type,
+        height = height,
+        width = width,
+        description = description
+    )
+end
+# extends object type by sample related information
+def create_sample(obj_id=0, cap_diameter=0, raw_diameter=0, color="", material="", description=""):
+    return struct(
+    obj_id = obj_id,
+    cap_diameter = cap_diameter,
+    raw_diameter = raw_diameter,
+    color = color,
+    material = material,
+    description = description)
+end
+
+# create gripper configs
+def create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=0, speed=0, validation=0, object=create_object()):
+    gripper_offset.prepick = object.width+gripper_offset.prepick
+    gripper_offset.place = object.width+gripper_offset.place
+    return struct(
+        object = object.obj_name,
+        force = force,
+        speed = speed,
+        validation = validation,
+        width = gripper_offset
+    )
+end
+
+def create_manipulator_command(id="", item="", action=0, jig_nbr=-1, obj_nbr=-1, object_type=-1, error_id=0, data=""):
+    return struct(
+        id = id,
+        device = Device.MANIPULATOR,
+        item = item,
+        action = action,
+        jig_nbr = jig_nbr,
+        obj_nbr = obj_nbr,
+        object_type = object_type,
+        error_id = error_id,
+        data = data
+    )
+end
+
+def create_amr_command(id="", item="", action=0, target=0, error_id=0, data=""):
+    return struct(
+        id = id,
+        device = Device.AMR,
+        item = item,
+        action = action,
+        target = target,
+        error_id = error_id,
+        data = data
+    )
+end
+
+def create_camera_command(id="", item="", action=0, attempt=0, error_id=0, data=""):
+    return struct(
+        id = id,
+        device = Device.CAMERA,
+        item = item,
+        action = action,
+        attempt = attempt,
+        error_id = error_id,
+        data = data
+    )
+end
+
+# Function to create a new  vision struct to assign workspace and skill to an item or a selection
+def create_vision_config(workspace_id="", skill_id="", item_id=-1, target_origin=p[0,0,0,0,0,0], description="default"):
+    return struct(
+        workspace_id = workspace_id, 
+        skill_id = skill_id, 
+        item_id = item_id, 
+        target_origin = target_origin,
+        description = description)
+end
+
+# extents the vision config by the inspect configuration, this info will be called in the action inspect only
+# item_id is the reference to the item
+# dx is the distance in x direction for one position to the next in the inspection rack
+# dy is the distance in y direction for one position to the next in the inspection rack
+# target origin is the origin coordinate of the first position in the inspectionrack from where the calculation starts
+def create_inspect_config(item_id=0, dx=0, dy=0, target_origin=p[0,0,0,0,0,0], rack_size=[0,0], description="default"):
+    return struct(
+    item_id = item_id, 
+    dx = dx,
+    dy = dy,
+    target_origin = target_origin,
+    rack_size = rack_size,
+    description = description
+    )
+end
+ # Function to create a new landmark struct that contains all lm related configurationparameters and will be assigned via item_id
+#def create_landmark(lm_id=0, marker_id=-1, marker_size=0.1, marker_type="aruco_7x7", capture_pos=p[0,0,0,0,0,0], init_frame=p[0,0,0,0,0,0], search_offset=[0,0,0], actual_frame=p[0,0,0,0,0,0], description=""):
+  ##  return struct(
+   #     lm_id = lm_id,
+   #     marker_id = marker_id,
+     #   marker_size = marker_size,
+  ##      marker_type = marker_type,
+  #      capture_pos = capture_pos,
+  #      init_frame = init_frame,
+  #      search_offset = search_offset,
+  #      actual_frame = actual_frame,
+#        description = description)
+#end
+
+def create_movement(id=0, actionlist=create_action_list([]), hh_approach=POS_Z, h_approach=POS_Z, approach=POS_Z, h_target=POS_Z, target=POS_Z, retract=POS_Z, h_retract=POS_Z, hh_retract=POS_Z, h_frame=POS_Z, frame=POS_Z, speed=1, acceleration=1, description="default"):
+return struct(
+    id = id,
+    actionlist = actionlist,
+    hh_approach = hh_approach,
+    h_approach = h_approach,
+    approach = approach, 
+    h_target = h_target,
+    target = target,
+    retract = retract, 
+    h_retract = h_retract,
+    hh_retract = hh_retract,
+    h_frame = h_frame,
+    frame = frame, 
+    speed = speed,
+    acceleration = acceleration,
+    description = description
+)
+end
+
+
+
+
+
+

@@ -1,0 +1,55 @@
+current_state_log = ""
+current_process_log = ""
+current_step_log = ""
+current_warning_log = ""
+current_error_log = ""
+current_message_log = "placeholderstring"
+
+def log_message(prefix="", newlog=current_message_log):
+    # generates a log message every time its useful
+    if (current_message_log != newlog and newlog != ""):
+        textmsg(str_cat(prefix, to_str(newlog)))
+        current_message_log = to_str(newlog)
+    end
+end
+
+def log_state(newlog):
+    # generates a log message every time its useful
+    if (current_state_log != newlog and newlog != ""):
+        textmsg(str_cat("Machine: ", to_str(newlog)))
+        current_state_log = to_str(newlog)
+    end
+end
+
+def log_process(newlog):
+    # generates a log message every time its useful
+    if (current_process_log != newlog and newlog != ""):
+        textmsg(str_cat("Process: ", to_str(newlog)))
+        current_process_log = to_str(newlog)
+    end
+end
+
+def log_step(newlog):
+    # generates a log message every time its useful
+    if (current_step_log != newlog and newlog != ""):
+        textmsg(str_cat("Step: ", to_str(newlog)))
+        current_step_log = to_str(newlog)
+    end
+end
+
+
+def log_warning(newlog):
+    # generates a log message every time its useful
+    if (current_warning_log != newlog and newlog != ""):
+        textmsg(str_cat("WARNING: ", to_str(newlog)))
+        current_warning_log = to_str(newlog)
+    end
+end
+
+def log_error(newlog):
+    # generates a log message every time its useful
+    if (current_error_log != newlog and newlog != ""):
+        textmsg(str_cat("ERROR: ", to_str(newlog)))
+        current_error_log = to_str(newlog)
+    end
+end

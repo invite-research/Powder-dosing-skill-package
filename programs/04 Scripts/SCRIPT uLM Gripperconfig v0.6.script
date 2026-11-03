@@ -1,0 +1,107 @@
+############# SCRIPT uLM Gripperconfig ###############
+#*****************************************************
+# Customer          :   URG
+# Product Name      :   uLabMobile
+#****************************************************
+# Controller/Robot  :   UR5e
+# Software          :   UR-Script
+# Dependencies      :   physical Gripper and Datastructure from Factory for args -> Device Script and Implementations of the Functions
+# How To            :   Assign all Functioncalls to the equivalent of the used Device Script
+#****************************************************
+# Author            :   D.Kreugel, P.Köhnke
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# Description       :   Defines all Gripperm related Parameters and Functions 
+# Version           :   0.6
+# Created           :   18.07.2024
+# Updated           :   
+#****************************************************
+# Modifications     :   -> at the moment Gripperconfig linked to Robotiq Gripper Device Script
+# Date              :   18.07.2017
+# Name              :   D.Kreugel
+# Reason            :   uLM Standard
+#****************************************************
+# TO DO             : Implement Activate and Reset Routine at the beginning or after an error depending on the state if an Object is gripped or not, documentation
+
+
+
+# GRIPPER DEFINES
+GRIPPER_CLOSE = ROBOTIQ_GRP_CLOSE
+GRIPPER_OPEN = ROBOTIQ_GRP_OPEN
+# #############FORCE###############
+GRIPPER_FORCE = ROBOTIQ_GRP_FORCE
+# #############SPEED###################
+GRIPPER_SPEED = ROBOTIQ_GRP_SPEED
+# ############VALIDATION###############
+GRIPPER_VALIDATION = ROBOTIQ_GRP_VALIDATION
+
+# takes force in %
+def gripper_set_force(force):
+    return gripper_robotiq_set_force(force)
+end
+
+# takes speed in %
+def gripper_set_speed(velocity):
+    return gripper_robotiq_set_speed(velocity)
+end
+
+def gripper_activate():
+    return gripper_robotiq_activate()
+end
+
+def gripper_reset_and_activate():
+    return gripper_robotiq_reset_and_activate()
+end
+
+def gripper_is_activated():
+    return gripper_robotiq_is_activated()
+end
+
+def gripper_get_current_pos_mm():
+    return gripper_robotiq_get_current_pos_mm()
+end
+
+def gripper_has_object():
+    return gripper_robotiq_has_object()
+end
+
+def gripper_open():
+    return gripper_robotiq_open()
+end
+ 
+def gripper_close():
+    return gripper_robotiq_close()
+end
+
+def gripper_move_to_pos_mm(mm):
+    return gripper_robotiq_move_to_mm(mm)
+end
+
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_init(args):
+    return gripper_robotiq_init(args)
+end
+
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_prepick(args):
+    return gripper_robotiq_prepick(args)
+end
+
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_pick(args):
+    return gripper_robotiq_pick(args)
+end
+
+# args = struct(obj_type = object.obj_type, force = force, speed = speed, validation = validation, width = (prepick=2, pick=0, place=2))
+def gripper_place(args):
+    return gripper_robotiq_place(args)
+end
+
+
+# def gripper_close_and_validate():
+#     return gripper_robotiq_close_and_validate()
+# end
+

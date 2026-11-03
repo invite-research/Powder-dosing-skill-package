@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Powder Dosing Dashboard</title>
+  <style>
+    body{
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      color:#f5f5f5;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+      font-size:20px;
+      background: linear-gradient(145deg, #1b2337 0%, #121827 40%, #0f1523 100%);
+      background-attachment:fixed;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      z-index: 1001;
+      box-sizing: border-box;
+    }
+
+    .menu-btn {
+      font-size: 24px;
+      cursor: pointer;
+      margin-right: 15px;
+      user-select: none;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 60px;
+      left: -260px;
+      width: 260px;
+      height: calc(100% - 60px);
+      background: #34495e;
+      transition: 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 14px 20px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover {
+      background: #1abc9c;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 60px);
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 999;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    header{
+      text-align:center;
+      padding:90px 10px 10px;
+    }
+
+    header h1{
+      margin:0;
+      font-size:2.8rem;
+      letter-spacing:1px;
+    }
+
+    .sub{
+      margin-top:5px;
+      font-size:1.05rem;
+      color:#cbd5e1;
+    }
+
+    .content{
+      max-width:1300px;
+      margin:0 auto;
+      padding:25px 20px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:25px;
+      flex:1;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .button-row{
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:20px;
+    }
+
+    .btn{
+      padding:16px 32px;
+      border-radius:12px;
+      font-size:1.1rem;
+      font-weight:600;
+      text-transform:uppercase;
+      background:#ff2f70;
+      color:white;
+      box-shadow:0 6px 20px rgba(0,0,0,.4);
+      border:none;
+      text-decoration:none;
+    }
+
+    .btn.secondary{
+      background:#4b66ff;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:24px;
+      margin-top:10px;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:16px;
+      padding:22px;
+      box-shadow:
+        0 18px 28px rgba(0,0,0,0.45),
+        0 0 10px rgba(255,255,255,0.03);
+      backdrop-filter: blur(14px);
+      min-height:420px;
+    }
+
+    .card h2{
+      margin:0 0 14px;
+      font-size:1.25rem;
+      color:#ffd34e;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:1.1rem;
+    }
+
+    th,td{
+      padding:10px 6px;
+      text-align:left;
+    }
+
+    th{
+      font-weight:600;
+      color:#d6dfeb;
+      border-bottom:1px solid rgba(255,255,255,0.22);
+    }
+
+    tr+tr td{
+      border-top:1px solid rgba(255,255,255,0.15);
+    }
+
+    .total-value{
+      font-size:1.6rem;
+      font-weight:700;
+      margin-top:4px;
+    }
+
+    footer{
+      padding:10px 20px 25px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+    }
+
+    .logo img{
+      height:70px;
+      object-fit:contain;
+    }
+
+    @media(max-width:900px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+      .card{
+        min-height:0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <span class="menu-btn" onclick="toggleMenu()">☰</span>
+    <h3 style="margin:0;">Dashboard</h3>
+  </div>
+
+  <div id="sidebar" class="sidebar">
+    <a href="/">Home</a>
+    <a href="/powders">Powders</a>
+    <a href="/datacode_registry">Datacode Registry</a>
+    <a href="/containers">Containers</a>
+    <a href="/spatulas">Spatulas</a>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <header>
+    <h1>Powder Dosing Dashboard</h1>
+    <div class="sub">Current Dosing Session</div>
+  </header>
+
+  <div class="content">
+    <div class="button-row">
+      <a class="btn" href="/live">Live Visualization</a>
+      <a class="btn secondary" href="/results">Recipe Results</a>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <h2>Current Session</h2>
+
+        <table>
+          <tr><td>Status</td><td id="state">--</td></tr>
+          <tr><td>Mode</td><td id="mode">--</td></tr>
+          <tr><td>Controller</td><td id="controller">--</td></tr>
+        </table>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>Weight</h2>
+
+        <table>
+          <tr><td>Current Weight</td><td id="weight">-- g</td></tr>
+          <tr><td>Target Weight</td><td id="target">-- g</td></tr>
+          <tr><td>Remaining</td><td id="remaining">-- g</td></tr>
+        </table>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>Material</h2>
+
+        <table>
+          <tr><td>Powder</td><td id="powder">--</td></tr>
+          <tr><td>Container</td><td id="container">--</td></tr>
+          <tr><td>Shape</td><td id="shape">--</td></tr>
+          <tr><td>Fill Level</td><td id="level">-- %</td></tr>
+        </table>
+
+      </div>
+
+
+      <div class="card">
+
+        <h2>Tool</h2>
+
+        <table>
+          <tr><td>Spatula</td><td id="spatula">--</td></tr>
+          <tr><td>Scoop Target</td><td id="scoopTarget">-- g</td></tr>
+        </table>
+
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="logo">
+      <img src="/static/rox-logo.png" alt="RoX logo">
+    </div>
+    <div class="logo">
+      <img src="/static/invite-gmbh.png" alt="INVITE logo">
+    </div>
+  </footer>
+
+  <script>
+  async function refreshSession(){
+
+    try{
+
+      const res = await fetch('/session');
+      const s = await res.json();
+
+      document.getElementById("state").textContent = s.state;
+      document.getElementById("mode").textContent = s.mode;
+      document.getElementById("controller").textContent = s.controller;
+
+      document.getElementById("weight").textContent =
+        Number(s.weight).toFixed(3) + " g";
+
+      document.getElementById("target").textContent =
+        Number(s.target).toFixed(3) + " g";
+
+      document.getElementById("remaining").textContent =
+        Number(s.remaining).toFixed(3) + " g";
+
+      document.getElementById("powder").textContent = s.powder;
+
+      document.getElementById("container").textContent = s.container;
+
+      document.getElementById("shape").textContent = s.shape;
+
+      document.getElementById("level").textContent =
+        Number(s.level).toFixed(1) + " %";
+
+      document.getElementById("spatula").textContent = s.spatula;
+
+      document.getElementById("scoopTarget").textContent =
+        Number(s.scoop_target).toFixed(3) + " g";
+
+    }
+    catch(e){
+      console.error(e);
+    }
+
+  }
+
+refreshSession();
+setInterval(refreshSession, 1000);
+
+function toggleMenu() {
+    document.getElementById("sidebar").classList.toggle("active");
+    document.getElementById("overlay").classList.toggle("active");
+}
+
+document.querySelectorAll(".sidebar a").forEach(link => {
+    link.addEventListener("click", () => {
+        document.getElementById("sidebar").classList.remove("active");
+        document.getElementById("overlay").classList.remove("active");
+    });
+});
+  </script>
+</body>
+</html>

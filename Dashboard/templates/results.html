@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dosing Results – Powder Dosing Dashboard</title>
+  <style>
+    body{
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      color:#f5f5f5;
+      display:flex;
+      flex-direction:column;
+      min-height:100vh;
+      font-size:20px;
+  
+      /* Same improved gradient */
+      background: linear-gradient(145deg, #1b2337 0%, #121827 40%, #0f1523 100%);
+      background-attachment:fixed;
+    }
+  
+    header{
+      text-align:center;
+      padding:30px 10px 15px;
+    }
+    header h1{
+      margin:0;
+      font-size:2.8rem;
+      font-weight:700;
+    }
+    .sub{
+      margin-top:8px;
+      font-size:1.15rem;
+      color:#cbd5e1;
+    }
+  
+    .content{
+      max-width:1250px;
+      margin:0 auto;
+      padding:20px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:25px;
+    }
+  
+    a.back{
+      color:#8ec9ff;
+      text-decoration:none;
+      font-size:1.1rem;
+    }
+  
+    .panes{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:28px;
+    }
+  
+    /* ✨ New glass cards */
+    .card,
+    .errors{
+      background:rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:16px;
+      padding:22px;
+      box-shadow:
+        0 18px 28px rgba(0,0,0,0.45),
+        0 0 10px rgba(255,255,255,0.03);
+      backdrop-filter:blur(14px);
+    }
+  
+    .card{ min-height:340px; }
+    .errors{ min-height:260px; }
+  
+    .card h2{ color:#ffd34e; font-size:1.35rem; }
+    .errors h2{ color:#ff4f5e; font-size:1.45rem; }
+  
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:1.1rem;
+    }
+    th{
+      font-weight:600;
+      color:#d6dfeb;
+      border-bottom:1px solid rgba(255,255,255,0.22);
+    }
+    td{
+      padding:10px 6px;
+    }
+    tr+tr td{
+      border-top:1px solid rgba(255,255,255,0.12);
+    }
+  
+    @media(max-width:900px){
+      .panes{ grid-template-columns:1fr; }
+    }
+  </style>
+  
+</head>
+<body>
+
+<header>
+  <h1>Dosing Results</h1>
+  <div class="sub">Initial vs final parameters and percentage errors</div>
+</header>
+
+<div class="content">
+
+  <a class="back" href="/">&larr; Back to home</a>
+
+  <div class="panes">
+    <!-- Initial parameters -->
+    <div class="card">
+      <h2>Session Information</h2>
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Powder</td><td id="powder">--</td></tr>
+          <tr><td>Container</td><td id="container">--</td></tr>
+          <tr><td>Spatula</td><td id="spatula">--</td></tr>
+          <tr><td>Controller</td><td id="controller">--</td></tr>
+          <tr><td>Status</td><td id="status">--</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Final parameters -->
+    <div class="card">
+      <h2>Dosing Results</h2>
+      <table>
+        <thead>
+          <tr><th>Parameter</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Target Weight</td><td id="target">--</td></tr>
+          <tr><td>Remaining Weight</td><td id="remaining">--</td></tr>
+          <tr><td>Final Weight</td><td id="finalWeight">--</td></tr>
+          <tr><td>Error</td><td id="error">--</td></tr>
+          <tr><td>Completion</td><td id="completion">--</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+function setText(id, value, formatter) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  if (value === null || value === undefined || value === '') {
+    el.textContent = '--';
+    return;
+  }
+
+  el.textContent = formatter ? formatter(value) : String(value);
+}
+
+function formatNumber(value, digits = 3, suffix = '') {
+  if (value === null || value === undefined || value === '') return '--';
+  return Number(value).toFixed(digits) + suffix;
+}
+
+async function refreshResults() {
+  try {
+    const res = await fetch('/session');
+    if (!res.ok) throw new Error(`Session request failed: ${res.status}`);
+
+    const j = await res.json();
+
+    setText('powder', j.powder);
+    setText('container', j.container);
+    setText('spatula', j.spatula);
+    setText('controller', j.controller);
+    setText('status', j.state);
+
+    setText('target', j.target, (v) => formatNumber(v, 3, ' g'));
+    setText('remaining', j.remaining, (v) => formatNumber(v, 3, ' g'));
+    setText('finalWeight', j.final_weight, (v) => formatNumber(v, 3, ' g'));
+    setText('error', j.error, (v) => formatNumber(v, 3, ' g'));
+    setText('completion', j.completion, (v) => formatNumber(v, 3, ' %'));
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+refreshResults();
+setInterval(refreshResults, 2000);
+</script>
+
+</body>
+</html>

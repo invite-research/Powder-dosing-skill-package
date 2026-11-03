@@ -1,0 +1,77 @@
+global weight = 0.0
+
+thread weight_reader():
+  socket_open("192.168.12.111", 3002)
+  sleep(0.2)
+
+  while True:
+    if (Start_thread == True):
+
+      socket_send_string("GET_WEIGHT")
+      sync()
+      sleep(0.2)
+
+      data = socket_read_ascii_float(6)
+
+      if (data[0] > 0):
+        global weight_value = data[1]
+      end
+
+    end
+
+    sleep(0.1)
+  end
+end
+
+def get_weight():
+  return weight
+end
+
+def tare_scale():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("TARE")
+	sleep(0.5)
+	socket_close()
+end
+
+def zero_scale():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("ZERO")
+	sleep(0.5)
+	socket_close()
+end
+
+def log_weight():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("LOG_WEIGHT")
+	sleep(0.5)
+	socket_close()
+end
+
+def send_target_info():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("SET_TARGET:" + to_str(target_weight))
+	sleep(0.2)
+	socket_close()
+end
+def send_powder_info():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("SET_POWDER:" + Pow_name)
+	sleep(0.2)
+	socket_close()
+end
+def send_spatula_info():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("SET_SPATULA:" + spatula)
+	sleep(0.2)
+	socket_close()
+end
+
+def send_level_info():
+	socket_open("192.168.12.111", 3002)
+	socket_send_string("SET_LEVEL:" + to_str(level))
+	sleep(0.2)
+	socket_close()
+end
+
+	

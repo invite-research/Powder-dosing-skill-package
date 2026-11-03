@@ -1,0 +1,9 @@
+ Program
+   Variables Setup
+   Robot Program
+     Popup: robot moving
+     Loop 5 times
+       MoveL
+         Direction: Base Z-
+           Until (distance)
+         Wait: 10.0

@@ -1,0 +1,108 @@
+#*****************************************************
+# customer          :   tbd
+# project name      :   tbd
+#****************************************************
+# controller        :   
+# software          :   
+#****************************************************
+# author            :   E.Petrichenko
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   task definitions for the application
+# version:      	:   3.1
+# created           :   2.01.2024
+# updated           :   
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+
+atellica_object_type=1
+atras_object_type=2
+a=0.11
+b=0.1675
+c=0.015
+#c=0.016
+d=0.1785
+e=0.118
+pose_target=p[0,0,0,0,0,0]
+jig_slot_1=1
+jig_slot_2=2
+jig_slot_3=3
+def get_shifted_pse_t(object_type,jig_slot):
+    grip_tilt=0
+    pose_target=p[b/2+d*(jig_slot-1),a+c/2,0.045,0,0,0]
+    if (object_type==atellica_object_type):
+        if(jig_slot==jig_slot_1):
+            grip_tilt=1
+            pose_target[3]=0.546
+            pose_target[4]=-0.546
+            pose_target[5]=-1.501
+        elif(jig_slot==jig_slot_2):
+            grip_tilt=1
+            pose_target[1]= pose_target[1]-e
+            pose_target[3]=0.546
+            pose_target[4]=-0.546
+            pose_target[5]=-1.501
+        elif (jig_slot==jig_slot_3): 
+            grip_tilt=1
+            pose_target[3]=0.546
+            pose_target[4]=-0.546
+            pose_target[5]=-1.501
+        end
+        pose_target[0]=pose_target[0]+grip_tilt*(0.0345)
+    else:
+        if(jig_slot==jig_slot_1):
+            grip_tilt=-1
+            pose_target[3]=-0.546
+            pose_target[4]=0.546
+            pose_target[5]=-1.501
+        elif (jig_slot==jig_slot_2):
+            grip_tilt=-1
+            pose_target[1]= pose_target[1]-e
+            pose_target[3]=-0.546
+            pose_target[4]=0.546
+            pose_target[5]=-1.501
+        elif( jig_slot==jig_slot_3):
+            grip_tilt=-1
+            pose_target[3]=-0.546
+            pose_target[4]=0.546
+            pose_target[5]=-1.501
+        end
+        pose_target[0]=pose_target[0]+grip_tilt*(-0.005)
+    end
+
+    return pose_target
+end
+
+def get_centered_pse_t(object_type,jig_slot):
+    grip_tilt=0
+    pose_target=p[b/2+d*(jig_slot-1),a+c/2,0.045,0,0,0]
+    if(jig_slot==jig_slot_1):
+        grip_tilt=-1
+        pose_target[3]=-0.546
+        pose_target[4]=0.546
+        pose_target[5]=-1.501
+    elif(jig_slot==jig_slot_2):
+        grip_tilt=-1
+        pose_target[1]= pose_target[1]-e
+        pose_target[3]=-0.546
+        pose_target[4]=0.546
+        pose_target[5]=-1.501
+    elif (jig_slot==jig_slot_3): 
+        grip_tilt=-1
+        pose_target[3]=-0.546
+        pose_target[4]=0.546
+        pose_target[5]=-1.501
+    end
+    pose_target[0]=pose_target[0]+grip_tilt*(0.016)
+
+    return pose_target
+end

@@ -1,0 +1,46 @@
+CAM_LM = struct(id=0, type="", size=0, related_itm=0, capture_relation="")
+global CAM_Result = make_list(0, 0, 50)
+
+def create_landmark(id=0, type="", size=0, related_itm=0, capture_relation=""):
+    return struct(id=id, type=type, size=size, related_itm=related_itm, capture_relation=capture_relation)
+end
+
+
+CAM_LMs = [
+  create_landmark(id=1, type="aruco_7x7", size=0.1, related_itm=1, capture_relation="front_right"),
+  create_landmark(id=4, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left"),
+  create_landmark(id=3, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left"),
+  create_landmark(id=8, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="right"),
+  create_landmark(id=5, type="aruco_7x7", size=0.1, related_itm=5, capture_relation="left"),
+  create_landmark(id=6, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left")
+]
+
+CAM_Capture_Poses = struct(
+  front_left = p[0.350,-0.330,0.500,0.353,-0.323,-1.458],
+  left = p[0.350,0.000,0.500,0.353,-0.323,-1.458],
+  back_left = p[0.350,0.220,0.500,0.353,-0.323,-1.458],
+  back_right = p[-0.350,0.000,0.500,0.579,0.240,0.760],
+  right = p[-0.350,-0.300,0.500,0.206,0.206,1.561],
+  front_right = p[-0.350,-0.400,0.500,0.242,0.903,2.480],
+  straight_left = p[0.375,-0.000,0.500,0.815,-0.815,-1.412],
+  front = p[0,0,0,0,0,0]
+)
+
+def get_capture_pose(lm):
+    if (lm.capture_relation == "front_left"):
+        return CAM_Capture_Poses.front_left
+    elif (lm.capture_relation == "left"):
+        return CAM_Capture_Poses.left
+    elif (lm.capture_relation == "back_left"):
+        return CAM_Capture_Poses.back_left
+    elif (lm.capture_relation == "back_right"):
+        return CAM_Capture_Poses.back_right
+    elif (lm.capture_relation == "right"):
+        return CAM_Capture_Poses.right
+    elif (lm.capture_relation == "straight_left"):
+       return CAM_Capture_Poses.straight_left
+    else:
+        # error
+        return get_actual_tcp_pose()
+    end
+end

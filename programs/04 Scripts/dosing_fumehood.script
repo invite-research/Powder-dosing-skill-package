@@ -1,0 +1,166 @@
+def compute_level_percent_estimated(W_now, target_g):
+
+    global w_dosed_total = w_dosed_total + target_g
+
+	local W_eff = W_now - w_dosed_total
+    if (W_eff <  empty_weight_g):
+        W_eff =  empty_weight_g
+    end
+	    # Compute powder level %
+    level = 100.0 * (W_eff -  empty_weight_g) / (full_weight_g -  empty_weight_g)
+
+    # Clamp to 0–100
+    level = clamp(level, 0, 100)
+  	textmsg("deb 1 = ", level)
+    return level
+
+end
+
+def compute_scoop_depth_estimated(level):
+
+    local scoop_depth_rel = ((100.0 - level) / 100.0) * (H - mouth_sh)
+    global scoop_depth_e = clamp(scoop_depth_rel, 0.0, H-mouth_sh)
+    return scoop_depth_e
+end
+
+def get_center_pose(f_center):
+	global p_center = pose_trans(f_center, p[0,0,-spatula_len-0.003,0,0,0])
+	return p_center
+end
+
+def after_scoop_f():
+	set_analog_out(0,0.0)
+	movel(lifted_pose, a=0.05, v=0.2)
+	movel(tilted_pose_in_base2, a=0.03, v=0.1)
+	movel(move_inside_spill, a=0.05, v=0.2)
+	set_analog_out(0,0.4)
+	movel(pose_trans(move_inside_spill, p[0,0,0,0,0,2.0]), a=0.05, v=0.2)
+	movel(move_inside_spill, a=0.05, v=0.2)
+	set_analog_out(0,0.0)
+	movel(lifted_pose, a=0.5, v=0.5)
+end
+
+def scoop_powder_fume(p_center):
+	
+	#set_tcp(tcp_dosing)
+
+	global ry = deg2rad(50)
+	local scoop_radius = mouth_d / 2 - spatula_depth - wall_thickness
+	global total_depth = clamp(mouth_sh + scoop_depth_e + spatula_mid, 0.0, H - spatula_mid)
+	local scoop_entry = pose_trans(p_center, p[-TCP_2_tip_x,0,spatula_len,0,0,0])
+	local scoop_start_rel = p[scoop_radius,0,-total_depth,0,0,0]
+	local scoop_start = pose_trans(scoop_entry, scoop_start_rel)
+	local scoop_via = pose_trans(scoop_entry, pose_trans(p[0,0,0,0,0,0.785], scoop_start_rel))
+	local scoop_end = pose_trans(scoop_entry, pose_trans(p[0,0,0,0,0,1.5708], scoop_start_rel))
+	scoop_start_rel_int = p[0, 0, -mouth_sh , 0, 0, 0]
+	scoop_start_pose_int = pose_trans(scoop_entry, scoop_start_rel_int)
+	
+	# entry and scoop
+	movel(scoop_entry, a=0.1, v=0.25)
+	movel(scoop_start_pose_int, a=0.1, v=0.25)
+	movel(scoop_start, a=0.1, v=0.25)
+	movec(scoop_via, scoop_end, a=0.05, v=0.04)
+
+	# safe pivot
+	local pivot_pose = pose_trans(scoop_end, p[0,0,total_depth-spatula_len,0,0,0])
+	local end_rel = pose_trans(pose_inv(pivot_pose), scoop_end)
+	local safe_angle = asin((mouth_d-spatula_depth-2*wall_thickness)/total_depth)
+	local end_rel_tilted = pose_trans(end_rel, p[0,0,0,0,safe_angle-deg2rad(spatula_ry),0])
+	local tilted_pose_in_base = pose_trans(pivot_pose, p[0,0,0,end_rel_tilted[3],end_rel_tilted[4],end_rel_tilted[5]])
+	local tilted_pose_in_base = pose_trans(tilted_pose_in_base, p[0,0,spatula_len-total_depth,0,0,0])
+	movel(tilted_pose_in_base, a=0.03, v=0.1)
+	textmsg("safe pivot done")
+
+	# retaintion to mouth and shoulder
+	global safe_x = sin(safe_angle)*(total_depth-mouth_sh - (mouth_d - spatula_depth)*tan(safe_angle/2))
+	global safe_z = cos(safe_angle)*(total_depth-mouth_sh - (mouth_d - spatula_depth)*tan(safe_angle/2))
+	local safe_up = pose_trans(tilted_pose_in_base, p[-safe_x,0,safe_z,0,0,0])
+	movel(safe_up, a=0.03, v=0.1)
+	textmsg("safe up done")
+
+	# full exit 
+	#local pivot_pose2 = pose_trans(scoop_start, p[0,0,-spatula_len,0,0,0])
+	local end_rel2 = pose_trans(pose_inv(p_center), tilted_pose_in_base)
+	local end_rel_tilted2 = pose_trans(end_rel2, p[0, 0, 0, 0, ry-safe_angle-deg2rad(spatula_ry), 0])
+	global tilted_pose_in_base2 = pose_trans(p_center, p[0,0,0,end_rel_tilted2[3],end_rel_tilted2[4], end_rel_tilted2[5]])
+	global tilted_pose_in_base2 = pose_trans(tilted_pose_in_base2, p[0, 0, spatula_len-spatula_mid, 0, 0, 0])
+	movel(tilted_pose_in_base2, a=0.03, v=0.1)
+	
+	if(spatula == "spatula_S"):
+		if(level>=80):
+			global z_ratio = 0.0
+		elif(level == 0.0):
+			global z_ratio = 1.0
+		else:
+			global z_ratio = (80-level)/80
+		end
+		z_offset = 4*spatula_mid*z_ratio
+	elif(spatula == "spatula_M"):
+		if(level>=50):
+			global z_ratio = 0.0
+		elif(level == 0.0):
+			global z_ratio = 1.0
+		else:
+			global z_ratio = (50-level)/50
+		end
+		z_offset = 2*spatula_mid*z_ratio
+	else:
+	    z_offset = 0.0
+	end
+
+	global move_inside_spill = pose_trans(tilted_pose_in_base2, p[0,0,-z_offset,0,0,0])
+	movel(move_inside_spill, a=0.03, v=0.1)
+
+	if(scoop_status== "normal"):
+		vib_thread=True
+		if (spatula=="spatula_S"):
+			local ry_level = deg2rad(5)
+		elif(spatula=="spatula_flat_S" or spatula=="spatula_flat_M"): 
+			local ry_level = deg2rad(5)
+		else:
+			local ry_level = deg2rad(15)
+		end
+		
+		# remove excess
+		local pivot_pose_level = pose_trans(move_inside_spill, p[0,0,-spatula_len,0,0,0])
+		local end_rel_level = pose_trans(pose_inv(pivot_pose_level), move_inside_spill)
+		local end_rel_tilted_level = pose_trans(end_rel_level, p[0, 0, 0, 0, -ry_level, 0])
+		global end_rel_tilted_level2 = pose_trans(pivot_pose_level, p[0, 0, 0,end_rel_tilted_level[3],end_rel_tilted_level[4], end_rel_tilted_level[5]])
+		global end_rel_tilted_level2 = pose_trans(end_rel_tilted_level2, p[0,0,spatula_len,0,0,0])
+		movel(end_rel_tilted_level2, a=0.03, v=0.1)
+	
+	else: 
+		set_analog_out(0, 0.0)
+	end
+	vib_thread=False
+	movel(move_inside_spill, a=0.03, v=0.1)
+	movel(tilted_pose_in_base2, a=0.03, v=0.1)
+	global lifted_pose = pose_trans(tilted_pose_in_base2, p[-0.04,0,0.04,0,0,0]) # safety distance away from the container 
+	
+	movel(lifted_pose, a=0.03, v=0.1)
+	set_analog_out(0,0.0)
+	#set_tcp(tcp_default)
+	global dose_pose = pose_trans(lifted_pose, p[0,0.20,-0.17,0 ,0, 0])
+	movel(dose_pose, a=0.05, v=0.2)
+	global dispense = pose_trans(dose_pose, p[0,0,0,0,0,2.0])
+	set_analog_out(0,0.4)
+	movel(dispense, a=0.1, v=0.1)
+	sleep(0.5)
+	set_analog_out(0,0.0)
+	movel(dose_pose, a=0.1, v=0.25)
+end
+
+def safe_entry(p_center):
+	global scoop_safe_entry_pose = pose_trans(p_center, p[-TCP_2_tip_x,0,spatula_len+0.05,0,0,0])
+	movel(scoop_safe_entry_pose, a=0.1, v=0.25)
+end
+
+def auto_scoop(W_now):
+	global level=compute_level_percent_estimated(W_now, target_g)
+	global target_g=get_scoop_weight(spatula, bulk_density)
+	global scoop_depth=compute_scoop_depth_estimated(level)
+	get_center_pose(f_center)
+	scoop_powder_fume(p_center)
+	sleep(0.5)
+	safe_entry(p_center)
+end

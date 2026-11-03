@@ -1,0 +1,1636 @@
+ Program
+   Variables Setup
+   Robot Program
+     PreSettings
+       init poses
+         PSE_A≔p[0,0,0,0,0,0]
+         PSE_A_H≔p[0,0,0,0,0,0]
+         PSE_T≔p[0,0,0,0,0,0]
+         PSE_T_H≔p[0,0,0,0,0,0]
+         PSE_G≔p[0,0,0,0,0,0]
+         PSE_G_H≔p[0,0,0,0,0,0]
+         PSE_R≔p[0,0,0,0,0,0]
+         PSE_R_H≔p[0,0,0,0,0,0]
+         JNT_Q≔[0,0,0,0,0,0]
+         JNT_S≔[0,0,0,0,0,0]
+       Gripping parameters
+         OBJ = find_object_by_type(OBJs, OBJ_Type)
+         GRP_Open_Pos≔OBJ.dimension.diameter * 1000 + 6
+         GRP_Offset≔OBJ.gripper_offset
+         rq_set_force_norm(50)
+         rq_set_speed_norm(50)
+       Switch ITM_ID
+         Case 1
+           uML
+             JIG2 = find_object_by_type(JIGs, JIG)
+             JIG_Offset≔JIG2.jig_offset
+             Switch JIG
+               Case 1
+                 3FG
+                   define poses
+                     FRM_Reference≔ULM_3FG
+                     JNT_Q≔JNT_HOME
+                     PSE_T≔pose_trans(GRP_Offset, JIG_Offset)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.100,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 2
+                 Input
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   define poses
+                     FRM_Reference≔ULM_Input
+                     PSE_T≔pose_trans(pose_trans(get_pattern_pos_rectangle(OBJ_Nbr, "X", [10,5], patternsize=[0.181,0.081]), GRP_Offset), JIG_Offset)
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 3
+                 Output
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   define poses
+                     FRM_Reference≔ULM_Output
+                     PSE_T≔pose_trans(pose_trans(get_pattern_pos_rectangle(OBJ_Nbr, "X", [10,5], patternsize=[0.181,0.081]), GRP_Offset), JIG_Offset)
+                     'PSE_T_H≔...'
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 4
+                 jig centrifuge racks
+                   define poses
+                     FRM_Reference≔ULM_Cent_Racks
+                     PSE_T≔get_pattern_pos_rectangle(JIG_Slot, "X", [4,1], patternsize=[0.291,0])
+                     If OBJ_Nbr≠0
+                       PSE_T≔pose_trans(pose_trans(PSE_T, get_pattern_pos_rectangle(OBJ_Nbr, "X", [3,3], patternsize=[0.060,0.060])),p[-0.030, -0.030,0,0,0,3.927])
+                     PSE_T≔pose_trans(PSE_T, GRP_Offset)
+                     If Action≟1
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     ElseIf Action≟2
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                       PSE_A≔pose_add(PSE_T, p[0,0,0.200,0,0,0])
+               Case 6
+                 Caps bin
+                   define poses
+                     'Drop cap'
+                     FRM_Reference=ULM_Cap_Bin
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_T_H≔pose_add(PSE_T, p[0,0,-0.011,0,0,0])
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R_H≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 7
+                 Sarstedt
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   'Gripping parameters'
+                   If TASK.ID≟10
+                     Frame & Position Params
+                       'FRM_Reference = CAM_LM_SSRack'
+                       FRM_Reference = CAM_LM_SSRack
+                       'MoveL'
+                       'PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])'
+                       'PSE_T≔pose_trans(PSE_T, GRP_Offset)'
+                       PSE_T≔uLM_SS_PickPlc
+                       PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+                   ElseIf TASK.ID≟11
+                     FRM_Reference = ULM_SS_Jig
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_T≔pose_trans(PSE_T, GRP_Offset)
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.2,0,0,0])
+               Case 8
+                 NoK
+                   define poses
+                     'NoK'
+                     FRM_Reference=ULM_NoK
+                     PSE_T≔pose_RPY2RotVec(p[0,0,0,0,0,0])
+                     PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                     PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+               Case 9
+                 'Pick_bott_jig'
+               Case 10
+                 'Place_bott_jig'
+               Case 11
+                 'Place_bott_jig'
+               Case 12
+                 'Pick_Vial_jig'
+         Case 2
+           Centrifuge
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             define poses
+               FRM_Reference≔FRM_Centrifuge
+               PSE_T≔GRP_Offset
+               If Action≟8
+                 PSE_R≔pose_add(PSE_T, p[0,0,0.250,0,0,0])
+                 PSE_A≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+               ElseIf Action≟7
+                 PSE_R≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+                 PSE_A≔pose_add(PSE_T, p[0,0,0.250,0,0,0])
+         Case 3
+           Output
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             define poses
+               FRM_Reference≔Base_const
+               PSE_T≔p[0,0,0,0,0,0]
+               PSE_A≔pose_add(PSE_T, p[0,0,0.150,0,0,0])
+               PSE_R≔pose_add(PSE_T, p[0,0,0.100,0,0,0])
+         Case 5
+           Sarstedt Pickup Table
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             Switch JIG
+               Case 7
+                 'Sarstedt Rack'
+                 Sarstedt
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   'Gripping parameters'
+                   If TASK.ID≟10
+                     Frame & Position Params
+                       FRM_Reference = CAM_LM_SSRack
+                       PSE_T≔uLM_SS_PickPlc
+                       PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+                   'ElseIf TASK.ID≟11'
+         Case 13
+           Sarstedt Pickup Table
+             'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+             Switch JIG
+               Case 7
+                 'Sarstedt Rack'
+                 Bottle
+                   'CHANGE THE REFERENCE TO THE FRAME TO MOVE IN'
+                   'Gripping parameters'
+                   If TASK.ID≟43
+                     Frame & Position Params
+                       'FRM_Reference = CAM_LM_Bott'
+                       PSE_T≔uLM_SS_PickPlc
+                       PSE_A≔pose_trans(PSE_T, p[0,0,0.1,0,0,0])
+                       PSE_R≔pose_add(PSE_T, p[0,0,0.1,0,0,0])
+                   'ElseIf TASK.ID≟11'
+       Additional check
+         If  not is_reachable(FRM_Reference,[PSE_A,PSE_A_H,PSE_T,PSE_T_H,PSE_R,PSE_R_H])
+           Error
+             set_error(ERROR_POSE_NOT_REACHABLE)
+           Action≔0
+     '=========='
+     Switch Action
+       Case 1
+         Pick
+           Action_Info≔"pick object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EOAT
+             If  not OBJ_Picked
+               rq_move_and_wait_mm(GRP_Open_Pos)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+             EOAT
+               rq_set_force_norm(50)
+               rq_close_and_wait()
+               OBJ_Picked≔rq_is_object_detected()
+               If  not OBJ_Picked
+                 set_error(ERROR_NO_OBJECT_TO_PICK)
+             EXTT
+               Switch JIG
+                 Case 1
+                   3FG
+                     If OBJ_Picked
+                       Set GRP_3F_Open=On
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 2
+         Place
+           Action_Info≔"place object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EXTT
+             Switch JIG
+               Case 1
+                 3FG
+                   If OBJ_Picked
+                     Set GRP_3F_Open=On
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+               Until (tool_contact_detection)
+             Force
+               PSE_T
+             EXTT
+               Switch JIG
+                 Case 1
+                   3FG
+                     If OBJ_Picked
+                       Set GRP_3F_Open=Off
+                       Wait: 0.2
+             EOAT
+               rq_move_and_wait_mm(GRP_Open_Pos)
+               OBJ_Picked≔rq_is_object_detected()
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 3
+         Push
+           Action_Info≔"push"
+       Case 4
+         Pull
+           Action_Info≔"pull"
+       'Case 5'
+       Case 6
+         Drop the cap
+           If JNT_A≠[0,0,0,0,0,0]
+             MoveJ
+               JNT_A
+           Else
+             MoveJ
+               PSE_A
+           MoveL
+             PSE_T
+             'ADD OPEN GRIPPER'
+             Gripper Move10mm (1)
+             PSE_T_H
+             Gripper Move40mm (1)
+             PSE_R
+       Case 7
+         Load
+           Action_Info≔"load object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+               Until (tool_contact_detection)
+             Force
+               PSE_T
+             EOAT
+               rq_move_and_wait_mm(GRP_Open_Pos)
+               OBJ_Picked≔rq_is_object_detected()
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 8
+         Unload
+           Action_Info≔"pick object"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           EOAT
+             If  not OBJ_Picked
+               rq_move_and_wait_mm(GRP_Open_Pos)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+             Force
+               EOAT
+                 rq_set_force_norm(50)
+                 rq_close_and_wait()
+                 OBJ_Picked≔rq_is_object_detected()
+                 If  not OBJ_Picked
+                   set_error(ERROR_NO_OBJECT_TO_PICK)
+               If PSE_R_H≠PSE_Z
+                 PSE_R
+                 PSE_R_H
+               Else
+                 PSE_R
+       Case 11
+         'Place without opening gripper'
+       Case 12
+         Decap
+           Action_Info≔"decapping"
+           Set GRP_3F_Enable=On
+           Set GRP_3F_Decap=On
+           Force
+             check_decapping(offset=0.015, timeout=5, abort=CMD_Hold)
+           Set GRP_3F_Decap=Off
+           Set GRP_3F_Enable=Off
+           MoveL
+             PSE_R
+       Case 13
+         TMR_Barcode: Reset
+         Read
+           TMR_Barcode: Start
+           If TMR_Barcode<PRM_TO_Read_BC
+             KeyenceTrigger
+               Set OClearResult=HI:Pulse 0.2
+               Wait: 0.5
+               Set OTriggerBarcode=Off
+               Wait: 0.5
+               Set OTriggerBarcode=On
+               Wait: 0.5
+             Preorient
+               TMR_Barcode: Reset
+               If ICmdExctd
+                 Set GRP_3F_Decap=On
+                 Set GRP_3F_Enable=On
+                 Loop ICmdExctd
+                   KeyenceTrigger
+                     Set OClearResult=HI:Pulse 0.1
+                     Wait: 0.3
+                     Set OTriggerBarcode=Off
+                     Wait: 0.3
+                     Set OTriggerBarcode=On
+                     Wait: 0.1
+               If  not ICmdExctd
+                 Set GRP_3F_Decap=On
+                 Set GRP_3F_Enable=On
+                 Wait ICmdExctd=HI
+             Set GRP_3F_Decap=Off
+             Set GRP_3F_Enable=Off
+             OBJ_Brc_OK≔ True 
+           Else
+             exeption
+               error
+                 'set_error(6000)'
+                 OBJ_Brc_OK≔ False 
+           Set GRP_3F_Decap=Off
+           Set GRP_3F_Enable=Off
+           Set OTriggerBarcode=Off
+       Case 15
+         Detect
+           Action_Info≔"detect"
+       Case 30
+         Shake
+           Action_Info≔"shake"
+           do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=OBJ_Picked)
+           If PSE_A_H≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A_H), qnear=JNT_Q), r=0.050)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A_H), r=0.050)
+           If PSE_A≠PSE_Z
+             If JNT_Q≠JNT_Z
+               movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_A), qnear=JNT_Q), r=0.020)
+             Else
+               movej(pose_trans(FRM_Reference, PSE_A), r=0.020)
+           MoveL
+             If PSE_T_H≠PSE_Z
+               PSE_T_H
+             PSE_T
+             EXTT
+               Comment
+               MoveJ
+                 Waypoint_54
+               MoveJ
+                 Waypoint_77
+               MoveJ
+                 Waypoint_83
+               MoveJ
+                 Waypoint_84
+             If PSE_R_H≠PSE_Z
+               PSE_R
+               PSE_R_H
+             Else
+               PSE_R
+       Case 31
+         Action_Info≔"Pick_Vial"
+         Pick_Vial
+           Gripper Open (1)
+           MoveJ
+             Vial_above_1
+           MoveL
+             Vial_pick_poi_1
+           Gripper Close (1)
+           MoveL
+             Waypoint_86
+           Home (Safe)
+       Case 32
+         'decap≔ False '
+         decap_Vial
+           Set GRP_3F_Open=On
+           MoveJ
+             Waypoint_87
+           MoveL
+             Vial_3FG_plac_1
+           Set GRP_3F_Open=Off
+           Wait: 0.5
+           MoveL
+             Waypoint_88
+           MoveJ
+             cap_dump_1
+           Gripper Open (1)
+           MoveJ
+             Waypoint_89
+           MoveL
+             Vial_3FG_plac_2
+           Gripper Close (1)
+           'decap≔ True '
+           'dynamic_upward_motion(0.015, 7)'
+           'MoveL'
+           'decap≔ False '
+           Decap
+             Action_Info≔"decapping"
+             Set GRP_3F_Enable=On
+             Set GRP_3F_Decap=On
+             Force
+               check_decapping(offset=0.015, timeout=10, abort=CMD_Hold)
+             Set GRP_3F_Decap=Off
+             Set GRP_3F_Enable=Off
+             MoveL
+               Waypoint_90
+           MoveJ
+             cap_dump_2
+           Gripper Open (1)
+           MoveJ
+             Waypoint_91
+       Case 33
+         Shake and liquid transfer
+           MoveL
+             Vial_liq_abov_1
+             Vial_liq_pick_3
+             Vial_liq_pick_4
+             Gripper Close (1)
+             Wait: 1.0
+             Set GRP_3F_Open=On
+             Wait: 0.5
+             Vial_liq_abov_2
+           MoveL
+             Liquid_midway_1
+             Loop 3 times
+               shake_3
+               shake_4
+             drop_above_3
+             drop_above_4
+             liq_tran_3
+             Wait: 1.0
+             drop_above_5
+             Waypoint_92
+             liq_tran_4
+             Wait: 1.0
+             drop_above_6
+             drop_above_7
+             Liquid_midway_2
+           MoveL
+             Vial_drop_abo_1
+             Vial_liq_drop_1
+             Gripper Open (1)
+             Vial_drop_abo_2
+       'Case 34'
+       'Case 35'
+       'Case 36'
+       'Case 37'
+       'Case 38'
+       Case 39
+         Powder container Pick
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   Gripper Open (1)
+                   MoveJ
+                     pick_cont_otw
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   Gripper Move0mm (1)
+                 Exit Pose
+               No Object Detected
+                 Popup: No Powder container is detected
+           MoveJ
+             Powder_wayp1
+           MoveL
+             Waypoint_2
+           MoveL
+             Decapp_above_1
+             Set GRP_3F_Open=On
+             Wait: 0.5
+             Decapp_place_2
+           Set GRP_3F_Open=Off
+           Wait: 0.5
+           Gripper Open (1)
+           MoveL
+             Decapp_above_2
+             Waypoint_78
+           Home (Safe)
+       Case 40
+         Decap Container 
+           MoveL
+             Decap_above
+             Decapp
+           Gripper Move22mm (1)
+           Decap
+             Action_Info≔"decapping"
+             Set GRP_3F_Enable=On
+             Set GRP_3F_Decap=On
+             Force
+               check_decapping(offset=0.010, timeout=4, abort=CMD_Hold)
+             Set GRP_3F_Decap=Off
+             Set GRP_3F_Enable=Off
+           MoveL
+             Decap_above
+             Cap_above
+             Cap_place
+             Gripper Move39mm (1)
+             Cap_above
+             Home (Safe)
+       Case 41
+         Place the open PowderA container & dosing
+           'tilt_to_home()'
+           'tilt_send(4)'
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   Gripper Open (1)
+                   Set
+                   Wait: 0.2
+                   MoveL
+                     OP_PowderA2
+                     OP_PowderA_ab_1
+                     OP_PowderA_pick
+                     Gripper Close (1)
+                     Wait: 0.5
+                     Set GRP_3F_Open=On
+                     'Motors_off()'
+                     OP_PowderA_ab_2
+                     Op_PowA_wP
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   container_place≔get_actual_tcp_pose()
+                   radius≔0.035
+                   PoTS_place_abov≔pose_trans(container_place, p[0,0,radius,0,0,0])
+                   MoveL
+                     PoTS_place_abov
+                   target_pose≔pose_trans(PoTS_place_abov, p[0,0.09,0,0,0,0])
+                   MoveL
+                     target_pose
+                   Gripper Open (1)
+                 Exit Pose
+               No Object Detected
+                 Popup: No weigh scale detected
+           place_pose≔get_actual_tcp_pose()
+           center_pose()
+           'center_tilt_pos≔P_center'
+           MoveJ
+             Waypoint_1
+       Case 42
+         Powder Emptying
+           zero_scale()
+           Wait: 0.2
+           send_powder_info()
+           send_target_info()
+           Task≔"Emptying"
+           'VISOR Easy Pick'
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   tare_scale()
+                   Wait: 0.2
+                   weight_value≔get_weight()
+                   Wait: 0.2
+                   diff≔target_weight-weight_value
+                   scooping_init()
+                   compute_level_percent(W_now, weight_value)
+                   send_level_info()
+                   'spatula≔select_spatula(Pow_name, level, diff, diameter)'
+                   spatula≔select_spatula(Flowability,level,diff,density)
+                   Wait: 0.2
+                   send_spatula_info()
+                   FolderPicking selected spatula
+                     If spatula ≟ "spatula_L"
+                       MoveJ
+                         Spatula_otw
+                         pick_spat_L_abv
+                       MoveL
+                         spat_L_pick
+                         Gripper Close (1)
+                         spat_L_lift
+                         spat_L_side
+                         spat_L_up
+                       MoveJ
+                         Spatula_otw
+                     ElseIf spatula ≟"spatula_M"
+                       MoveJ
+                         Spatula_otw
+                         spat_M_up
+                       MoveL
+                         spat_M_pick
+                         Gripper Close (1)
+                         spat_M_up
+                         Spatula_otw
+                       switch_spat_M≔ False 
+                     ElseIf spatula≟"spatula_S"
+                       MoveJ
+                         Spatula_otw
+                         spat_S_Up_1
+                       MoveL
+                         spat_S_Pick_1
+                         Gripper Close (1)
+                         spat_S_Up_2
+                         Spatula_otw
+                       switch_spat_S≔ False 
+                     ElseIf spatula≟"spatula_flat_M"
+                       MoveJ
+                         Spatula_otw
+                         spat_flatM_up
+                       MoveL
+                         spat_flatM_pick
+                         Gripper Close (1)
+                         spat_flatM_up
+                         Spatula_otw
+                       switch_spat_F_M≔ False 
+                     ElseIf spatula≟"spatula_flat_S"
+                       MoveJ
+                         Spatula_otw
+                         spat_flatS_up
+                       MoveL
+                         spat_flatS_pick
+                         Gripper Close (1)
+                         spat_flatS_up
+                         Spatula_otw
+                       switch_spat_F_S≔ False 
+                   weight_value≔get_weight()
+                   auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   dispense_pos≔get_actual_tcp_pose()
+                   Loop weight_value≤target_weight
+                     MoveL
+                       dispense_pos
+                       log_weight()
+                       Wait: 0.5
+                       If level≥90.0
+                         Rotate()
+                       If level≤85
+                         tilt_to_home()
+                       Wait: 0.5
+                       Start_thread≔ True 
+                       vib_thread≔ True 
+                       Wait: 0.5
+                       tilt_pose≔pose_trans(get_actual_tcp_pose(), p[0, 0, 0, 0, 0, 2.0])
+                       movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                       Start_thread≔ False 
+                       weight_value≔get_weight()
+                       Wait: 0.5
+                       vib_thread≔ False 
+                       MoveL
+                         dispense_pos
+                       compute_level_percent(W_now, weight_value)
+                       send_level_info()
+                       'spatula = select_spatula(Pow_name, level, diff, diameter)'
+                       spatula≔select_spatula(Flowability,level,diff,density)
+                       Wait: 0.2
+                       'spatula = str_cat("", spatula)'
+                       Integral_error≔0
+                       current_error≔0
+                       previous_error≔0
+                       Set AO[0]=0.0
+                       Wait: 0.2
+                       send_spatula_info()
+                       If spatula ≟ "spatula_M" and switch_spat_M≟ True 
+                         MoveJ
+                           Spatula_otw
+                           spat_L_up
+                         MoveL
+                           spat_L_side
+                           spat_L_lift
+                           spat_L_pick
+                           Gripper Open (1)
+                           spat_M_pick
+                           Gripper Close (1)
+                           spat_M_up
+                           Spatula_otw
+                         switch_spat_M≔ False 
+                       ElseIf spatula ≟ "spatula_S" and switch_spat_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_M_up
+                           spat_M_pick
+                           Gripper Open (1)
+                           spat_S_pick
+                           Gripper Close (1)
+                           spat_S_up
+                           Spatula_otw
+                         switch_spat_S≔ False 
+                       ElseIf spatula≟"spatula_flat_S"  and switch_spat_F_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_flatM_up
+                           spat_flatM_pick
+                           Gripper Open (1)
+                           spat_flatS_pick
+                           Gripper Close (1)
+                           spat_flatS_up
+                           Spatula_otw
+                         switch_spat_F_S≔ False 
+                       auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                       Wait: 0.5
+                   Start_thread≔ False 
+                   Wait: 0.5
+                   vib_thread≔ False 
+                   'Rotate()'
+                   MoveJ
+                     dispense_pos
+                 Exit Pose
+               No Object Detected
+                 Popup: No weigh scale detected
+           Loop
+             tilt_to_home()
+             MoveJ
+               Spatula_otw
+               spat_S_Up_3
+             MoveL
+               spat_S_Pick_2
+               Gripper Open (1)
+               spat_S_Up_4
+             Home (Safe)
+             W_now≔get_weight()
+             Pick container from PoTS
+               cont_place_offs≔pose_add(container_place, p[0.05,0,0,0,0,0])
+               MoveJ
+                 cont_place_offs
+                 container_place
+               MoveL
+                 target_pose
+                 Gripper Close (1)
+                 container_place
+                 Wait: 0.2
+                 W_now≔get_weight()
+                 Wait: 0.2
+                 target_weight≔W_now-W_EMPTY-(0.002*W_FULL)
+                 MoveL
+                   PosA_up
+                   PosA_pick
+                   Gripper Open (1)
+                   PosA_up
+                   trigger_otw_2
+             VISOR Easy Pick
+               # 1 Setup
+               Process
+                 Image Acquisition Pose
+                 Object Detected
+                   Open Gripper
+                     Gripper Open (1)
+                   Approach Pose
+                   Target Pose
+                   Close Gripper
+                     Gripper Close (1)
+                     weigh_swap_pose≔get_actual_tcp_pose()
+                   Exit Pose
+                 No Object Detected
+                   Popup: No weigh scale detected
+             tilt(70.0)
+             MoveJ
+               container_place
+             tilt_to_home()
+             Wait: 2.0
+             MoveL
+               target_pose
+               Gripper Open (1)
+               container_place
+             MoveJ
+               PosA_up
+             MoveL
+               PosA_pick
+               Gripper Close (1)
+               PosA_up
+               Postions_otw
+             MoveJ
+               weigh_swap_offs≔pose_add(weigh_swap_pose, p[0,0,0.05,0,0,0])
+               weigh_swap_offs
+             MoveL
+               weigh_swap_pose
+               Gripper Open (1)
+             Home (Safe)
+             Dosing
+               send_target_info()
+               zero_scale()
+               Wait: 0.5
+               tare_scale()
+               Wait: 0.5
+               spatula_selection test
+                 weight_value≔get_weight()
+                 diff≔target_weight-weight_value
+                 scooping_init()
+                 compute_level_percent(W_now, weight_value)
+                 'spatula = select_spatula(Pow_name, level, diff, diameter)'
+                 spatula≔select_spatula(Flowability,level,diff,density)
+               FolderPicking selected spatula
+                 If spatula ≟ "spatula_L"
+                   MoveJ
+                     Spatula_otw
+                     pick_spat_L_abv
+                   MoveL
+                     spat_L_pick
+                     Gripper Close (1)
+                     spat_L_lift
+                     spat_L_side
+                     spat_L_up
+                   MoveJ
+                     Spatula_otw
+                 ElseIf spatula ≟"spatula_M"
+                   MoveJ
+                     Spatula_otw
+                     spat_M_up
+                   MoveL
+                     spat_M_pick
+                     Gripper Close (1)
+                     spat_M_up
+                     Spatula_otw
+                   switch_spat_M≔ False 
+                 ElseIf spatula≟"spatula_S"
+                   MoveJ
+                     Spatula_otw
+                     spat_S_Up_5
+                   MoveL
+                     spat_S_Pick_3
+                     Gripper Close (1)
+                     spat_S_Up_6
+                     Spatula_otw
+                   switch_spat_S≔ False 
+                 ElseIf spatula≟"spatula_flat_M"
+                   MoveJ
+                     Spatula_otw
+                     spat_flatM_up
+                   MoveL
+                     spat_flatM_pick
+                     Gripper Close (1)
+                     spat_flatM_up
+                     Spatula_otw
+                   switch_spat_F_M≔ False 
+                 ElseIf spatula≟"spatula_flat_S"
+                   MoveJ
+                     Spatula_otw
+                     spat_flatS_up
+                   MoveL
+                     spat_flatS_pick
+                     Gripper Close (1)
+                     spat_flatS_up
+                     Spatula_otw
+                   switch_spat_F_S≔ False 
+               auto_tilt_and_scoop(W_now, target_weight, weight_value)
+               Loop weight_value≤target_weight
+                 MoveL
+                   dispense_pos
+                   log_weight()
+                   Wait: 0.5
+                   If level≥90.0
+                     Rotate()
+                   If level≤85
+                     tilt_to_home()
+                   Wait: 0.5
+                   Start_thread≔ True 
+                   vib_thread≔ True 
+                   Wait: 0.5
+                   tilt_pose≔pose_trans(get_actual_tcp_pose(), p[0, 0, 0, 0, 0, 2.0])
+                   movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                   Start_thread≔ False 
+                   weight_value≔get_weight()
+                   Wait: 0.5
+                   vib_thread≔ False 
+                   MoveL
+                     dispense_pos
+                   compute_level_percent(W_now, weight_value)
+                   send_level_info()
+                   'spatula = select_spatula(Pow_name, level, diff, diameter)'
+                   spatula≔select_spatula(Flowability,level,diff,density)
+                   Wait: 0.2
+                   Integral_error≔0
+                   current_error≔0
+                   previous_error≔0
+                   Set AO[0]=0.0
+                   Wait: 0.2
+                   send_spatula_info()
+                   If spatula ≟ "spatula_M" and switch_spat_M≟ True 
+                     MoveJ
+                       Spatula_otw
+                       spat_L_up
+                     MoveL
+                       spat_L_side
+                       spat_L_lift
+                       spat_L_pick
+                       Gripper Open (1)
+                       spat_M_pick
+                       Gripper Close (1)
+                       spat_M_up
+                       Spatula_otw
+                     switch_spat_M≔ False 
+                   ElseIf spatula ≟ "spatula_S" and switch_spat_S ≟ True 
+                     MoveL
+                       Spatula_otw
+                       spat_M_up
+                       spat_M_pick
+                       Gripper Open (1)
+                       spat_S_pick
+                       Gripper Close (1)
+                       spat_S_up
+                       Spatula_otw
+                     switch_spat_S≔ False 
+                   ElseIf spatula≟"spatula_flat_S"  and switch_spat_F_S ≟ True 
+                     MoveL
+                       Spatula_otw
+                       spat_flatM_up
+                       spat_flatM_pick
+                       Gripper Open (1)
+                       spat_flatS_pick
+                       Gripper Close (1)
+                       spat_flatS_up
+                       Spatula_otw
+                     switch_spat_F_S≔ False 
+                   auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                   Wait: 0.5
+       Case 43
+         Powder dosing
+           'zero_scale()'
+           send_target_info()
+           send_powder_info()
+           'tilt_to_home()'
+           'spatula_selection test'
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   tare_scale()
+                   Wait: 0.2
+                   weight_value≔get_weight()
+                   Wait: 0.2
+                   diff≔target_weight-weight_value
+                   scooping_init()
+                   compute_level_percent(W_now, weight_value)
+                   send_level_info()
+                   'spatula≔select_spatula(Pow_name, level, diff, diameter)'
+                   spatula≔select_spatula(Flowability,level,diff,density)
+                   'spatula = "spatula_M"'
+                   Wait: 0.2
+                   send_spatula_info()
+                   If spatula ≟ "spatula_L"
+                     MoveJ
+                       Spatula_otw
+                       pick_spat_L_abv
+                     MoveL
+                       spat_L_pick
+                       Gripper Close (1)
+                       spat_L_lift
+                       spat_L_side
+                       spat_L_up
+                     MoveJ
+                       Spatula_otw
+                   ElseIf spatula ≟"spatula_M"
+                     MoveJ
+                       Spatula_otw
+                       spat_M_up
+                     MoveL
+                       spat_M_pick
+                       Gripper Close (1)
+                       spat_M_up
+                       Spatula_otw
+                     switch_spat_M≔ False 
+                   ElseIf spatula≟"spatula_S"
+                     MoveJ
+                       Spatula_otw
+                       spat_S_Up_7
+                     MoveL
+                       spat_S_Pick_4
+                       Gripper Close (1)
+                       spat_S_Up_8
+                       Spatula_otw
+                     switch_spat_S≔ False 
+                   ElseIf spatula≟"spatula_flat_M"
+                     MoveJ
+                       Spatula_otw
+                       spat_flatM_up
+                     MoveL
+                       spat_flatM_pick
+                       Gripper Close (1)
+                       spat_flatM_up
+                       Spatula_otw
+                     switch_spat_F_M≔ False 
+                   ElseIf spatula≟"spatula_flat_S"
+                     MoveJ
+                       Spatula_otw
+                       spat_flatS_up
+                     MoveL
+                       spat_flatS_pick
+                       Gripper Close (1)
+                       spat_flatS_up
+                       Spatula_otw
+                     switch_spat_F_S≔ False 
+                   weight_value≔get_weight()
+                   auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   dispense_pos≔get_actual_tcp_pose()
+                   Loop weight_value≤target_weight
+                     MoveL
+                       dispense_pos
+                       log_weight()
+                       Wait: 0.5
+                       If level≥90.0
+                         Rotate()
+                       If level≤85
+                         tilt_to_home()
+                       Wait: 0.5
+                       Start_thread≔ True 
+                       vib_thread≔ True 
+                       'tilt_angle≔current_pose[5]'
+                       Wait: 0.5
+                       'Loop diff>3.0'
+                       If diff ≥(target_g +(0.1*target_g))
+                         tilt_pose≔pose_trans(get_actual_tcp_pose(), p[0, 0, 0, 0, 0, 2.0])
+                         movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                       Else
+                         Loop weight_value≤target_weight and tilt_angle≥(-1.999) and tilt_angle≤0.5
+                           current_error≔target_weight-weight_value
+                           Integral_error≔Integral_error+current_error*dt
+                           derivative≔(current_error-previous_error)/dt
+                           tilt_increment≔(kp*current_error)+(ki*Integral_error)+(kd*derivative)
+                           current_pose≔get_actual_tcp_pose()
+                           tilt_angle≔current_pose[5]
+                           tilt_pose≔pose_trans(current_pose, p[0, 0, 0, 0, 0, tilt_increment])
+                           movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                           previous_error≔current_error
+                       Start_thread≔ False 
+                       'Waypoint_64'
+                       weight_value≔get_weight()
+                       tilt_angle≔-1
+                       Wait: 0.5
+                       vib_thread≔ False 
+                       MoveL
+                         dispense_pos
+                       compute_level_percent(W_now, weight_value)
+                       send_level_info()
+                       'spatula = select_spatula(Pow_name, level, diff, diameter)'
+                       spatula≔select_spatula(Flowability,level,diff,density)
+                       'spatula = "spatula_M"'
+                       Wait: 0.2
+                       'spatula = str_cat("", spatula)'
+                       Integral_error≔0
+                       current_error≔0
+                       previous_error≔0
+                       Set AO[0]=0.0
+                       Wait: 0.2
+                       send_spatula_info()
+                       If spatula ≟ "spatula_M" and switch_spat_M≟ True 
+                         MoveJ
+                           Spatula_otw
+                           spat_L_up
+                         MoveL
+                           spat_L_side
+                           spat_L_lift
+                           spat_L_pick
+                           Gripper Open (1)
+                           spat_M_pick
+                           Gripper Close (1)
+                           spat_M_up
+                           Spatula_otw
+                         switch_spat_M≔ False 
+                       ElseIf spatula ≟ "spatula_S" and switch_spat_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_M_up
+                           spat_M_pick
+                           Gripper Open (1)
+                           spat_S_pick
+                           Gripper Close (1)
+                           spat_S_up
+                           Spatula_otw
+                         switch_spat_S≔ False 
+                       ElseIf spatula≟"spatula_flat_S"  and switch_spat_F_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_flatM_up
+                           spat_flatM_pick
+                           Gripper Open (1)
+                           spat_flatS_pick
+                           Gripper Close (1)
+                           spat_flatS_up
+                           Spatula_otw
+                         switch_spat_F_S≔ False 
+                       auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                       Wait: 0.5
+                   Start_thread≔ False 
+                   Wait: 0.5
+                   vib_thread≔ False 
+                   'Rotate()'
+                 Exit Pose
+               No Object Detected
+                 Popup: No weigh scale detected
+           'Task≔"Dosing"'
+           'scooping_init()'
+           MoveJ
+             dispense_pos
+           after_scoop()
+           'powder dispensing'
+           'tilt_send()'
+       Case 44
+         Decap Container for recipe
+           'powder_position≔"Position2"'
+           If powder_position ≟ "Position1"
+             MoveJ
+               Postions_otw
+             Gripper Open (1)
+             MoveL
+               PosA_up
+               PosA_pick
+               Gripper Close (1)
+               PosA_up
+               Postions_otw
+           ElseIf powder_position≟"Position2"
+             MoveJ
+               Postions_otw
+             Gripper Open (1)
+             MoveL
+               PosB_up
+               PosB_pick
+               Gripper Close (1)
+               PosB_up
+               Postions_otw
+           ElseIf powder_position≟"Position3"
+             MoveJ
+               Postions_otw
+               Gripper Open (1)
+             MoveL
+               PosC_up
+               PosC_pick
+               Gripper Close (1)
+               PosC_up
+           MoveJ
+             Pow_decap_up
+           Set GRP_3F_Open=On
+           Wait: 0.5
+           MoveL
+             pow_decap_place
+           Set GRP_3F_Open=Off
+           Wait: 0.5
+           Gripper Open (1)
+           MoveL
+             Pow_decap_up
+             Postions_otw
+           Home (Safe)
+           MoveL
+             Decap_above
+             Decapp
+           Gripper Close (1)
+           Decap
+             Action_Info≔"decapping"
+             Set GRP_3F_Enable=On
+             Set GRP_3F_Decap=On
+             Force
+               check_decapping(offset=0.010, timeout=4.5, abort=CMD_Hold)
+             Set GRP_3F_Decap=Off
+             Set GRP_3F_Enable=Off
+           MoveL
+             Decap_above
+             Cap_above
+             Cap_place
+             Gripper Move39mm (1)
+             Cap_above
+             Home (Safe)
+       Case 45
+         Place the decapped container- recipe
+           tilt_to_home()
+           'tilt_send(4)'
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   Gripper Open (1)
+                   Set
+                   Wait: 0.25
+                   MoveL
+                     OP_PowderA2
+                     Decap_up
+                     Decap_pick
+                     Gripper Close (1)
+                     Wait: 0.5
+                     Set GRP_3F_Open=On
+                     Decap_up
+                     'Motors_off()'
+                     Op_PowA_wP
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   container_place≔get_actual_tcp_pose()
+                   target_pose≔pose_add(container_place, p[0,0,-0.12,0,0,0])
+                   MoveL
+                     target_pose
+                   Gripper Open (1)
+                 Exit Pose
+               No Object Detected
+                 Popup: No weigh scale detected
+           place_pose≔get_actual_tcp_pose()
+           center_pose()
+           'center_tilt_pos≔P_center'
+           MoveJ
+             Waypoint_1
+       Case 46
+         Powder dosing for recipe
+           'zero_scale()'
+           send_target_info()
+           Wait: 0.5
+           send_powder_info()
+           Wait: 0.5
+           'spatula_selection test'
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   tare_scale()
+                   Wait: 0.2
+                   weight_value≔get_weight()
+                   Wait: 0.2
+                   diff≔target_weight-weight_value
+                   scooping_init()
+                   compute_level_percent(W_now, weight_value)
+                   send_level_info()
+                   'spatula≔select_spatula(Pow_name, level, diff, diameter)'
+                   spatula≔select_spatula(Flowability,level,diff,density)
+                   Wait: 0.2
+                   send_spatula_info()
+                   If spatula ≟ "spatula_L"
+                     MoveJ
+                       Spatula_otw
+                       pick_spat_L_abv
+                     MoveL
+                       spat_L_pick
+                       Gripper Close (1)
+                       spat_L_lift
+                       spat_L_side
+                       spat_L_up
+                     MoveJ
+                       Spatula_otw
+                   ElseIf spatula ≟"spatula_M"
+                     MoveJ
+                       Spatula_otw
+                       spat_M_up
+                     MoveL
+                       spat_M_pick
+                       Gripper Close (1)
+                       spat_M_up
+                       Spatula_otw
+                     switch_spat_M≔ False 
+                   ElseIf spatula≟"spatula_S"
+                     MoveJ
+                       Spatula_otw
+                       spat_S_Up_9
+                     MoveL
+                       spat_S_Pick_5
+                       Gripper Close (1)
+                       spat_S_Up_10
+                       Spatula_otw
+                     switch_spat_S≔ False 
+                   ElseIf spatula≟"spatula_flat_M"
+                     MoveJ
+                       Spatula_otw
+                       spat_flatM_up
+                     MoveL
+                       spat_flatM_pick
+                       Gripper Close (1)
+                       spat_flatM_up
+                       Spatula_otw
+                     switch_spat_F_M≔ False 
+                   ElseIf spatula≟"spatula_flat_S"
+                     MoveJ
+                       Spatula_otw
+                       spat_flatS_up
+                     MoveL
+                       spat_flatS_pick
+                       Gripper Close (1)
+                       spat_flatS_up
+                       Spatula_otw
+                     switch_spat_F_S≔ False 
+                   weight_value≔get_weight()
+                   auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   dispense_pos≔get_actual_tcp_pose()
+                   Loop weight_value≤target_weight
+                     MoveL
+                       dispense_pos
+                       log_weight()
+                       Wait: 0.5
+                       If level≥90.0
+                         Rotate()
+                       If level≤85
+                         tilt_to_home()
+                       Wait: 0.5
+                       Start_thread≔ True 
+                       vib_thread≔ True 
+                       'tilt_angle≔current_pose[5]'
+                       Wait: 0.5
+                       'Loop diff>3.0'
+                       If diff ≥(target_g +(0.1*target_g))
+                         tilt_pose≔pose_trans(get_actual_tcp_pose(), p[0, 0, 0, 0, 0, 2.0])
+                         movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                       Else
+                         Loop weight_value≤target_weight and tilt_angle≥(-1.999) and tilt_angle≤0.5
+                           current_error≔target_weight-weight_value
+                           Integral_error≔Integral_error+current_error*dt
+                           derivative≔(current_error-previous_error)/dt
+                           tilt_increment≔(kp*current_error)+(ki*Integral_error)+(kd*derivative)
+                           current_pose≔get_actual_tcp_pose()
+                           tilt_angle≔current_pose[5]
+                           tilt_pose≔pose_trans(current_pose, p[0, 0, 0, 0, 0, tilt_increment])
+                           movel(tilt_pose, a=0.1, v=0.1, r=0.00001)
+                           previous_error≔current_error
+                       Start_thread≔ False 
+                       'Waypoint_64'
+                       weight_value≔get_weight()
+                       tilt_angle≔-1
+                       Wait: 0.5
+                       vib_thread≔ False 
+                       MoveL
+                         dispense_pos
+                       compute_level_percent(W_now, weight_value)
+                       send_level_info()
+                       'spatula = select_spatula(Pow_name, level, diff)'
+                       spatula≔select_spatula(Flowability,level,diff,density)
+                       Wait: 0.2
+                       'spatula = str_cat("", spatula)'
+                       Integral_error≔0
+                       current_error≔0
+                       previous_error≔0
+                       Set AO[0]=0.0
+                       Wait: 0.2
+                       send_spatula_info()
+                       If spatula ≟ "spatula_M" and switch_spat_M≟ True 
+                         MoveJ
+                           Spatula_otw
+                           spat_L_up
+                         MoveL
+                           spat_L_side
+                           spat_L_lift
+                           spat_L_pick
+                           Gripper Open (1)
+                           spat_M_pick
+                           Gripper Close (1)
+                           spat_M_up
+                           Spatula_otw
+                         switch_spat_M≔ False 
+                       ElseIf spatula ≟ "spatula_S" and switch_spat_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_M_up
+                           spat_M_pick
+                           Gripper Open (1)
+                           spat_S_pick
+                           Gripper Close (1)
+                           spat_S_up
+                           Spatula_otw
+                         switch_spat_S≔ False 
+                       ElseIf spatula≟"spatula_flat_S"  and switch_spat_F_S ≟ True 
+                         MoveL
+                           Spatula_otw
+                           spat_flatM_up
+                           spat_flatM_pick
+                           Gripper Open (1)
+                           spat_flatS_pick
+                           Gripper Close (1)
+                           spat_flatS_up
+                           Spatula_otw
+                         switch_spat_F_S≔ False 
+                       auto_tilt_and_scoop(W_now, target_weight, weight_value)
+                       Wait: 0.5
+                   Start_thread≔ False 
+                   Wait: 0.5
+                   vib_thread≔ False 
+                   'Rotate()'
+                 Exit Pose
+               No Object Detected
+                 Popup: No weigh scale detected
+           'Task≔"Dosing"'
+           'scooping_init()'
+           MoveJ
+             dispense_pos
+           weight_value≔get_weight()
+           after_scoop()
+           If spatula≟"spatula_M"
+             MoveJ
+               Spatula_otw
+               spat_M_up
+             MoveL
+               spat_M_pick
+               Gripper Open (1)
+               spat_M_up
+             Home (Safe)
+           ElseIf spatula≟"spatula_flat_S"
+             MoveJ
+               Spatula_otw
+               spat_flatS_up
+             MoveL
+               spat_flatS_pick
+               Gripper Open (1)
+               spat_flatS_up
+             Home (Safe)
+           Pick container from PoTS
+             cont_place_offs≔pose_add(container_place, p[0.05,0,0,0,0,0])
+             MoveJ
+               cont_place_offs
+               container_place
+             MoveL
+               target_pose
+               Gripper Close (1)
+               container_place
+           'powder_position≔"Position2"'
+           Place Powder container back to holder
+             If powder_position ≟ "Position1"
+               MoveL
+                 Postions_otw
+               MoveL
+                 PosA_up
+                 PosA_pick
+                 Gripper Open (1)
+                 PosA_up
+                 Postions_otw
+             ElseIf powder_position≟"Position2"
+               MoveL
+                 Postions_otw
+               MoveL
+                 PosB_up
+                 PosB_pick
+                 Gripper Open (1)
+                 PosB_up
+                 Postions_otw
+             ElseIf powder_position≟"Position3"
+               MoveL
+                 Postions_otw
+               MoveL
+                 PosC_up
+                 PosC_pick
+                 Gripper Open (1)
+                 PosC_up
+                 Postions_otw
+           MoveJ
+             Cap_above
+           MoveL
+             Cap_place
+             Gripper Close (1)
+             Cap_above
+           Cap the container
+             If powder_position ≟ "Position1"
+               MoveJ
+                 Cap_Pos1_up
+               MoveL
+                 Cap_pos1
+             ElseIf powder_position≟"Position2"
+               MoveJ
+                 Cap_Pos2_up
+               MoveL
+                 Cap_Pos2
+             ElseIf powder_position≟"Position3"
+               MoveJ
+                 Cap_Pos3_up
+               MoveL
+                 Cap_pos3
+             Capping motion
+               Gripper Move30mm (1)
+               Loop 2 times
+                 'MoveL'
+                 Cap_CW≔pose_add(get_actual_tcp_pose(), p[0,0,0,0,0,2.2])
+                 MoveL
+                   Cap_CW
+                 Gripper Move25mm (1)
+                 Cap_CCW≔pose_add(get_actual_tcp_pose(), p[0,0,0,0,0,-2.2])
+                 MoveL
+                   Cap_CCW
+                 Gripper Move30mm (1)
+               Gripper Open (1)
+               after_capping≔pose_add(get_actual_tcp_pose(), p[0,0,0.05,0,0,0])
+               MoveL
+                 after_capping
+               Home (Safe)
+       Case 47
+         Pick containers
+           VISOR Easy Pick
+             # 1 Setup
+             Process
+               Image Acquisition Pose
+               Object Detected
+                 Open Gripper
+                   Gripper Open (1)
+                   MoveJ
+                     pick_cont_otw
+                 Approach Pose
+                 Target Pose
+                 Close Gripper
+                   Gripper Close (1)
+                 Exit Pose
+               No Object Detected
+                 Popup: No container detected
+           MoveJ
+             Powder_wayp1
+           If powder_position ≟ "Position1"
+             MoveJ
+               Postions_otw
+             MoveL
+               PosA_up
+               PosA_pick
+               Gripper Open (1)
+               PosA_up
+               Postions_otw
+             powder_position≔"Position2"
+             Home (Safe)
+             Num_cont_picked≔Num_cont_picked+1
+           ElseIf powder_position≟"Position2"
+             MoveJ
+               Postions_otw
+             MoveL
+               PosB_up
+               PosB_pick
+               Gripper Open (1)
+               PosB_up
+               Postions_otw
+             powder_position≔"Position3"
+             Home (Safe)
+             Num_cont_picked≔Num_cont_picked+1
+           ElseIf powder_position≟"Position3"
+             MoveJ
+               Postions_otw
+             MoveL
+               PosC_up
+               PosC_pick
+               Gripper Open (1)
+               PosC_up
+               Postions_otw
+             Home (Safe)
+             Num_cont_picked≔Num_cont_picked+1
+       Case 48
+         QR detections
+           Device_ID≔1
+           MoveJ
+             Position1
+           # 1 VISOR Trigger
+           pos1_powder≔visor_getResponse(Device_ID)
+           pos1_powder = extract_powder_name(pos1_powder)
+           MoveJ
+             Position2
+           # 1 VISOR Trigger
+           pos2_powder≔visor_getResponse(Device_ID)
+           pos2_powder = extract_powder_name(pos2_powder)
+           MoveJ
+             Position3
+           # 1 VISOR Trigger
+           pos3_powder≔visor_getResponse(Device_ID)
+           pos3_powder = extract_powder_name(pos3_powder)
+       'Case 49'
+     '=========='
+     PostSettings
+       'ADD ADDITIONAL CHECKS'
+     'Switch Action'
+     ''==========''
+     'PostSettings'

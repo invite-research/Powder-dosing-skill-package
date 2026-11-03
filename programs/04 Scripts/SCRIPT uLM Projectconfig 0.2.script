@@ -1,0 +1,259 @@
+############# SCRIPT uLM Projectconfig ###############
+#*****************************************************
+# Customer          :   URG
+# Product Name      :   uLabMobile
+#****************************************************
+# Controller/Robot  :   UR5e
+# Software          :   5.17
+# Dependencies      :   Factory Script, Defines Script, relevant project knowledge about objects, patterns, items, commands, vision skills, landmarktypes and movements
+# How To            :   Define Step by Step all Project Data by creating the objects and appending them to the assigned List, if you skip information
+#                       the default value will be assigned -> give as many details as possible as the default values will not work in some cases
+#****************************************************
+# Author            :   D.Kreugel
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# Description       :   Project Related Configurations -> in the future will be configured by UGO 
+# Version           :   0.2
+# Created           :   18.07.2024
+# Updated           :   
+#****************************************************
+# Modifications     :   
+# Date              :   
+# Name              :   
+# Reason            :   
+#****************************************************
+# TO DO             :  Simplify Rack Assignment, create Enums for Choices that can be made and will be repeated in many projects, documentation
+
+# 
+
+# Please Import DeviceScripts and Defines Script First as you may wanna use some of the Defined Variables here
+
+# Define here the Objects that should be handled, add a new Object Type in the defines if necessary
+# create_object(id=0, obj_name=0, height=0, width=0, color="default", material="default", description="default")
+# struct(NONE=0, CC_SAMPLE=1, CC_RACK=2, COAG_SAMPLE=3, COAG_RACK=4, HEMA_SAMPLE=5, HEMA_RACK=6, INPUT_RACK=7, CF_RACK=8, ANY_SAMPLE=9, ANY_RACK=10)
+#create_object(id=0, obj_name=0, height=0, width=0, obj_type = 0, description="default")
+OBJECT_MAP.append(create_object(id=0, obj_name=Objects.NONE, obj_type=ObjectType.NONE, height=0, width=0, description="None Object"))
+OBJECT_MAP.append(create_object(id=1, obj_name=Objects.CC_SAMPLE, obj_type=ObjectType.SAMPLE, height=108, width=15, description="BD Li-Heparin"))
+OBJECT_MAP.append(create_object(id=2, obj_name=Objects.HEMA_SAMPLE, obj_type=ObjectType.SAMPLE, height=81, width=13, description="BD EDTA"))
+OBJECT_MAP.append(create_object(id=3, obj_name=Objects.CC_SAMPLE, obj_type=ObjectType.SAMPLE, height=108, width=15, description="BD Li-Heparin"))
+OBJECT_MAP.append(create_object(id=4, obj_name=Objects.HEMA_SAMPLE, obj_type=ObjectType.SAMPLE, height=81, width=13, description="Sarstedt EDTA"))
+OBJECT_MAP.append(create_object(id=5, obj_name=Objects.CC_SAMPLE, obj_type=ObjectType.SAMPLE, height=110, width=15, description="Sarstedt Serum-Gel"))
+OBJECT_MAP.append(create_object(id=6, obj_name=Objects.ANY_SAMPLE, obj_type=ObjectType.SAMPLE, height=110, width=15, description="Any Sample"))
+OBJECT_MAP.append(create_object(id=7, obj_name=Objects.ANY_RACK, height=150, width=120, description="Any Rack"))
+OBJECT_MAP.append(create_object(id=8, obj_name=Objects.CF_RACK, height=110, width=15, description="Centrifuge Rack"))
+OBJECT_MAP.append(create_object(id=12, obj_name=Objects.COBAS_RACK, height=OBJECT_REFERENCE_HEIGHT, width=20, description="Cobas Rack"))
+OBJECT_MAP.append(create_object(id=9, obj_name=Objects.TARA_SAMPLE, obj_type=ObjectType.SAMPLE, height=110, width=15, description="Tara Sample"))
+OBJECT_MAP.append(create_object(id=10, obj_name=Objects.BUTTON, obj_type=ObjectType.BUTTON, height=0, width=0, description="Button"))
+OBJECT_MAP.append(create_object(id=11, obj_name=Objects.XN550_DRAWER, height=OBJECT_REFERENCE_HEIGHT, width=25, description="XN550 Drawer"))
+
+#create_sample(obj_id=0, diameter=0, color="", material="", description="")
+SAMPLES = make_list(0,create_sample(),MAX_ITEM_OBJ)
+SAMPLES.append(create_sample(obj_id=1, cap_diameter=17.4, raw_diameter=15.3, color="darkgreen", material="88", description="BD Li-Heparin -> decapped in Cobas"))
+SAMPLES.append(create_sample(obj_id=1, cap_diameter=17.4, raw_diameter=15.3, color="darkgreen", material="80", description="BD Li-Heparin -> decapped in Cobas"))
+SAMPLES.append(create_sample(obj_id=1, cap_diameter=17.4, raw_diameter=15.3, color="darkgreen", material="93", description="BD Li-Heparin -> decapped in archive"))
+SAMPLES.append(create_sample(obj_id=2, cap_diameter=15.5, raw_diameter=12.3, color="violet", material="82", description="BD EDTA -> Sysmex ->Archive"))
+SAMPLES.append(create_sample(obj_id=2, cap_diameter=15.5, raw_diameter=12.3, color="violet", material="91", description="BD EDTA ->Archive"))
+SAMPLES.append(create_sample(obj_id=2, cap_diameter=15.5, raw_diameter=12.3, color="violet", material="96", description="BD EDTA ->Archive"))
+SAMPLES.append(create_sample(obj_id=3, cap_diameter=17.4, raw_diameter=15.3, color="lightgreen", material="88", description="BD Li-Heparin -> decapped in Cobas"))
+SAMPLES.append(create_sample(obj_id=3, cap_diameter=17.4, raw_diameter=15.3, color="lightgreen", material="93", description="BD Li-Heparin -> decapped in Archive"))
+SAMPLES.append(create_sample(obj_id=3, cap_diameter=17.4, raw_diameter=15.3, color="lightgreen", material="97", description="BD Li-Heparin -> decapped in Archive"))
+SAMPLES.append(create_sample(obj_id=4, cap_diameter=15.6, raw_diameter=12.3, color="red", material="82", description="BD EDTA -> Sysmex ->Archive"))
+SAMPLES.append(create_sample(obj_id=4, cap_diameter=15.6, raw_diameter=12.3, color="red", material="91", description="BD EDTA -> Archive"))
+SAMPLES.append(create_sample(obj_id=4, cap_diameter=15.6, raw_diameter=12.3, color="red", material="96", description="BD EDTA -> Archive"))
+SAMPLES.append(create_sample(obj_id=5, cap_diameter=17.4, raw_diameter=15.3, color="brown", material="80", description="Sarstedt Serum-Gel -> decapped in Cobas"))
+SAMPLES.append(create_sample(obj_id=5, cap_diameter=17.4, raw_diameter=15.3, color="brown", material="93", description="Sarstedt Serum-Gel -> decapped in Archive"))
+
+# Gripper Configurations depending on the Object Type , add new force and speed in the Defines if necessary
+# create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=0, speed=0, validation=0, object=create_object())
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.ANY_SAMPLE)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=GRIPPER_FORCE.FULL, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.ANY_RACK)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.CC_SAMPLE)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=3, pick=0, place=3), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.HEMA_SAMPLE)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=4, pick=0, place=4), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.OFF, object=find_object_by_objectname(Objects.TARA_SAMPLE)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=GRIPPER_FORCE.FULL, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.CF_RACK)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=2, pick=0, place=2), force=GRIPPER_FORCE.FULL, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.ON, object=find_object_by_objectname(Objects.COBAS_RACK)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=0, pick=0, place=0), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.OFF, object=find_object_by_objectname(Objects.NONE)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=0, pick=0, place=0), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.OFF, object=find_object_by_objectname(Objects.BUTTON)))
+GRIPPER_CONFIG_MAP.append(create_gripper_config(gripper_offset=struct(prepick=5, pick=25, place=5), force=GRIPPER_FORCE.HALF, speed=GRIPPER_SPEED.MEDIUM, validation=GRIPPER_VALIDATION.OFF, object=find_object_by_objectname(Objects.XN550_DRAWER)))
+# create Patterns like Racks or Magazines
+# easy if you define x and y regarding to the base coordinate system  if not you have to deal with transpose and or invert
+# create_pattern(id=0, pattern_width=[0, 0], pattern_size=[0, 0], blocked=[-1, -1], obj_name=0, direction="X", transpose=False, invert=False, description="default")
+# Objectss: NONE=0, CC_SAMPLE=1, CC_RACK=2, COAG_SAMPLE=3, COAG_RACK=4, HEMA_SAMPLE=5, HEMA_RACK=6, INPUT_RACK=7, CENTRIFUGE_RACK=8, ANY_SAMPLE=9, ANY_RACK=10
+# ITEM_MODEL_MAP.append(create_pattern(id=0, pattern_width=[0, 0], pattern_size=[0, 0], blocked=[-1, -1, -1],  direction="X", transpose=False, invert=False, description="default"))
+# ITEM_MODEL_MAP.append(create_pattern(id=1, pattern_width=[0.06, 0], pattern_size=[3, 1],  direction="X", description="Tara"))
+# ITEM_MODEL_MAP.append(create_pattern(id=2, pattern_width=[0.183, 0.082], pattern_size=[10, 5], description="Sarstedt 50 D17 Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=3, pattern_width=[0.153, 0.067], pattern_size=[10, 5], description="Sarstedt 50 D13 Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=4, pattern_width=[0.06, 0.06], pattern_size=[3, 3], blocked=[5, -1, -1], description="Hettich Centrifuge Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=5, pattern_width=[0.093, 0.093], pattern_size=[2, 2],  description="Hettich Centrifuge Rack Magazin"))
+# ITEM_MODEL_MAP.append(create_pattern(id=6, pattern_width=[0.08, 0.05], pattern_size=[5, 2], description="Sysmex XN 550 Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=7, pattern_width=[0.175, 0.078], pattern_size=[8, 4], description="URG Rack 40 D17"))
+# ITEM_MODEL_MAP.append(create_pattern(id=8, pattern_width=[0.092, 0], pattern_size=[5, 1], description="Cobas Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=9, pattern_width=[0.245, 0.123], pattern_size=[3, 5], blocked=[9,11,12], description="Cobas Rack Magazin"))
+# ITEM_MODEL_MAP.append(create_pattern(id=10, pattern_width=[0.237, 0.095], pattern_size=[11, 5], description="Atellica Rack 5x11"))
+# ITEM_MODEL_MAP.append(create_pattern(id=11, pattern_width=[0.237, 0.095], pattern_size=[2, 2], description="Sensors LM"))
+# ITEM_MODEL_MAP.append(create_pattern(id=12, pattern_width=[0.18, 0], pattern_size=[10, 1], description="Sysmex CS2500 Rack"))
+# ITEM_MODEL_MAP.append(create_pattern(id=13, pattern_width=[0.310, 0.075], pattern_size=[13, 4], description="URG RACK 52 - Special Input"))
+# ITEM_MODEL_MAP.append(create_pattern(id=14, pattern_width=[0.075, 0.075], pattern_size=[4, 6], description="URG RACK 24 - Special NoK"))
+# ITEM_MODEL_MAP.append(create_pattern(id=15, pattern_width=[0.120, 0], pattern_size=[2, 1], description="XN550 Drawer"))
+
+ITEM_MODEL_MAP.append(create_pattern(id=0, name="NONE", pattern_width=[0, 0], pattern_size=[0, 0], blocked=[-1, -1, -1],  direction="X", transpose=False, invert=False, description="default"))
+ITEM_MODEL_MAP.append(create_pattern(id=1, name="TARA", pattern_width=[0.06, 0], pattern_size=[3, 1],  direction="X", description="Tara"))
+ITEM_MODEL_MAP.append(create_pattern(id=4, name="CENTRIFUGE", pattern_width=[0.06, 0.06], pattern_size=[3, 3], blocked=[5, -1, -1], description="Hettich Centrifuge Rack"))
+ITEM_MODEL_MAP.append(create_pattern(id=5, name="CENTRIFUGE_MAGAZINE", pattern_width=[0.093, 0.093], pattern_size=[2, 2],  description="Hettich Centrifuge Rack Magazin"))
+ITEM_MODEL_MAP.append(create_pattern(id=6, name="SYSMEX_XN550", pattern_width=[0.08, 0.05], pattern_size=[5, 2], description="Sysmex XN 550 Rack"))
+ITEM_MODEL_MAP.append(create_pattern(id=8, name="COBAS", pattern_width=[0.092, 0], pattern_size=[5, 1], description="Cobas Rack"))
+ITEM_MODEL_MAP.append(create_pattern(id=9, name="COBAS_MAGAZINE", pattern_width=[0.245, 0.123], pattern_size=[3, 5], blocked=[9,11,12], description="Cobas Rack Magazin"))
+ITEM_MODEL_MAP.append(create_pattern(id=13, name="INPUT", pattern_width=[0.310, 0.075], pattern_size=[13, 4], description="URG RACK 52 - Special Input"))
+ITEM_MODEL_MAP.append(create_pattern(id=14, name="NOK", pattern_width=[0.075, 0.075], pattern_size=[4, 6], description="URG RACK 24 - Special NoK"))
+ITEM_MODEL_MAP.append(create_pattern(id=15, name="DRAWER_XN550", pattern_width=[0.120, 0], pattern_size=[2, 1], description="XN550 Drawer"))
+ITEM_MODEL_MAP.append(create_pattern(id=7, name="ARCHIVE", pattern_width=[0.175, 0.078], pattern_size=[8, 4], description="URG Rack 40 D17"))
+
+
+
+
+
+
+# add a "skill" to the robots skillset the control system will send a string with the ls_item and action and here we will look if we have a matching skill to execute
+# the item_modell defines the patterns which have to be used by the robot on multiple racks and or multiple samples in a rackpattern
+# inner pattern is always dependung on the object that has to be moved and the outer pattern is the pattern for the containers where the objects are stored in.
+# if racks have to be handled it is also an inner pattern cause the object to handle is the rack itself 
+# create_item(id=0, ls_item="default", frame=p[0,0,0,0,0,0], actionlist=create_action_list([]), item_model=create_item_model(), lm_id=0, description="default")
+# create_item_model(inner=create_pattern(), outer=create_pattern(), description="default")
+# ITEM_MAP.append(create_item(id=1, ls_item="Home", frame=F1_uLM_Home, actionlist=[ActionManipulator.MOVE_TO], description="uLM Move To Home"))
+# ITEM_MAP.append(create_item(id=2, ls_item="InputStation", frame=F2_uLM_Input, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.INPUT), description="uLM Pick and Place samples from Input"))
+# ITEM_MAP.append(create_item(id=3, ls_item="InputCapture", frame=F3_Cap_Input, actionlist=[ActionCamera.INSPECT, ActionManipulator.MOVE_TO], description="uLM Inspect samples from Input and Move To Capture Position"))
+# ITEM_MAP.append(create_item(id=4, ls_item="Bin", frame=F4_uLM_Bin, actionlist=[ActionManipulator.PLACE], description="uLM Place Cap to Bin"))
+# ITEM_MAP.append(create_item(id=5, ls_item="StationaryGripper", frame=F5_uLM_Gripper, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE, ActionManipulator.DECAP, ActionManipulator.MOVE_TO, ActionManipulator.GRASP, ActionManipulator.RELEASE], description=" uLM stationary gripper"))
+# ITEM_MAP.append(create_item(id=6, ls_item="CobasRack", frame=F6_uLM_Cobas_R, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(outer=Patterns.COBAS_MAGAZINE), description="uLM Cobas Racks Pick and Place"))
+# ITEM_MAP.append(create_item(id=7, ls_item="CobasMagazine", frame=F7_uLM_Coba_Mag, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.COBAS, outer=Patterns.COBAS_MAGAZINE), description="uLM Cobas Magazine Samples Pick and Place"))
+# ITEM_MAP.append(create_item(id=8, ls_item="DetectCobasRacks", frame=F8_Cap_Cobas_LM, actionlist=[ActionCamera.DETECT_OBJECTS, ActionManipulator.MOVE_TO], lm_id=2, description="uLM Cobas Rack Detection and Move To Capture"))
+# ITEM_MAP.append(create_item(id=9, ls_item="TaraMagazine", frame=F9_uLM_Tara, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.TARA), description="uLM Centrifuge Tara Pick and Place"))
+# ITEM_MAP.append(create_item(id=10, ls_item="CentrifugeCapture", frame=F10_Cap_CF, actionlist=[ActionManipulator.MOVE_TO, ActionCamera.DETECT], lm_id=1, description="Centrifuge Device Move to Capture Pos and Detect Landmarks"))
+# ITEM_MAP.append(create_item(id=11, ls_item="Centrifuge", frame=F11_CF_PiPl, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], description="Centrifuge Device Rack Pick and Place"))
+# ITEM_MAP.append(create_item(id=12, ls_item="CentrifugeMagazine", frame=F12_uLM_CF_Mag, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.CENTRIFUGE, outer=Patterns.CENTRIFUGE_MAGAZINE), description=" uLM Centrifuge Magazin Pick and Place"))
+# ITEM_MAP.append(create_item(id=13, ls_item="CentrifugeRack", frame=F13_uLM_CF_R, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(outer=Patterns.CENTRIFUGE_MAGAZINE), description="uLM Centrifuge Magazin Pick and Place Racks"))
+# ITEM_MAP.append(create_item(id=14, ls_item="DailyArchive", frame=F14_uLM_Archive, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.ARCHIVE), description="uLM Pick and Place samples from Archive Rack"))
+# ITEM_MAP.append(create_item(id=15, ls_item="NokRack", frame=F15_uLM_Nok, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.NOK), description="uLM Pick and Place samples from Nok Rack"))
+# ITEM_MAP.append(create_item(id=16, ls_item="CobasInput", frame=F16_Cobas_Input, actionlist=[ActionManipulator.PLACE], description="uLM Place Cobasrack in Cobas Device"))
+# ITEM_MAP.append(create_item(id=17, ls_item="CobasInputCapture", frame=F17_Cobas_Cap, actionlist=[ActionCamera.DETECT, ActionManipulator.MOVE_TO], lm_id=3, description="uLM Place Cobasrack in Cobas Device"))
+# ITEM_MAP.append(create_item(id=18, ls_item="XN550Input", frame=F18_XN550_Input, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Patterns.SYSMEX_XN550, outer=Patterns.DRAWER_XN550), lm_id=4, description="uLM Pick and Place Samples in or out of XN550 Racks"))
+# ITEM_MAP.append(create_item(id=19, ls_item="XN550Capture", frame=F19_XN550_Cap, actionlist=[ActionCamera.DETECT, ActionManipulator.MOVE_TO], lm_id=4, description="uLM Move To and Capture LM XN550"))
+# ITEM_MAP.append(create_item(id=20, ls_item="XN550Drawer", frame=F20_XN550_Draw, actionlist=[ActionManipulator.DRAWER_OPEN, ActionManipulator.DRAWER_CLOSE], item_model=create_item_model(inner=Patterns.DRAWER_XN550), lm_id=4, description="uLM Open and close Drawer XN550"))
+# ITEM_MAP.append(create_item(id=21, ls_item="XN550Button", frame=F21_XN550_Btn, actionlist=[ActionManipulator.PUSH], lm_id=4, description="uLM Push XN550 Button"))
+# ITEM_MAP.append(create_item(id=22, ls_item="AMR", frame=p[0,0,0,0,0,0], actionlist=[ActionAMR.READ, ActionAMR.LOAD_MISSION, ActionAMR.START_MISSION, ActionAMR.NAVIGATE, ActionAMR.ACKNOWLEDGE], description="all AMR actions"))
+
+
+
+# ITEM_MAP.append(create_item(id=31, ls_item="TestLM", frame=TestLM, actionlist=[ActionManipulator.PICK, ActionManipulator.PLACE], item_model=create_item_model(inner=Rack.SYSMEX_CS2500), lm_id=5, description="LM Test"))
+# Fills the Vision Config List with Projectrelated Data
+# workspaceid and skillid are highly robominds related so probably will not stay like this in the future
+# sample detection: dx and dy are used to calculate the positions in a rack and given by the offset which will be applied in order to assign the sample to a place in the rack 
+# create_vision_config(workspace_id="", skill_id="", item_id=-1, capture_pos=p[0,0,0,0,0,0], dx=0, dy=0, target_origin=p[0,0,0,0,0,0], selector="default", description="default")
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F10_Cap_CF, target_origin=p[0,0,0,0,0,0], item_id=11, description="LM Detect CF"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F8_Cap_Cobas_LM, target_origin=p[0,0,0,0,0,0], item_id=8, description="LM Detect Cobas Racks"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="8f0ad01c-dc36-4fdd-b295-0b6b4a38b89a", skill_id="afdc9e13-ea83-40d6-a805-bb041453d2e5", capture_pos=F3_Cap_Input, target_origin=F2_uLM_Input, item_id=3, description="Lab Solution Input Capture"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F19_XN550_Cap, target_origin=F18_XN550_Input, item_id=18, description="Input XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F19_XN550_Cap, target_origin=POS_Z, item_id=19, description="LM Detect XN550F"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F10_Cap_CF, target_origin=POS_Z, item_id=10, description="LM Detect CF"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F19_XN550_Cap, target_origin=F20_XN550_Draw, item_id=20, description="Drawer XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=F19_XN550_Cap, target_origin=F21_XN550_Btn, item_id=21, description="Button XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=TestLMCap, target_origin=p[0,0,0,0,0,0], item_id=30, description="Button XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", capture_pos=TestLMCap, target_origin=TestLM, item_id=31, description="Button XN550"))
+
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=p[0,0,0,0,0,0], item_id=11, description="LM Detect CF"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=p[0,0,0,0,0,0], item_id=8, description="LM Detect Cobas Racks"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="8f0ad01c-dc36-4fdd-b295-0b6b4a38b89a", skill_id="afdc9e13-ea83-40d6-a805-bb041453d2e5", target_origin=F2_uLM_Input, item_id=3, description="Lab Solution Input Capture"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=F18_XN550_Input, item_id=18, description="Input XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=POS_Z, item_id=19, description="LM Detect XN550F"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=POS_Z, item_id=10, description="LM Detect CF"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=F20_XN550_Draw, item_id=20, description="Drawer XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=F21_XN550_Btn, item_id=21, description="Button XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=p[0,0,0,0,0,0], item_id=30, description="Button XN550"))
+# VISION_CONFIG_MAP.append(create_vision_config(workspace_id="96017791-f581-4e9e-93da-6951695fccc8", skill_id="8885cfe1-6784-4293-bd26-52ebdc67bf95", target_origin=TestLM, item_id=31, description="Button XN550"))
+
+# local inputrack = find_pattern_by_name("INPUT")
+# INSPECT_CONFIG_MAP.append(create_inspect_config(item_id=3, dx=inputrack.pattern_width[0]/(inputrack.pattern_size[0]-1), dy=inputrack.pattern_width[1]/(inputrack.pattern_size[1]-1), rack_size=inputrack.pattern_size , description="Input Capture"))
+# # Fills the Landmark List with Projectrelated Data
+# # create_landmark(lm_id=0, marker_id=-1, marker_size=0.1, marker_type="aruco_7x7", capture_pos=p[0,0,0,0,0,0], init_frame=p[0,0,0,0,0,0], search_offset=[0,0,0], actual_frame=p[0,0,0,0,0,0], description="")
+# LANDMARK_MAP.append(create_landmark(lm_id=1, marker_id=3, marker_size=0.1, marker_type="aruco_7x7", capture_pos = F10_Cap_CF, init_frame=p[-0.617789, -0.065471, 0.07918, 0.020983, -0.012695, 1.512066], search_offset=[0.15, 0.15, 0.1], actual_frame=p[-0.617789, -0.065471, 0.07918, 0.020983, -0.012695, 1.512066], description="LM CF Lid"))
+# LANDMARK_MAP.append(create_landmark(lm_id=2, marker_id=-1, marker_size=0.0085, marker_type="aruco_4x4", capture_pos = F8_Cap_Cobas_LM, init_frame=p[0,0,0,0,0,0], search_offset=[0.15, 0.15, 0.1], actual_frame=POS_Z, description="LM Cobas Rack Detection"))
+# LANDMARK_MAP.append(create_landmark(lm_id=3, marker_id=0, marker_size=0.1, marker_type="aruco_7x7", capture_pos = F17_Cobas_Cap, init_frame=p[-0.667,-0.194,0.100,0,0,0], search_offset=[0.15, 0.15, 0.1], actual_frame=POS_Z, description="LM Cobas Cap"))
+# LANDMARK_MAP.append(create_landmark(lm_id=4, marker_id=4, marker_size=0.1, marker_type="aruco_7x7", capture_pos = F19_XN550_Cap, init_frame=p[0.124,-0.976,0.355,-0.008,0.025,3.131], search_offset=[0.15, 0.15, 0.1], actual_frame=p[0,0,0,0,0,0], description="LM XN550 Cap"))
+# LANDMARK_MAP.append(create_landmark(lm_id=5, marker_id=0, marker_size=0.1, marker_type="aruco_7x7", capture_pos = TestLMCap, init_frame=p[-0.49,-0.144,0.092,0,-0.008,0.001], search_offset=[0.15, 0.15, 0.1], actual_frame=POS_Z, description="LM Test"))
+# # Configuration of all movement related parameters
+# # create_movement(id=0, hh_approach=POS_Z, h_approach=POS_Z, approach=POS_Z, h_target=POS_Z, target=POS_Z, retract=POS_Z, h_retract=POS_Z, hh_retract=POS_Z, h_frame=POS_Z, frame=POS_Z, speed=1, acceleration=1, description="default")
+# MOVEMENT_MAP.append(create_movement(description="TestLMCap", frame=TestLMCap, actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="TestLM", frame=TestLM, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Home - MOVE_TO", frame=F1_uLM_Home, actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="Input - PICK&PLACE", frame=F2_uLM_Input, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Capture Input - MOVE_TO", frame=F3_Cap_Input, actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="BIN - PLACE", frame=F4_uLM_Bin, actionlist=[ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Gripper - Move To", frame=F5_uLM_Gripper, actionlist=[ActionManipulator.MOVE_TO],
+#         approach=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Gripper - Pick", frame=F5_uLM_Gripper, actionlist=[ActionManipulator.PICK],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Gripper - Place", frame=F5_uLM_Gripper, actionlist=[ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="CobasRack Pick & Place", frame=F6_uLM_Cobas_R, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         target=p[0,0,0,0,0,d2r(90)],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="CobasMagazine Pick & Place", frame=F7_uLM_Coba_Mag, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         target=p[0,0,0,0,0,-d2r(90)],
+#         retract=p[0,0,0.1,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Capture Position Cobas Landmarks", frame=F8_Cap_Cobas_LM, actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="TaraMagazine - PICK & PLACE", frame=F9_uLM_Tara, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.13,0,0,0],
+#         target=p[0,0,0,0,0,-d2r(90)],
+#         retract=p[0,0,0.13,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Capture Position - Centrifuge LM", frame=F10_Cap_CF,actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="Pick and Place Racks - Centrifuge Lid", frame=F11_CF_PiPl, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.3,0,0,0],
+#         retract=p[0,0,0.3,0,0,0]))
+# MOVEMENT_MAP.append(create_movement(description="Pick and Place Samples - Centrifuge on uLM", frame=F12_uLM_CF_Mag, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.13,0,0,0],
+#         retract=p[0,0,0.13,0,0,0]
+#         ))
+# MOVEMENT_MAP.append(create_movement(description="Pick and Place Racks - Centrifuge on uLM", frame=F13_uLM_CF_R, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.15,0,0,0],
+#         retract=p[0,0,0.15,0,0,0]
+#         ))
+
+# MOVEMENT_MAP.append(create_movement(description="Pick and Place Samples XN550 Racks in Device", frame=F18_XN550_Input, actionlist=[ActionManipulator.PICK,ActionManipulator.PLACE],
+#         approach=p[0,0,0.1,0,0,0],
+#         target = p[0,0,0,0,0,d2r(90)],
+#         retract=p[0,0,0.1,0,0,0]
+#         ))
+# MOVEMENT_MAP.append(create_movement(description="Capture LM XN550", frame=F19_XN550_Cap, actionlist=[ActionManipulator.MOVE_TO]))
+# MOVEMENT_MAP.append(create_movement(description="Open XN550 Drawer ", frame=F20_XN550_Draw, actionlist=[ActionManipulator.DRAWER_OPEN],
+#         h_approach=p[0.07,0,0.1,0,0,0],
+#         approach=p[0,0,0.1,0,0,0],
+#         target = p[0,0,0,0,0,d2r(90)],
+#         retract=p[0.07,0,0,0,0,0],
+#         h_retract=p[0.07,0,0.1,0,0,0]
+#         ))
+# MOVEMENT_MAP.append(create_movement(description="Close XN550 Drawer ", frame=F20_XN550_Draw, actionlist=[ActionManipulator.DRAWER_CLOSE],
+#         h_approach=p[0.07,0,0.1,0,0,0],
+#         approach=p[0.07,0,0,0,0,0],
+#         target = p[0,0,0,0,0,d2r(90)],
+#         retract=p[0,0,0.1,0,0,0],
+#         h_retract=p[0.07,0,0.1,0,0,0]
+#         ))
+# MOVEMENT_MAP.append(create_movement(description="Push XN550 Button ", frame=F21_XN550_Btn, actionlist=[ActionManipulator.PUSH],
+#         approach=p[0,0,0.15,0,0,0],
+#         retract=p[0,0,0.15,0,0,0]
+#         ))
+# MOVEMENT_MAP.append(create_movement(description="Capture Position 2 Input", frame=F_Cap_Input2,actionlist=[ActionManipulator.MOVE_TO]))
+
+
+

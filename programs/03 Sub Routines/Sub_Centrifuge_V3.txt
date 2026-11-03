@@ -1,0 +1,76 @@
+ Program
+   Variables Setup
+   BeforeStart
+     Centrifuge≔rpc_factory("xmlrpc","http://192.168.12.125:50002")
+     Action≔'What to do?'
+   Robot Program
+     Handling
+       'PreSettings'
+       '===================='
+       Switch Action
+         Case 5
+           Open
+             Centrifuge.open_hatch()
+         Case 6
+           Close
+             Centrifuge.close_hatch()
+         Case 7
+           Load
+             DEV_CEN_CmdRslt≔Centrifuge.move_rotor(DEV_CEN_PosRtr)
+             If JNT_S≠[0,0,0,0,0,0]
+               MoveJ
+                 JNT_S
+             MoveJ
+               If PSE_A_H≠p[0,0,0,0,0,0]
+                 PSE_A_H
+               PSE_A
+             If Centrifuge.posreached(DEV_CEN_PosRtr)
+               MoveL
+                 If PSE_T_H≠p[0,0,0,0,0,0]
+                   PSE_T_H
+                 PSE_T
+                   Until (tool_contact_detection)
+                     EOAT
+                       Gripper Move5mm (1)
+                     Force
+                       PSE_T
+                 EOAT
+                   Gripper Move15mm (1)
+                 If PSE_R_H≠p[0,0,0,0,0,0]
+                   PSE_R
+                   PSE_R_H
+                 Else
+                   PSE_R
+         Case 8
+           Unload
+             DEV_CEN_CmdRslt≔Centrifuge.move_rotor(DEV_CEN_PosRtr)
+             If JNT_S≠[0,0,0,0,0,0]
+               MoveJ
+                 JNT_S
+             MoveJ
+               If PSE_A_H≠p[0,0,0,0,0,0]
+                 PSE_A_H
+               PSE_A
+             EOAT
+               Gripper Move15mm (1)
+             If Centrifuge.posreached(DEV_CEN_PosRtr)
+               MoveL
+                 PSE_T
+                 EOAT
+                   Gripper Close (1)
+                 If PSE_R_H≠p[0,0,0,0,0,0]
+                   PSE_R
+                   PSE_R_H
+                 Else
+                   PSE_R
+         Case 9
+           Start
+             Centrifuge.start()
+         Case 10
+           Stop
+             Centrifuge.stop()
+       '===================='
+       PostSettings
+         OBJ_Picked≔rq_is_object_detected()
+         Action≔0
+         Action_Info≔""

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Containers Database</title>
+  <style>
+    body{
+      margin:0;
+      font-family:'Segoe UI',sans-serif;
+      color:#f5f5f5;
+      min-height:100vh;
+      background: linear-gradient(145deg, #1b2337 0%, #121827 40%, #0f1523 100%);
+      background-attachment:fixed;
+    }
+
+    a{
+      color:#8ec9ff;
+      text-decoration:none;
+    }
+
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      z-index: 1001;
+      box-sizing: border-box;
+    }
+
+    .menu-btn {
+      font-size: 24px;
+      cursor: pointer;
+      margin-right: 15px;
+      user-select: none;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 60px;
+      left: -260px;
+      width: 260px;
+      height: calc(100% - 60px);
+      background: #34495e;
+      color: white;
+      transition: 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 14px 20px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .sidebar a:hover {
+      background: #1abc9c;
+    }
+
+    .sidebar.active {
+      left: 0;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 60px);
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 999;
+    }
+
+    .overlay.active {
+      display: block;
+    }
+
+    .page{
+      padding: 90px 20px 20px;
+      box-sizing: border-box;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:2rem;
+    }
+
+    .sub{
+      color:#cbd5e1;
+      margin-bottom:18px;
+    }
+
+    .row{
+      display:flex;
+      gap:18px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+    }
+
+    .card{
+      background:rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.18);
+      border-radius:16px;
+      padding:18px;
+      box-shadow: 0 18px 28px rgba(0,0,0,0.45);
+      backdrop-filter: blur(14px);
+    }
+
+    .form-card{
+      min-width:320px;
+      max-width:380px;
+      flex:0 0 auto;
+    }
+    
+
+    .table-card{
+      flex:1 1 680px;
+      min-width:520px;
+    }
+
+    label{
+      display:block;
+      margin-top:10px;
+      color:#e2e8f0;
+      font-size:0.95rem;
+    }
+
+    input, select, textarea{
+      width:100%;
+      box-sizing:border-box;
+      padding:10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.20);
+      color:#f5f5f5;
+      margin-top:6px;
+    }
+
+    textarea{
+      min-height:90px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    button{
+      margin-top:12px;
+      padding:10px 14px;
+      border:none;
+      border-radius:12px;
+      background:#4b66ff;
+      color:white;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    button.secondary{
+      background:#6c757d;
+      font-weight:600;
+      margin-left:8px;
+    }
+
+    button.danger{
+      background:#ff4f5e;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:0.98rem;
+    }
+
+    th,td{
+      padding:10px 8px;
+      border-bottom:1px solid rgba(255,255,255,0.15);
+      text-align:left;
+    }
+
+    th{
+      color:#ffd34e;
+      font-weight:700;
+    }
+
+    .msg{
+      margin:8px 0 0;
+      color:#9ff0c5;
+    }
+
+    .err{
+      margin:8px 0 0;
+      color:#ff9aa5;
+    }
+
+    .actions button{
+      margin:0 8px 0 0;
+      padding:7px 10px;
+      border-radius:10px;
+    }
+
+    @media(max-width:900px){
+      .table-card{
+        min-width:0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="menu-btn" onclick="toggleMenu()">☰</span>
+    <h3 style="margin:0;">Containers Database</h3>
+  </div>
+
+  <div id="sidebar" class="sidebar">
+    <a href="/">Home</a>
+    <a href="/powders">Powders</a>
+    <a href="/datacode_registry">Datacode Registry</a>
+    <a href="/containers">Containers</a>
+    <a href="/spatulas">Spatulas</a>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+  <div class="page">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+      <div>
+        <h1>Containers Database</h1>
+        <div class="sub">All the dimensions of the Container and it's empty weight</div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="card form-card">
+        <h2 style="margin:0 0 6px;color:#ffd34e;">Add / Update</h2>
+
+        <label>ID (Container ID)
+          <input id="container_id" type="number" />
+        </label>
+
+        <label> Hc (Height with cap in mm)
+          <input id="height_w_cap_mm" type="number" step="0.1" />
+        </label>
+        
+        <label>H (Height w/o cap in mm)
+          <input id="height_wo_cap_mm" type="number" step="0.1" />
+        </label>
+
+        <label>Dn (Mouth inner diameter in mm)
+          <input id="mouth_diameter_mm" type="number" step="0.1" />
+        </label>
+
+        <label>Hns (Mouth-shoulder height in mm)
+          <input id="mouth_shoulder_height_mm" type="number" step="0.1" />
+        </label>
+
+        <label>L (Length of cubical container in mm)
+          <input id="length_mm" type="number" step="0.1" />
+        </label>
+
+        <label>D (Diameter of cylindrical container in mm)
+          <input id="diameter_mm" type="number" step="0.1" />
+        </label>
+
+        <label>E-W (Empty Weight of container in g)
+          <input id="empty_weight_g" type="number" step="0.1" />
+        </label>
+
+        <label>Shape
+          <select id="shape">
+            <option value="cylindrical">cylindrical</option>
+            <option value="cubical">cubical</option>
+          </select>
+        </label>
+        <div>
+          <button onclick="save()">Save</button>
+          <button class="secondary" onclick="clearForm()">Clear</button>
+        </div>
+        <hr style="margin:14px 0;opacity:0.2">
+
+        <h3 style="margin:6px 0;color:#ffd34e;">Import JSON</h3>
+
+        <input type="file" id="jsonFile">
+        <button onclick="uploadJSON()">Upload JSON</button>
+        <div id="msg" class="msg"></div>
+        <div id="err" class="err"></div>
+
+        <p class="sub" style="margin-top:12px;">
+          JSON endpoint: <a href="/containers.json">/containers.json</a>
+        </p>
+      </div>
+
+      <div class="card table-card">
+        <h2 style="margin:0 0 0;color:#ffd34e;">Current Containers</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Hc (mm)</th>
+              <th>H (mm)</th>
+              <th>Dn (mm)</th>
+              <th>Hns (mm)</th>
+              <th>L (mm)</th>
+              <th>D (mm)</th>
+              <th>E-W (g)</th>
+              <th>Shape</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="card img">
+        <h2 style="margin:0 0 12px;color:#ffd34e;">Container Notations</h2>
+        <div class="logo">
+          <img src="/static/Container_dimentions.png" alt="Container_D">
+        </div>
+      </div>
+
+      
+    </div>
+  </div>
+
+  <script>
+    function $(id){ return document.getElementById(id); }
+
+    function fillForm(r){
+      $('container_id').value = r.container_id ?? "";
+      $('height_w_cap_mm').value = r.height_w_cap_mm ?? "";
+      $('height_wo_cap_mm').value = r.height_wo_cap_mm ?? "";
+      $('mouth_diameter_mm').value = r.mouth_diameter_mm ?? "";
+      $('mouth_shoulder_height_mm').value = r.mouth_shoulder_height_mm ?? "";
+      $('length_mm').value = r.length_mm ?? 0;
+      $('diameter_mm').value = r.diameter_mm ?? 0;
+      $('empty_weight_g').value = r.empty_weight_g ?? 0;
+      $('shape').value = r.shape ?? "cylindrical";
+    }
+
+    function clearForm(){
+      $('container_id').value = "";
+      $('height_w_cap_mm').value = "";
+      $('height_wo_cap_mm').value = "";
+      $('mouth_diameter_mm').value = "";
+      $('mouth_shoulder_height_mm').value = "";
+      $('length_mm').value = 0;
+      $('diameter_mm').value = 0;
+      $('empty_weight_g').value = 0;
+      $('shape').value = "cylindrical";
+      $('msg').textContent = "";
+      $('err').textContent = "";
+    }
+
+    async function refresh(){
+      $('msg').textContent = "";
+      $('err').textContent = "";
+
+      try{
+        const res = await fetch('/containers.json');
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+
+        const rows = await res.json();
+        const tb = $('tbody');
+        tb.innerHTML = '';
+
+        for(const r of rows){
+          const tr = document.createElement('tr');
+
+          const editBtn = document.createElement('button');
+          editBtn.textContent = 'Edit';
+          editBtn.onclick = () => fillForm(r);
+
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.className = 'danger';
+          delBtn.onclick = () => del(r.container_id);
+
+          const actionsTd = document.createElement('td');
+          actionsTd.className = 'actions';
+          actionsTd.appendChild(editBtn);
+          actionsTd.appendChild(delBtn);
+
+          tr.innerHTML = `
+            <td>${r.container_id ?? ""}</td>
+            <td>${r.height_w_cap_mm ?? ""}</td>
+            <td>${r.height_wo_cap_mm ?? ""}</td>
+            <td>${r.mouth_diameter_mm ?? ""}</td>
+            <td>${r.mouth_shoulder_height_mm ?? ""}</td>
+            <td>${r.length_mm ?? ""}</td>
+            <td>${r.diameter_mm ?? ""}</td>
+            <td>${r.empty_weight_g ?? ""}</td>
+            <td>${r.shape ?? ""}</td>
+          `;
+          tr.appendChild(actionsTd);
+          tb.appendChild(tr);
+        }
+      }catch(e){
+        $('err').textContent = 'Failed to load containers: ' + e.message;
+      }
+    }
+
+    async function save(){
+      $('msg').textContent = '';
+      $('err').textContent = '';
+
+      try{
+        const payload = {
+          container_id: Number($('container_id').value),
+          height_w_cap_mm: Number($('height_w_cap_mm').value),
+          height_wo_cap_mm: Number($('height_wo_cap_mm').value),
+          mouth_diameter_mm: Number($('mouth_diameter_mm').value),
+          mouth_shoulder_height_mm: Number($('mouth_shoulder_height_mm').value),
+          length_mm: Number($('length_mm').value || 0),
+          diameter_mm: Number($('diameter_mm').value || 0),
+          empty_weight_g: Number($('empty_weight_g').value || 0),
+          shape: $('shape').value
+        };
+
+        if(isNaN(payload.container_id)){
+          throw new Error('container ID is required');
+        }
+
+        const r = await fetch('/api/containers/insert', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+
+        const j = await r.json();
+        if(j.ok){
+          $('msg').textContent = 'Saved';
+          clearForm();
+          await refresh();
+        }else{
+          $('err').textContent = j.error || 'Save failed';
+        }
+      }catch(e){
+        $('err').textContent = e.toString();
+      }
+    }
+
+    async function del(id){
+      if(!confirm('Delete this container?')) return;
+
+      $('msg').textContent = '';
+      $('err').textContent = '';
+
+      try{
+        const r = await fetch('/api/containers/delete', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({container_id:id})
+        });
+
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+
+        const j = await r.json();
+        if(j.ok){
+          $('msg').textContent = 'Deleted';
+          await refresh();
+        }else{
+          $('err').textContent = j.error || 'Delete failed';
+        }
+      }catch(e){
+        $('err').textContent = e.toString();
+      }
+    }
+
+    function toggleMenu() {
+      document.getElementById("sidebar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("active");
+    }
+    async function uploadJSON(){
+      $('msg').textContent = '';
+      $('err').textContent = '';
+
+      const file = $('jsonFile').files[0];
+
+      if(!file){
+        $('err').textContent = "Select a JSON file";
+        return;
+      }
+
+      try{
+        const text = await file.text();
+        const jsonData = JSON.parse(text);
+
+        const res = await fetch('/api/import/containers', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(jsonData)
+        });
+
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+
+        const j = await res.json();
+
+        if(!j.ok){
+          throw new Error(j.error || 'Import failed');
+        }
+
+        $('msg').textContent = `Imported ${j.inserted} items`;
+
+        if(j.errors && j.errors.length){
+          console.warn(j.errors);
+          $('err').textContent = `Imported ${j.inserted} items, with ${j.errors.length} row(s) skipped`;
+        }
+
+        await refresh();
+
+      }catch(e){
+        $('err').textContent = e.toString();
+      }
+    }
+    document.querySelectorAll(".sidebar a").forEach(link => {
+      link.addEventListener("click", () => {
+        document.getElementById("sidebar").classList.remove("active");
+        document.getElementById("overlay").classList.remove("active");
+      });
+    });
+
+    refresh();
+  </script>
+</body>
+</html>

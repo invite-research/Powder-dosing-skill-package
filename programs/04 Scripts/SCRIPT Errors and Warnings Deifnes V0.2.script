@@ -1,0 +1,148 @@
+
+#*****************************************************
+# customer          :   UK Essen
+# project name      :   P1132
+#****************************************************
+# controller        :
+# software          :
+#****************************************************
+# author            :   E.Petrichenko
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   centrifuge actions for the application
+# version:      	:   0.1
+# created           :   22.08.2024
+# updated           :
+#****************************************************
+# modifications     :
+#
+# date              :
+# name              :
+# reason            :
+#****************************************************
+
+
+#################################### VARIABLES DEFINITIONS ###################################
+
+ERROR_POSE_NOT_REACHABLE = 1002
+ERROR_ROBOT_ARM_NOT_IN_HOME_POSE = 1006
+ERROR_NO_OBJECT_TO_PICK = 1010
+ERROR_NOT_DOCKED = 2003
+ERROR_NOT_REACHABLE_TARGET = 2007
+ERROR_CHARGING_NOT_STARTED = 2008
+ERROR_AMR_WRONG_MODE = 2009
+ERROR_UNKNOWN_POSE = 2010
+ERROR_NO_LANDMARK = 3002
+ERROR_WRONG_ORDER = 4002
+ERROR_CENTRIFUGE_CONNECTION = 5001
+ERROR_CENTRIFUGE = 5002
+ERROR_CANNOT_OPEN_HATCH = 5003
+ERROR_CANNOT_CLOSE_HATCH = 5004
+ERROR_CANNOT_ROTATE = 5005
+ERROR_CANNOT_START = 5006
+ERROR_WRONG_KEY_POSE = 5007
+ERROR_MISSIING_CENTRACK = 5008
+
+WARNING_POSE_NOT_REACHABLE = 1002
+WARNING_BATTERY_LEVEL = 2002
+WARNING_NOT_REACHABLE_TARGET = 2007
+
+
+ERROR = struct(
+    FLAG = False,
+    ID = 0,
+    MSG = "")
+
+WARNING = struct(
+    FLAG = False,
+    ID = 0,
+    MSG = "")
+        
+
+#################################### FUNCTIONS ###################################
+
+def set_error(error_id):
+    ERROR.ID = error_id
+    if (ERROR.ID == 0):
+        ERROR.FLAG = False
+        ERROR.MSG = ""
+    else:
+        ERROR.FLAG = True
+        if(ERROR.ID == ERROR_POSE_NOT_REACHABLE):
+            ERROR.MSG = "Pose is not reachable"
+        elif(ERROR.ID == ERROR_NO_OBJECT_TO_PICK):
+            ERROR.MSG = "No object to pick" 
+        elif(ERROR.ID == ERROR_NO_LANDMARK):
+            ERROR.MSG = "No landmark detected"   
+        elif(ERROR.ID == ERROR_ROBOT_ARM_NOT_IN_HOME_POSE):
+            ERROR.MSG = "Robot arm cannot go to home pose"    
+        elif(ERROR.ID == ERROR_AMR_WRONG_MODE):
+            ERROR.MSG = "AMR is in the wrong mode" 
+        elif(ERROR.ID == ERROR_NOT_DOCKED):
+            ERROR.MSG = "Could not dock to the charger" 
+        elif(ERROR.ID == ERROR_NOT_REACHABLE_TARGET):
+            ERROR.MSG = "Could not reach the target" 
+        elif(ERROR.ID == ERROR_CHARGING_NOT_STARTED):
+            ERROR.MSG = "Could not start charging" 
+        elif(ERROR.ID == ERROR_UNKNOWN_POSE):
+            ERROR.MSG = "Unknown navigation target" 
+        elif(ERROR.ID == ERROR_CANNOT_OPEN_HATCH):
+            ERROR.MSG = "Centrifuge Cannot open the hatch"
+        elif(ERROR.ID == ERROR_CENTRIFUGE_CONNECTION):
+            ERROR.MSG = "Cannot reach centrifuge"
+        elif (ERROR.ID == ERROR_CANNOT_CLOSE_HATCH):
+            ERROR.MSG = "Centrifuge Cannot close the hatch"
+        elif (ERROR.ID == ERROR_CANNOT_START):
+            ERROR.MSG = "Centrifuge Cannot start"
+        elif (ERROR.ID == ERROR_CANNOT_ROTATE):
+            ERROR.MSG = "Centrifuge Cannot rotate the rotor"
+        elif (ERROR.ID == ERROR_WRONG_ORDER):
+            ERROR.MSG = "Wrong parameter was recieved"
+        elif (ERROR.ID == ERROR_CENTRIFUGE):
+            ERROR.MSG = "Centrifuge is in Error"
+        elif (ERROR.ID == ERROR_WRONG_KEY_POSE):
+            ERROR.MSG = "Key is in the wrong position"
+        elif(ERROR.ID == ERROR_MISSIING_CENTRACK):
+            ERROR.MSG = "Missing rack for centrifuge set"
+        else:
+            ERROR.MSG = "Unknown code"
+        end
+        textmsg("ERROR:",ERROR)
+    end
+end
+
+def set_warning(warning_id):
+    WARNING.ID = warning_id
+    if (WARNING.ID == 0):
+        WARNING.FLAG = False
+        WARNING.MSG = ""
+    else:
+        WARNING.FLAG = True
+        if(WARNING.ID == WARNING_POSE_NOT_REACHABLE):
+            WARNING.MSG = "Pose is not reachable"
+        elif(WARNING.ID == WARNING_BATTERY_LEVEL):
+            WARNING.MSG = "Batery level dropped to a certain level" 
+        elif(WARNING.ID == WARNING_NOT_REACHABLE_TARGET):
+            WARNING.MSG = "Not reachable location of AMR" 
+        else:
+            WARNING.MSG = "Unknown code"
+        end
+    end
+end
+
+
+def reset_error():
+  ERROR.ID = 0
+  ERROR.FLAG = False
+  ERROR.MSG = ""
+end
+
+
+def reset_warning():
+    WARNING.ID = 0
+    WARNING.FLAG = False
+    WARNING.MSG = ""
+  end

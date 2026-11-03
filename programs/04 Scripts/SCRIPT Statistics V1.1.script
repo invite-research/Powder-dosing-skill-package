@@ -1,0 +1,77 @@
+#*****************************************************
+# customer          :   tbd
+# project name      :   tbd
+#****************************************************
+# controller        :   
+# software          :   
+#****************************************************
+# author            :   P. Koehnke (+49 1628859904; p.koehnke@unitedrobotics.group)
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   statistics script, which tracks the times in different PackML states and let you count objects
+# version:      	:   1.0
+# created           :   20.11.2023
+# updated           :   
+#****************************************************
+# modifications     :   
+#
+# date              :   
+# name              :   
+# reason            :   
+#****************************************************
+
+# to save the times persistently, these variables must be defined in the installation file of the robot
+
+# ===== object counters =====
+def count_up(counters, idx, by):
+    counters[idx] = counters[idx] + by
+    return counters
+end
+
+def count_total(counters):
+    local i = 0
+    local total = 0
+    while (i<length(counters)):
+        total = total + counters[i]
+        i = i + 1
+    end
+    return total
+end
+# ==========
+
+# ===== Times =====
+thread Pml_Timer_Thread():
+    # STATE_Times is a list of all time values in seconds
+    while (True):
+        STATE_Times[STATE-1] = STATE_Times[STATE-1] + get_steptime()
+        sync()
+    end
+end
+
+thread_timer_handler = run Pml_Timer_Thread()
+
+def get_time(timer, format="dd/hh/mm/ss"):
+    # give the time in seconds
+    # the function will return the given time as string in the predefined format
+    local days = floor(timer/86400)
+    local hours = floor((timer%86400)/3600)
+    local minutes = floor((timer%3600)/60)
+    local seconds = floor(timer%60)
+    return str_cat(str_cat(str_cat(str_cat(str_cat(str_cat(to_str(days), "/"), to_str(hours)), "/"), to_str(minutes)), "/"), to_str(seconds))
+end
+
+def set_timer(time, format="dd/hh/mm/ss"):
+    # give the time as string
+    # the function will return the corresponding seconds summed up
+    local days_idx = str_find(time, "/", 0)
+    local hours_idx = str_find(time, "/", days_idx+1)
+    local minutes_idx = str_find(time, "/", hours_idx+1)
+    local days = to_num(str_sub(time, 0, days_idx))
+    local hours = to_num(str_sub(time, days_idx+1, hours_idx-days_idx-1))
+    local minutes = to_num(str_sub(time, hours_idx+1, minutes_idx-hours_idx-1))
+    local seconds = to_num(str_sub(time, minutes_idx+1, length(time)-minutes_idx))
+    return (days*86400 + hours*3600 + minutes*60 + seconds)
+end

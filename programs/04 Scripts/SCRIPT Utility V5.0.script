@@ -1,0 +1,273 @@
+#*****************************************************
+# customer          :   tbd
+# project name      :   tbd
+#****************************************************
+# controller        :   
+# software          :   
+#****************************************************
+# author            :   P. Koehnke (+49 1628859904; p.koehnke@unitedrobotics.group)
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   utility programs for the application
+# version:      	:   3.1
+# created           :   30.01.2023
+# updated           :   
+#****************************************************
+# modifications     :   get_tool_free_pose_2(), get_index_from_list()
+#
+# date              :   05.01.2024
+# name              :   PK
+# reason            :   
+#****************************************************
+
+def found_in_matrix(data, req_id, req_idx):
+    local id = -1
+    local dimensions = size(data)
+    local loop_dataset = 0
+
+    while (id != req_id and loop_dataset < dimensions[0]):
+        id = data[loop_dataset, 0]
+        if (id == req_id):
+            return data[loop_dataset, req_idx]
+        else:
+            loop_dataset = loop_dataset + 1
+        end
+    end
+end
+
+def found_in_list(value, list):
+    local idx = 0
+
+    while (idx < length(list)):
+        if (value == list[idx]):
+            return True
+        end
+        idx = idx + 1
+    end
+    return False
+end
+
+def get_index_from_list(list, value=-1):
+    local idx = 0
+
+    while (idx < length(list)):
+        if (value == -1):
+            if (list[idx] != 0):
+                return idx
+            end
+        else:
+            if (list[idx] == value):
+                return idx
+            end
+        end
+        idx = idx + 1
+    end
+    return -1
+end
+
+def pose_RPY2RotVec(pose):
+    local rotvec = rpy2rotvec([d2r(pose[3]),d2r(pose[4]),d2r(pose[5])])
+    return p[pose[0],pose[1],pose[2],rotvec[0],rotvec[1],rotvec[2]]
+end
+
+def pose_RotVec2RPY(pose):
+    local rpy = rotvec2rpy([pose[3],pose[4],pose[5]])
+    return p[pose[0],pose[1],pose[2],r2d(rpy[0]),r2d(rpy[1]),r2d(rpy[2])]
+end
+
+def swivel(frame_ref, angles=[0,0,0], pose=p[0,0,0,0,0,0]):
+
+    local rpy_ref = [0,0,0]
+    local rpy_new = [0,0,0]
+    local rotvec_new = [0,0,0]
+    local pose_from = p[0,0,0,0,0,0]
+    local pose_to = p[0,0,0,0,0,0]
+    local i = 0
+
+    if (pose == p[0,0,0,0,0,0]):
+        pose_to = pose_trans(pose_inv(frame_ref), get_actual_tcp_pose())
+    else:
+        pose_to = pose
+    end
+
+    rpy_ref = rotvec2rpy(frame_ref[3], frame_ref[4], frame_ref[5])
+
+    while (i < 3):
+        rpy_new[i] = rpy_ref[i] + d2r(angles[i])
+        i = i + 1
+    end
+
+    rotvec_new = rpy2rotvec(rpy_new)
+    pose_from = p[0,0,0,rotvec_new[0],rotvec_new[1],rotvec_new[2]]
+    pose_to = p[pose_to[0], pose_to[1], pose_to[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+
+    return pose_trans(pose_from, pose_to)
+end
+
+def get_random_pose(pose_ref, mode="", range_max=[0,0,0]):
+    # modi: "cubic", "rotation"
+    # getting a random pose in the x/y-plane. range can be set for each 
+    # translation and rotation.
+    local rpy_random = [0,0,0]
+    local rotvec_random = [0,0,0]
+    local pose_random = pose_ref
+    local i = 0
+
+    if (mode == "cubic"):
+        # cubic mode: random pose takes only x, y and z
+        i = 0
+        while(i<3):
+            pose_random[i] = pose_ref[i] + range_max[i] * (random() - 0.5)
+            i = i + 1
+        end
+        return pose_random
+
+    elif (mode == "rotation"):
+        i = 0
+        while(i<3):
+            rpy_random[i] = d2r(range_max[i]) * (random() - 0.5)
+            i = i + 1
+        end
+        rotvec_random = rpy2rotvec(rpy_random)
+        pose_random = pose_trans(p[0,0,0,rotvec_random[0],rotvec_random[1],rotvec_random[2]], pose_ref)
+        return pose_random
+        
+    else:
+        # unknown mode, return pose_ref
+        return pose_ref
+    end
+end
+
+def get_pattern_pos_rectangle(counter, direction, patternsize, patterninc=[0,0], patternwidth=[0,0]):
+    # defines the position inside a rectangular pattern
+    # patternsize describes, how many objects are in x-direction and how many in y-direction [x, y]
+    # patternwidth will give the total length of each direction [x, y]
+    local X_Fac = 0
+    local Y_Fac = 0
+    local max = patternsize[0]*patternsize[1]
+
+    if (1>counter or counter>max):
+        counter = 1
+    end
+
+    if (direction == "Y" or direction == "y"):
+        X_Fac = floor((counter - 1) / patternsize[1])
+        Y_Fac = (counter - 1) % patternsize[1]
+    elif (direction == "X" or direction == "x"):
+        X_Fac = (counter - 1) % patternsize[0]
+        Y_Fac = floor((counter - 1) / patternsize[0])
+    end
+
+    if patternwidth != [0,0]:
+        patterninc = [patternwidth[0]/(patternsize[0]-1), patternwidth[1]/(patternsize[1]-1)]
+    end
+
+    return p[X_Fac*patterninc[0], Y_Fac*patterninc[1],0,0,0,0]
+end
+
+def get_pattern_pos_circle(counter, radius, angle, direction, pattern, patternsize=[0,0]):
+    # get the patternpos for a circular pattern through a counter
+    # need the radius and the angle in radiants
+    local X_Fac = 0
+    local Y_Fac = 0
+    local rad_bow = 0
+    local radius_cal = 0
+    local ref = p[0,0,0,0,0,0]
+
+    if (direction == "Y" or direction == "y"):
+        X_Fac = floor((counter - 1) / pattern[1])
+        Y_Fac = (counter - 1) % pattern[1]
+    elif (direction == "X" or direction == "x"):
+        X_Fac = (counter - 1) % pattern[0]
+        Y_Fac = floor((counter - 1) / pattern[0])
+    end
+
+    # the opening angle will be calculated in x-direction
+    # works only between -90 and 90 degree
+    rad_bow = -angle/(pattern[0]-1) * X_Fac + angle/2
+
+    if (counter%2 == 0):
+        radius_cal = radius - patternsize[1]/(pattern[1])
+    else:
+        radius_cal = radius + patternsize[1]/(pattern[1])
+    end
+    ref = p[0, radius_cal, 0, 0, 0, 0]
+
+    return p[ref[0]*cos(rad_bow)-ref[1]*sin(rad_bow), (ref[0]*sin(rad_bow)+ref[1]*cos(rad_bow))-radius,0,0,0,0]
+end
+
+def get_plc_reg(mod_sig_name):
+	return integer_to_binary_list(modbus_get_signal_status(mod_sig_name))
+end
+
+def set_plc_reg(mod_sig_name, mod_sig_list):
+	modbus_set_output_register(mod_sig_name,binary_list_to_integer(mod_sig_list),False)
+end
+
+def check_decapping(offset=0, timeout=5):
+    # checken, ob der Deckel schon ab ist
+    local start = get_actual_tcp_pose()
+    local current_offset = 0
+    local timecounter = 0
+    while (current_offset < offset):
+        current_offset = pose_dist(start, get_actual_tcp_pose())
+        timecounter = timecounter + 1
+        if (timecounter*0.5 == timeout):
+            break
+        end
+        sleep(0.5)
+    end
+    stopl(0.5)
+end
+
+def check_capping(torque=0):
+    # checken, wann der Deckel verschraubt ist
+    force_mode(get_actual_tcp_pose(), [0,0,1,0,0,0], [0,0,-2.0,0,0,0], 2, [0,0,0.100,0,0,0])
+end
+
+def is_reachable(frame, poses, offsets=[0,0,0]):
+    idx = 0 
+    pose = p[0,0,0,0,0,0]
+
+    while (idx < length(poses)):
+        pose = poses[idx]
+        pose[0] = pose[0] + offsets[0]
+        pose[1] = pose[1] + offsets[1]
+        pose[2] = pose[2] + offsets[2]
+
+        if (not get_inverse_kin_has_solution(pose_trans(frame, pose))):
+            textmsg(str_cat(str_cat("Pose ", to_str(idx + 1)), " is not reachable"))
+            return False
+        else:
+            idx = idx + 1
+        end
+    end
+    return True
+end
+
+def is_within_limits(frame, poses, offsets=[0,0,0]):
+    idx = 0 
+    pose = p[0,0,0,0,0,0]
+
+    while (idx < length(poses)):
+        pose = poses[idx]
+        pose[0] = pose[0] + offsets[0]
+        pose[1] = pose[1] + offsets[1]
+        pose[2] = pose[2] + offsets[2]
+
+        if is_reachable(frame=frame, poses=poses, offsets=offsets):
+            if (not is_within_safety_limits(get_inverse_kin(pose_trans(frame, pose), get_actual_joint_positions()))):
+                textmsg(str_cat(str_cat("Pose ", to_str(idx + 1)), "is out of joint limits"))
+                return False
+            else:
+                idx = idx + 1
+            end
+        else:
+            return False
+        end
+    end
+    return True
+end

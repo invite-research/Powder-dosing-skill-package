@@ -1,0 +1,197 @@
+# PackML
+
+IO_ADDRESS_CMD_STOP = 1
+IO_ADDRESS_CMD_RESET = 7
+IO_ADDRESS_CMD_START = 0
+
+EXT_ADDRESS_CMD_STOP = 0
+EXT_ADDRESS_CMD_RESET = 1
+EXT_ADDRESS_CMD_START = 2
+EXT_ADDRESS_CMD_HOLD = 3
+EXT_ADDRESS_CMD_UNHOLD = 4
+EXT_ADDRESS_CMD_SUSPEND = 5
+EXT_ADDRESS_CMD_UNSUSPEND = 6
+EXT_ADDRESS_CMD_ABORT = 7
+EXT_ADDRESS_CMD_CLEAR = 8
+EXT_ADDRESS_FNC_FREEDRIVE = 9
+
+global EXT_CtrlCmd = [False, False, False, False, False, False, False, False, False, False]
+
+EXT_Control_by = "uGO"
+
+global CMD_Abort = False
+global CMD_Clear = False
+global CMD_Stop = False
+global CMD_Reset = False
+global CMD_Start = False
+global CMD_Hold = False
+global CMD_Unhold = False
+global CMD_Suspend = False
+global CMD_Unsuspend = False
+global FNC_Freedrive = False
+
+CND_Suspend = False         # condition for suspend command
+CND_Unsuspend = False       # condition for unsuspend command
+
+thread Get_Pml_Command():
+    while (True):
+        if (EXT_Control_by == "uGO"):
+            EXT_CtrlCmd = ugo_event_controller()
+        elif (EXT_Control_by == "Leitsystem"):
+            # EXT_CtrlCmd = Leitsystem
+        end
+        # ---------- Abort ---------- #
+        if ((not STATE == 15) and (not STATE == 16) and EXT_CtrlCmd[EXT_ADDRESS_CMD_ABORT]):
+            CMD_Abort = True
+            CMD_Stop = False
+        elif ((STATE == 17) and not EXT_CtrlCmd[EXT_ADDRESS_CMD_ABORT]):
+            CMD_Abort = False
+        end
+        # ---------- Stop ---------- #
+        if ((not STATE == 1) and (not STATE == 2) and (get_standard_digital_in(IO_ADDRESS_CMD_STOP) or EXT_CtrlCmd[EXT_ADDRESS_CMD_STOP])):
+            CMD_Stop = True
+            if get_standard_digital_in(IO_ADDRESS_CMD_STOP):
+                log_state("Stop command by pushbutton")
+            elif EXT_CtrlCmd[EXT_ADDRESS_CMD_STOP]:
+                log_state("Stop command by external control")
+            end
+        elif (STATE == 2) and (not get_standard_digital_in(IO_ADDRESS_CMD_STOP)) and (not EXT_CtrlCmd[EXT_ADDRESS_CMD_STOP]):
+            CMD_Stop = False  
+        end
+        CMD_Hold = (STATE == 6 or STATE == 10) and not CMD_Stop and (ERROR.FLAG or EXT_CtrlCmd[EXT_ADDRESS_CMD_HOLD])
+        CMD_Reset = (STATE == 2 or STATE == 8) and not CMD_Stop and (read_input_boolean_register(5) or EXT_CtrlCmd[EXT_ADDRESS_CMD_RESET])
+        CMD_Start = (STATE == 4) and not CMD_Stop and (get_standard_digital_in(IO_ADDRESS_CMD_START) or EXT_CtrlCmd[EXT_ADDRESS_CMD_START])
+        CMD_Unhold = (STATE == 10) and not CMD_Stop and (get_standard_digital_in(IO_ADDRESS_CMD_START) or EXT_CtrlCmd[EXT_ADDRESS_CMD_UNHOLD])
+        CMD_Suspend = (STATE == 6) and not CMD_Stop and (CND_Suspend or EXT_CtrlCmd[EXT_ADDRESS_CMD_SUSPEND])
+        CMD_Unsuspend = (STATE == 13) and not CMD_Stop and (CND_Unsuspend or EXT_CtrlCmd[EXT_ADDRESS_CMD_UNSUSPEND])
+        CMD_Clear = (STATE == 16) and EXT_CtrlCmd[EXT_ADDRESS_CMD_CLEAR]
+        FNC_Freedrive = (STATE == 10) and EXT_CtrlCmd[EXT_ADDRESS_FNC_FREEDRIVE]
+        sleep(0.1)
+    end
+end
+
+thread_pml_command_handler = run Get_Pml_Command()
+
+def command_manager(external_control="uGO", cond_suspend=False, cond_unsuspend=False):
+
+    EXT_Control_by = external_control
+    CND_Suspend = cond_suspend
+    CND_Unsuspend = cond_unsuspend
+
+    if (CMD_Abort and STATE != 15 and STATE != 16):
+        STATE = 15
+    elif (CMD_Stop and STATE != 1 and STATE != 2):
+        STATE = 1
+    end
+    return False
+end
+
+def stopping():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_stopping()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def resetting():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_resetting()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def starting():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_starting()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def holding():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_holding()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def unholding():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_unholding()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def suspending():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_suspending()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def unsuspending():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_unsuspending()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def completing():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_completing()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def aborting():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_aborting()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end
+
+def clearing():
+    if (EXT_Control_by == "uGO"):
+        return ugo_pml_clearing()
+    elif (EXT_Control_by == "Leitsystem"):
+        # EXT_CtrlCmd = Leitsystem
+    else:
+        return True
+    end
+    return False
+end

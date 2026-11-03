@@ -1,0 +1,192 @@
+
+#****************************************************
+# product           : uLabMobile
+# language          : urscript
+#****************************************************
+# author            :   D.Kreugel
+# Copyright (c)     :   United Robotics Group
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# description       :   led controls for uLabMobile
+# version:      	:   1.2
+# created           :   09.08.2024
+# updated           :   
+#****************************************************
+# modifications     :   changed conditions to switch lights (not only pml state but also charging state)
+#
+# date              :   09.08.2024
+# name              :   PK
+# reason            :   due to the change in project P1117, we run to often through every state. This leads to to much colorchanges
+#****************************************************
+
+# HARDWARE CONFIGURATION
+LED_GREEN = struct(type="CO",id=5)
+LED_RED = struct(type="CO",id=6)
+LED_BLUE = struct(type="CO",id=7)
+
+def set_output(type,id,state=True):
+    if(type=="CO"):
+        set_configurable_digital_out(id,state)
+    elif(type=="DO"):
+        set_standard_digital_out(id,state)
+    end
+end
+
+def led_red_on():
+    set_output(LED_RED.type,LED_RED.id,True)
+end
+
+def led_red_off():
+    set_output(LED_RED.type,LED_RED.id,False)
+end
+
+def led_green_on():
+    set_output(LED_GREEN.type,LED_GREEN.id,True)
+end
+
+def led_green_off():
+    set_output(LED_GREEN.type,LED_GREEN.id,False)
+end
+
+def led_blue_on():
+    set_output(LED_BLUE.type,LED_BLUE.id,True)
+end
+
+def led_blue_off():
+    set_output(LED_BLUE.type,LED_BLUE.id,False)
+end
+
+
+# COLOR MIX
+def color_blue():
+    led_blue_on()
+    led_green_off()
+    led_red_off()
+end
+
+def color_red():
+    led_blue_off()
+    led_green_off()
+    led_red_on()
+end
+
+def color_green():
+    led_blue_off()
+    led_green_on()
+    led_red_off()
+end
+
+def color_yellow():
+    led_blue_off()
+    led_green_on()
+    led_red_on()
+end
+
+def color_lightblue():
+    led_blue_on()
+    led_green_on()
+    led_red_off()
+end
+
+def color_violet():
+    led_blue_on()
+    led_green_off()
+    led_red_on()
+end
+
+def color_white():
+    led_blue_on()
+    led_green_on()
+    led_red_on()
+end
+
+def led_off():
+    led_blue_off()
+    led_green_off()
+    led_red_off()
+end
+
+# COLOR FOR STATES
+thread Thread_Lights():
+    while(True):
+        # Stopping
+        if (STATE == 1):
+            color_red()
+            sleep(0.5)
+            led_off()
+        # Stopped
+        elif (STATE == 2):
+            color_red()
+        # Resetting
+        # elif (STATE == 3):
+        #     color_white()
+        #     sleep(0.5)
+        #     led_off()
+        # Idle
+        elif (AMR_Charging):
+            color_white()
+        # Starting
+        # elif (STATE == 5):
+        #     color_lightblue()
+        #     sleep(0.5)
+        #     led_off()
+        # Execute
+        # elif (STATE == 6):
+        #     color_lightblue()
+        # Completing
+        # elif (STATE == 7):
+        #     color_green()
+        #     sleep(0.5)
+        #     led_off()
+        # # Complete
+        # elif (STATE == 8):
+        #     color_green()
+        # Holding
+        elif (STATE == 9):
+            color_red()
+            sleep(0.5)
+            led_off()
+        # Held
+        elif (STATE == 10):
+            color_red()
+        # Unholding
+        elif (STATE == 11):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+        # Suspending
+        elif (STATE == 12):
+            color_blue()
+            sleep(0.5)
+            led_off()
+        # Suspended
+        elif (STATE == 13):
+            color_blue()
+        # Unsuspending
+        elif (STATE == 14):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+        # Aborting
+        elif (STATE == 15):
+            color_red()
+            sleep(0.5)
+            led_off()
+        # Aborted
+        elif (STATE == 16):
+            color_red()
+        # Clearing
+        elif (STATE == 17):
+            color_yellow()
+            sleep(0.5)
+            led_off()
+        else:
+            color_lightblue()
+        end
+        sleep(0.5)
+    end
+end
+
+thread_lights_handler = run Thread_Lights()

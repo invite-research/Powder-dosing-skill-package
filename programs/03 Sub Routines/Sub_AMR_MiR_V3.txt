@@ -1,0 +1,185 @@
+ Program
+   Variables Setup
+   BeforeStart
+     Manual
+       Home (Safe)
+       STATE≔'state'
+       If STATE≟6
+         Action≔'what'
+         If Action≟52
+           AMR_PosTarget≔'target'
+   Robot Program
+     PreSettings
+       AMR_TargetList≔[1,2,3,4,5,6,7,21,22,23,24,31,32,33,34,35,36,37,38,41]
+       AMR_Done≔ False 
+       AMR_PosActual≔T2O_Current_Pos
+       AMR_Attemps≔T2O_Nav_Attemps
+       AMR_Battery≔MiR_Battery_Lvl
+       AMR_Charging≔(T2O_Charging≟1)
+       AMR_Position≔struct(position_identifier=T2O_Current_Pos, x1=MiR_Position_X1, x2=MiR_Position_X2, y1=MiR_Position_Y1, y2=MiR_Position_Y2, theta1=MiR_Theta_1, theta2=MiR_Theta_2) 
+       If MiR_Mode≠7
+         Error
+           set_error(ERROR_AMR_WRONG_MODE)
+         AMR_Done≔ True 
+     '=========='
+     Switch STATE
+       Case 1
+         stopping
+           If T2O_Done≟1 and O2T_Acknowledge≟0
+             Set O2T_Acknowledge=1
+           Set MiR_CMD_Stop=On
+           AMR_Position.position_identifier = 0
+           AMR_Done≔ True 
+       Case 2
+         stopped
+           If MiR_State≠3 and MiR_State≠5
+             Set MiR_CMD_Stop=Off
+       Case 3
+         resetting
+           Set O2T_Mis_Main=Off
+           Set O2T_Mis_Charge=Off
+           If MiR_Mis_Queue>0
+             Set MiR_CMD_Clear_Q=On
+             Wait MiR_Mis_Queue≟0
+             Set MiR_CMD_Clear_Q=Off
+           If MiR_Error_ID≠0
+             Set MiR_CMD_Clear_E=On
+             Wait MiR_Error_ID≟0
+             Set MiR_CMD_Clear_E=Off
+           Set O2T_Action=0
+           Set O2T_Acknowledge=0
+           Set O2T_Target_Pos=0
+           Set O2T_Footprint=0
+           Set O2T_ProtectOff=0
+           Set O2T_Dock=0
+           AMR_Attemps≔0
+           AMR_PosTarget≔0
+           AMR_Step≔0
+           AMR_AtTarget≔ False 
+           If MiR_State≟4 or MiR_State≟3 or MiR_State≟10
+             AMR_Done≔ True 
+       Case 5
+         starting
+           If MiR_State≟4
+             Set MiR_CMD_Start=On
+             Wait MiR_State≠4
+             Set MiR_CMD_Start=Off
+             AMR_Done≔ True 
+           ElseIf MiR_State≟10
+             'MiR in protective stop. Wait'
+             AMR_Done≔ True 
+           ElseIf MiR_State≟3
+             AMR_Done≔ True 
+       Case 6
+         execute
+           AMR_AtTarget≔(AMR_PosActual≟AMR_PosTarget)
+           Switch AMR_Step
+             Case 0
+               If  not AMR_AtTarget
+                 AMR_Step≔1
+               Else
+                 AMR_Done≔ True 
+             Case 1
+               general Settings
+                 Set O2T_Acknowledge=0
+               check for error
+                 If OBJ_Picked and MiR_State≟10
+                   Error
+                     set_error(ERROR_ROBOT_ARM_NOT_IN_HOME_POSE)
+                   Action≔0
+                 ElseIf  not found_in_list(AMR_PosTarget, AMR_TargetList)
+                   Error
+                     set_error(ERROR_UNKNOWN_POSE)
+                   Action≔0
+               If MiR_State≟3
+                 Set MiR_CMD_Start=Off
+                 Switch Action
+                   Case 51
+                     Charge
+                       'trigger the charging mission'
+                       'target pos is predefined'
+                       Set O2T_Footprint=0
+                       Set O2T_Action=1
+                     If MiR_Mis_Queue≟0
+                       Set O2T_Mis_Charge=On
+                       Wait MiR_Mis_Queue≥1
+                       Set O2T_Mis_Charge=Off
+                   Case 52
+                     Navigate
+                       'trigger the standard missoin'
+                       Set O2T_Footprint=AMR_FootprintID
+                       Set O2T_Target_Pos=AMR_PosTarget
+                       Set O2T_Action=2
+                     If MiR_Mis_Queue≟0
+                       Set O2T_Mis_Main=On
+                       Wait MiR_Mis_Queue≥1
+                       Set O2T_Mis_Main=Off
+               ElseIf MiR_State≟4
+                 Set MiR_CMD_Start=On
+               ElseIf MiR_State≟5
+                 AMR_Step≔2
+               ElseIf MiR_State≟10
+                 'AMR still in safeguard stop'
+             Case 2
+               acknowledge handshake
+                 If T2O_Done≟1 and O2T_Acknowledge≟0
+                   Set O2T_Acknowledge=1
+                 ElseIf T2O_Done≟0 and O2T_Acknowledge≟1
+                   Set O2T_Acknowledge=0
+                   AMR_AtTarget≔(AMR_PosActual≟AMR_PosTarget)
+                   AMR_Done≔ True 
+           translate errors
+             If AMR_Done
+               Switch T2O_Error_ID
+                 Case 2003
+                   error
+                     set_error(ERROR_NOT_DOCKED)
+                 Case 2007
+                   error
+                     set_error(ERROR_NOT_REACHABLE_TARGET)
+                 Case 2008
+                   error
+                     set_error(ERROR_CHARGING_NOT_STARTED)
+       Case 7
+         completing
+           If MiR_Mis_Queue>0
+             Set MiR_CMD_Abort=On
+             Wait MiR_Mis_Queue≟0
+             Set MiR_CMD_Abort=Off
+           If MiR_State≟3 or MiR_State≟10
+             AMR_Done≔ True 
+       Case 9
+         holding
+           Set MiR_CMD_Abort=On
+           If MiR_State≟3 or MiR_State≟10
+             Set MiR_CMD_Abort=Off
+             AMR_Done≔ True 
+       Case 11
+         unholding
+           Set MiR_CMD_Start=On
+           If MiR_State≠4
+             Set MiR_CMD_Start=Off
+             AMR_Step≔0
+             AMR_Done≔ True 
+       Case 12
+         suspending
+           'none'
+       Case 14
+         unsuspending
+           'none'
+       Case 15
+         aborting
+           Set MiR_CMD_Abort=On
+           Wait MiR_State≟3
+           Set MiR_CMD_Abort=Off
+       Case 17
+         clearing
+           If MiR_Error_ID≠0
+             Set MiR_CMD_Clear_E=On
+             Wait MiR_Error_ID≟0
+             Set MiR_CMD_Clear_E=Off
+           If MiR_Error_ID≟0
+             AMR_Done≔ True 
+     '=========='
+     PostSettings
+       AMR_Position≔struct(position_identifier=T2O_Current_Pos, x1=MiR_Position_X1, x2=MiR_Position_X2, y1=MiR_Position_Y1, y2=MiR_Position_Y2, theta1=MiR_Theta_1, theta2=MiR_Theta_2) 

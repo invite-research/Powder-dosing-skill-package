@@ -1,0 +1,80 @@
+ Program
+   Variables Setup
+   Robot Program
+     powder dispensing variable init
+       Start_thread≔ False 
+       kp≔0.0005
+       ki≔0.002
+       kd≔0.02
+       dt≔0.05
+       Weight_value≔get_weight()
+       Target_weight≔'Enter the Target weight to be dispensed in gm'
+       Integral_error≔0
+       current_error≔0
+       previous_error≔0
+       tilt_increment≔0
+       tilt_angle≔-1
+     Script: Weight_scale_socket.script
+     Script: dosing_pid.script
+     MoveL
+       Start
+     'MoveL'
+     'MoveJ'
+     'MoveL'
+     'MoveJ'
+     powder dispensing
+       Loop Weight_value<Target_weight
+         MoveL
+           container_start
+           container_wp_1
+           Loop 2 times
+             Waypoint_55
+               Until (tool_contact_detection)
+             Waypoint_56
+           Loop 1 times
+             Waypoint_1
+             Waypoint_56
+           Waypoint_59
+           Waypoint_58
+         MoveJ
+           Waypoint_60
+           Waypoint_61
+           Waypoint_62
+         MoveL
+           Waypoint_63
+           Start_thread≔ True 
+           Wait: 0.5
+           Loop Weight_value≤Target_weight and tilt_angle≤-0.53
+             current_error≔Target_weight-Weight_value
+             Integral_error≔Integral_error+current_error*dt
+             derivative≔(current_error-previous_error)/dt
+             tilt_increment≔(kp*current_error)+(ki*Integral_error)+(kd*derivative)
+             current_pose≔get_actual_tcp_pose()
+             tilt_angle≔current_pose[4]
+             tilt_pose≔pose_trans(current_pose, p[(tilt_increment/5), 0, 0, 0, tilt_increment, 0])
+             movel(tilt_pose, a=0.025, v=0.015, r=0.00001)
+             previous_error≔current_error
+             Wait: 0.01
+           Start_thread≔ False 
+           'Waypoint_64'
+           Weight_value≔get_weight()
+           tilt_angle≔-1
+           Wait: 0.5
+         MoveL
+           Waypoint_68
+           Waypoint_3
+         Integral_error≔0
+         current_error≔0
+         previous_error≔0
+       MoveL
+         After_disp_1
+         After_disp_2
+         After_disp_3
+         After_disp_4
+         Start
+         Popup: Powder dispensed successfully...
+   Thread_1
+     If Start_thread≟ True 
+       Weight_value≔get_weight()
+       Wait: 0.25
+       sync()

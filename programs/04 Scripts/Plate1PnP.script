@@ -1,0 +1,52 @@
+def pick_flask():
+    global origin_flask = get_actual_tcp_pose()        # assume 6D pose is obtained from PLC 
+    # & has to be replaced with read_output_float_register(address) x6
+    
+    # approach points with 10cm offset in +Z dir
+    approach_flask_1 = p[-0.1176, -0.0526, 0.299136, 0, 0, 0]
+    approach_flask_2 = p[-0.1876, -0.1726, 0.299136, 0, 0, 0]
+    approach_flask_3 = p[-0.0476, -0.1726, 0.299136, 0, 0, 0]
+    
+
+    global approach_point_1 = pose_trans(origin_flask, approach_flask_1)
+    approach_point_2 = pose_trans(origin_flask, approach_flask_2)  
+    approach_point_3 = pose_trans(origin_flask, approach_flask_3)    
+
+    
+    pick_point_1 = pose_trans(approach_point_1, p[0, 0, -0.1, 0, 0, 0])
+    pick_point_2 = pose_trans(approach_point_2, p[0, 0, -0.1, 0, 0, 0])
+    pick_point_3 = pose_trans(approach_point_3, p[0, 0, -0.1, 0, 0, 0])
+
+
+    movej(approach_point_1, a=0.3, v=0.2)
+    movel(pick_point_1, a=0.3, v=0.2)
+	
+    popup("Wait and measure")
+    sleep(5)
+
+    set_tool_digital_out(1,True)        # closes gripper
+    set_tool_digital_out(0,True)        # opens gripper
+
+    movej(approach_point_1, a=0.3, v=0.2)
+
+    movej(approach_point_2, a=0.3, v=0.2)
+    movel(pick_point_2, a=0.3, v=0.2)
+    popup("Wait and measure")
+    sleep(5)
+    set_tool_digital_out(1,True)        # closes gripper
+    set_tool_digital_out(0,True)        # opens gripper
+
+    movej(approach_point_2, a=0.3, v=0.2)
+
+    movej(approach_point_3, a=0.3, v=0.2)
+    movel(pick_point_3, a=0.3, v=0.2)
+
+    popup("Wait and measure")
+    sleep(5)
+    set_tool_digital_out(1,True)        # closes gripper
+    set_tool_digital_out(0,True)        # opens gripper
+
+    movej(approach_point_3, a=0.3, v=0.2)
+end
+
+

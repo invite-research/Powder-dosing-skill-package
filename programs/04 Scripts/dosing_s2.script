@@ -1,0 +1,312 @@
+# vibration motor commands
+def vibration_2():
+	set_analog_out(0,0.4)
+	sleep(0.8)
+	set_analog_out(0,0.0)
+	sleep(0.2)
+end
+
+def vibration_3():
+	set_analog_out(0,0.4)
+	sleep(0.5)
+	set_analog_out(0,0.0)
+	sleep(0.3)
+end
+
+def vibration_4():
+	set_analog_out(0,0.4)
+	sleep(0.6)
+	set_analog_out(0, 0.0)
+	sleep(0.5)
+end
+
+def vibration_1():
+	set_analog_out(0,0.4)
+	sleep(1)
+	set_analog_out(0,0.0)
+	sleep(0)
+end
+
+# steps 
+def move_tilt_in_steps(Pow_center, final_pose, steps):
+	i = 0
+	while i <= steps:
+		ratio = i / steps
+		pose_step = p[Pow_center[0] + ratio * (final_pose[0] - Pow_center[0]), Pow_center[1] + ratio * (final_pose[1] -Pow_center[1]),Pow_center[2] + ratio * (final_pose[2] - Pow_center[2]), Pow_center[3] + ratio * (final_pose[3] - Pow_center[3]), Pow_center[4] + ratio * (final_pose[4] - Pow_center[4]), Pow_center[5] + ratio * (final_pose[5] - Pow_center[5])]
+		movej(pose_step, a=1.2, v=0.15)
+		sleep(0.1)
+		i = i+1
+	end
+end
+
+# tilt the container based on pose of container entry point
+def tilt_container(angle):
+	global p_center = get_actual_tcp_pose()
+	hinge_offset = p[0,0,- hinge_height-container_height-0.065,0,0,0]# this should be container height+hinge distance from tcp-tip to base of hinge. check?
+	pivot_pose = pose_trans(p_center, hinge_offset)
+	pose_rel = pose_trans(pose_inv(pivot_pose), p_center)
+	angle_mid = (angle/2.0)*3.1416/180
+	angle_end = angle*3.1416/180
+	tilt_mid = p[0,0,0, -angle_mid, 0, 0]
+	tilt_end = p[0,0,0, -angle_end, 0, 0]
+	pose_rel_mid = pose_trans(tilt_mid, pose_rel)
+	pose_rel_end = pose_trans(tilt_end, pose_rel)
+	via_pose = pose_trans(pivot_pose, pose_rel_mid)
+	end_pose = pose_trans(pivot_pose, pose_rel_end)
+	movec(via_pose, end_pose, a=0.05, v=0.01, r=0.001)
+	p_center = get_actual_tcp_pose()
+end
+
+# convertion of degree to radians
+def deg2rad(d):
+	return d*3.141592/180
+end
+
+# tilt values clamping based on powders
+def map_tilt_to_ry_deg(container_deg):
+	#ry_deg = -0.875*container_deg +87.0
+	#return clamp(ry_deg, 5.0, 80.0)
+	if (Pow_name == "NaCl" or Pow_name == "Mannitol" or Pow_name == "CCS" or Pow_name == "MCC"): 
+		if ( level>=10.0):
+			ry_min = 10.0	
+			ry_max = 75.0
+		elif (level<10.00 and level >1.00):
+			ry_min = 16.0
+			ry_max = 65.0
+		else:
+			ry_min=17.0
+			ry_max=75.0
+		end
+	else:
+		if ( level>=10.0):
+			ry_min = 0.0	
+			ry_max = 65.0
+		elif (level<10.00 and level >1.00):
+			ry_min = 10.0
+			ry_max = 45.0
+		else:
+			ry_min=0.0
+			ry_max=50.0
+		end
+
+	end
+	local span_count = angle_max-angle_min
+	local span_ry = ry_max - ry_min
+
+	local t = (container_deg -angle_min)/span_count
+	local ry_deg = ry_max - t*span_ry
+
+	return clamp(ry_deg, ry_min, ry_max)
+
+end
+
+def caluclate_corrections(level):
+	z_high = 0.01
+	z_low = -0.08
+	y_high = -0.01
+	y_low = -0.015
+
+	scale = (level - 10.0) / (100.0-10.0)
+
+	global correction_z = z_low + scale*(z_high - z_low)
+	global correction_y = y_low + scale*(y_high -y_low)
+
+end
+
+# scoop the powder using all the params
+def scoop_powder(p_center):	
+	vibration_voltage = 0.4
+	vibration_time = 3.0
+	global scoop_radius_default = 0.0
+	
+	# spatula's scoop max height used here
+	if (spatula == "spatula_L"):
+		global spatula_depth = 0.015		
+	elif (spatula == "spatula_M"):
+		global spatula_depth = 0.01
+	elif (spatula == "spatula_S"):
+		global spatula_depth = 0.008
+	elif (spatula == "spatula_flat_M"):
+		global spatula_depth = 0.001
+	elif (spatula == "spatula_flat_S"):
+		global spatula_depth = 0.005
+	end
+	
+	# have offset based on level
+	if (level >=70.00):	
+		approach_offset = p[0,0,spatula_len+0.05,0,0,0]
+		lift_offset = p[0, 0, 0.05, 0, 0, 0]
+		caluclate_corrections(level)	
+	elif (level >=10.00 and level <70):	
+		approach_offset = p[0,0,spatula_len+0.05,0,0,0]
+		lift_offset = p[0, 0, 0.15, 0, 0, 0]
+		caluclate_corrections(level)
+	elif (level<10.00 and level >= 1.00):
+		approach_offset = p[0,0,spatula_len+0.05,0,0,0]
+		correction_z = -0.08
+		correction_y = -0.01
+		lift_offset = p[0, 0, 0.14, 0, 0, 0]
+	else:
+		approach_offset = p[0,0,spatula_len+0.05,0,0,0]
+		correction_z = -0.08
+		correction_y = -0.01
+		lift_offset = p[0, 0, 0.14, 0, 0, 0]	
+ 	end
+	
+	# local entry_pose  = pose_trans(feature_pose, p[0, 0, entry_distance, 0, 0, 0])
+
+	# move into entry pose (surprisingly away from the hinge&p_center)
+	global scoop_entry_pose = pose_trans(p_center, approach_offset)
+	#popup("adsad", title="Pause",blocking=True)
+	movel(scoop_entry_pose, a=0.1, v=0.25)
+
+	popup("adsad2", title="Pause",blocking=True)
+	#global entry_pose = pose_trans(p_center, p[0,0,0.22,0,0,0])
+	#movel(entry_pose, a=0.5,v=0.3)
+
+	# scoop around radius-spatula depth to get max scooping angle
+	scoop_radius_default = diameter/2 - spatula_depth
+	
+	# scoop starting point based on level/scoop depth
+	scoop_start_rel = p[scoop_radius_default, 0, scoop_depth, 0, 0, 0]
+
+	rot_mid = p[0, 0, 0, 0, 0, 0.785]  # 45°
+	rot_end = p[0, 0, 0, 0, 0, 1.5708] # 90°
+
+	scoop_via_rel = pose_trans(rot_mid, scoop_start_rel)
+	scoop_end_rel = pose_trans(rot_end, scoop_start_rel)
+
+	global scoop_start_pose = pose_trans(p_center, scoop_start_rel)
+	scoop_via_pose = pose_trans(p_center, scoop_via_rel)
+	scoop_end_pose = pose_trans(p_center, scoop_end_rel)
+
+	movel(scoop_start_pose, a=0.5, v=0.3)
+	
+	if (level<90.0):
+		Rotate()
+	end
+
+	movec(scoop_via_pose, scoop_end_pose, a=0.03, v=0.02)
+	sleep(1.0)
+	local ry_deg = map_tilt_to_ry_deg(angle_deg)
+	local ry = deg2rad(ry_deg)
+	local end_rel = pose_trans(pose_inv(p_center), scoop_end_pose)
+	local end_rel_tilted = pose_trans(end_rel, p[0, 0, 0, 0, ry, 0])
+	global tilted_pose_in_base = pose_trans(p_center, p[0,correction_y,correction_z,end_rel_tilted[3],end_rel_tilted[4], end_rel_tilted[5]])
+	global tilted_pose_in_base = pose_trans(tilted_pose_in_base, p[0, 0, spatula_len, 0, 0, 0])
+
+	if (Pow_name == "lactose_fine" or Pow_name == "Magnesium_sterate"):
+		tilt_send((angle_deg+5))
+	end
+	movel(tilted_pose_in_base, a=0.03, v=0.1)
+
+	if (Pow_name == "lactose_fine" or Pow_name == "Magnesium_sterate"):
+		tilt_send((angle_deg-5))
+	end
+
+	if (spatula=="spatula_flat_S" or spatula=="spatula_S"):
+		vibration_3()
+	else:
+		set_analog_out(0, vibration_voltage)
+	end
+	if (Pow_name=="Mannitol" or Pow_name =="NaCl"):
+		local n=1.4
+	else:
+		local n=1.5
+	end
+	local ry_level = deg2rad(ry_deg/n)
+	local end_rel_tilted_level = pose_trans(end_rel, p[0, 0, 0, 0, ry_level, 0])
+	local level_tilted_pose_in_base = pose_trans(p_center, p[0,correction_y,correction_z,end_rel_tilted_level[3],end_rel_tilted_level[4], end_rel_tilted_level[5]])
+	local level_tilted_pose_in_base = pose_trans(level_tilted_pose_in_base, p[0, 0, spatula_len, 0, 0, 0])
+
+	movel(level_tilted_pose_in_base, a=0.03, v=0.1)
+	#if (level>70.0):
+		#sleep(1.0)
+	#end
+	sleep(1.0)
+	#sleep(vibration_time)
+	
+	movel(tilted_pose_in_base, a=0.03, v=0.1)
+	set_analog_out(0, 0.0)
+
+	tilt_pose_rel = pose_trans(pose_inv(p_center), tilted_pose_in_base)
+	
+	lifted_pose_rel = pose_trans(lift_offset, tilt_pose_rel)
+
+	global lifted_pose = pose_trans(p_center, lifted_pose_rel)
+	movel(lifted_pose, a=0.03, v=0.1)
+	CCW_Rotate()	
+end
+
+
+# calculate center pose on top of the container using pose transformation
+def center_pose():
+	# pose transformation from side of the container to top to get center point
+	trans_rel = p[-0.005, 0.05, -0.027, 0, 0, 0] 
+
+	p_translated = pose_trans(place_pose, trans_rel)
+	cx = p_translated[0]
+	cy = p_translated[1]
+	cz = p_translated[2]
+
+	global p_center_vertical = p[cx,cy,cz, 0, 0, 4.14]
+
+	#movej(p_center_vertical, a =0.3, v =0.3)
+	return p_center_vertical
+end
+
+# update center pose based on tilting 
+def updated_center_pose(p_center_vertical, angle_deg):
+	hinge_pose = pose_trans(p_center_vertical, p[0,0,-0.2,0,0,0])
+	local_rel = pose_trans(pose_inv(hinge_pose), p_center_vertical)
+
+	rot_tilt = p[0,0,0, -deg2rad(angle_deg),0,0]
+	local_rel_tilted = pose_trans(rot_tilt, local_rel)
+	
+	global p_center = pose_trans(hinge_pose, local_rel_tilted)
+	return p_center
+end
+
+#------
+# POTS commands
+def tilt_send(angle):
+	socket_open("192.168.12.101", 80)
+	angle = 92.0 - angle
+	socket_send_string("Tilt,"+to_str(angle)+",0")
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def Motors_off():
+	socket_open("192.168.12.101", 80)
+	socket_send_string("Off,0,0")
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def Rotate():
+	socket_open("192.168.12.101", 80)
+	socket_send_string("FullRotation, 1, 2000")
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+
+def CCW_Rotate():
+	socket_open("192.168.12.101", 80)
+	socket_send_string("FullRotation, -1, 2000")
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def tilt_to_home():
+	socket_open("192.168.12.101", 80)
+	socket_send_string("Home,0,0")
+	sync()
+	sleep(0.5)
+	socket_close()
+end

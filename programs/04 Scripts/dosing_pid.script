@@ -1,0 +1,26 @@
+def dosing_pid(target_weight):
+	#kp = 0.005
+	#ki = 0.02
+	#kd = 0.2
+	#dt = 0.05
+	#current_error = 0.0
+	#Integral_error = 0.0
+	#previous_error = 0.0
+	#tilt_angle = -1.0
+	max_tilt_angle = -0.55
+	#current_pose = get_actual_tcp_pose()
+
+	while ( weight_value < target_weight and tilt_angle < max_tilt_angle): 
+		weight_value = get_weight()
+		current_error = target_weight - weight_value 
+		Integral_error = Integral_error + current_error*dt
+		derivative = (current_error - previous_error) / dt
+		tilt_increment = (kp * current_error) + (ki * Integral_error) + (kd * derivative)
+		current_pose = get_actual_tcp_pose()
+		tilt_angle = current_pose[4]
+		new_pose = pose_trans(current_pose, p[(tilt_increment/5), 0, 0, 0, tilt_increment, 0])
+		movel(new_pose, a = 0.075, v = 0.025, t = 0, r = 0)
+		previous_error = current_error
+		sleep(dt)
+	end
+end

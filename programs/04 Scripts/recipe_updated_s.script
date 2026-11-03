@@ -1,0 +1,331 @@
+# ============================================
+# Recipe Dosing URScript (3 powders, sorted A/B/C)
+# - keeps final mixture ratio after 1st overshoot
+# - syncs with Python dashboard via TCP
+# ============================================
+
+# --------- HANDOFF GLOBALS (used by other skills) ---------
+global Pow_name = ""
+global target_weight = 0.0
+global last_dose_error = 0.0
+
+# --------- RECIPE STATE ---------
+global powder_names = ["", "", ""]
+global powder_ratios = [0.0, 0.0, 0.0]      # fractions 0..1
+global powder_targets = [0.0, 0.0, 0.0]     # target weights for each powder
+global powder_actuals = [0.0, 0.0, 0.0]     # measured after dosing
+global powder_order  = [0, 1, 2]            # indices, sorted by ascending ratio
+
+global total_weight = 0.0                   # initial / adjusted total
+global current_powder_index = 0             # index into powder_order
+global ratio_adjusted = False               # did we already adjust after powder 1
+global dose_start_weight = 0.0              # weight at dosing start for each powder
+
+# --------- FINAL RESULTS (for dashboard) ---------
+# WA/WB/WC = final weights of powders A/B/C after dosing (sorted by ratio)
+global WA = 0.0
+global WB = 0.0
+global WC = 0.0
+
+# finalPercA/B/C = final percentages of WA/WB/WC wrt adjusted total
+global finalPercA = 0.0
+global finalPercB = 0.0
+global finalPercC = 0.0
+
+# counter to know which powder we just finished (1 → A, 2 → B, 3 → C)
+global dose_counter = 0
+
+
+# =====================================================
+# SORTING HELPERS (BY ASCENDING RATIO)
+# =====================================================
+
+def swap_order(i, j):
+  local temp = powder_order[i]
+  powder_order[i] = powder_order[j]
+  powder_order[j] = temp
+end
+
+def sort_powders_by_ratio():
+  # bubble-sort style, only 3 elements
+  global powder_order = [0, 1, 2]
+
+  if (powder_ratios[powder_order[1]] < powder_ratios[powder_order[0]]):
+    swap_order(0, 1)
+  end
+
+  if (powder_ratios[powder_order[2]] < powder_ratios[powder_order[1]]):
+    swap_order(1, 2)
+  end
+
+  if (powder_ratios[powder_order[1]] < powder_ratios[powder_order[0]]):
+    swap_order(0, 1)
+  end
+end
+
+
+# =====================================================
+# TCP SENDING HELPERS (Python dashboard @ 192.168.12.103:3002)
+# =====================================================
+
+# Send powder labels in sorted A/B/C order
+# A = least %, B = middle %, C = highest %
+def send_powder_labels():
+  local A = powder_names[powder_order[0]]
+  local B = powder_names[powder_order[1]]
+  local C = powder_names[powder_order[2]]
+
+  socket_open("192.168.12.103", 3002)
+  local cmd = "SET_LABELS:" + A + ";" + B + ";" + C
+  textmsg("Sending labels: ", cmd)
+  socket_send_string(cmd)
+  sleep(0.2)
+  socket_close()
+end
+
+# Send initial recipe (TOTAL;PA;PB;PC) in sorted order
+# powder_ratios are fractions (0..1), we convert to %
+def send_init_recipe(total_w):
+  local rA = powder_ratios[powder_order[0]] * 100
+  local rB = powder_ratios[powder_order[1]] * 100
+  local rC = powder_ratios[powder_order[2]] * 100
+
+  socket_open("192.168.12.103", 3002)
+  local cmd = "SET_INIT:" +
+              to_str(total_w) + ";" +
+              to_str(rA) + ";" +
+              to_str(rB) + ";" +
+              to_str(rC)
+  textmsg("Sending INIT: ", cmd)
+  socket_send_string(cmd)
+  sleep(0.2)
+  socket_close()
+end
+
+# Send final recipe:
+# SET_FINAL:ADJ_TOTAL;PA;PB;PC;WA;WB;WC
+# where PA/B/C = finalPercA/B/C, WA/B/C = final weights, adj_total = total_weight
+def send_final_recipe(adj_total):
+  socket_open("192.168.12.103", 3002)
+
+  local cmd = "SET_FINAL:" +
+              to_str(adj_total) + ";" +
+              to_str(finalPercA) + ";" +
+              to_str(finalPercB) + ";" +
+              to_str(finalPercC) + ";" +
+              to_str(WA) + ";" +
+              to_str(WB) + ";" +
+              to_str(WC)
+  textmsg("Sending FINAL: ", cmd)
+  socket_send_string(cmd)
+  sleep(0.2)
+  socket_close()
+end
+
+
+# =====================================================
+# FINAL WEIGHT & PERCENTAGE LOGIC
+# =====================================================
+
+# Call this ONCE after each powder dosing is finished
+# final_weight = w_dosed_total of the just-finished powder
+def record_final_weight_for_current_powder(final_weight):
+  dose_counter = dose_counter + 1
+
+  if dose_counter == 1:
+    WA = final_weight
+    textmsg("Assigned WA (Powder A): ", WA)
+  elif dose_counter == 2:
+    WB = final_weight
+    textmsg("Assigned WB (Powder B): ", WB)
+  elif dose_counter == 3:
+    WC = final_weight
+    textmsg("Assigned WC (Powder C): ", WC)
+  else:
+    textmsg("WARNING: dose_counter > 3, ignoring extra weight")
+  end
+end
+
+# Compute final percentages from WA/WB/WC and adjusted total
+def compute_final_percentages(adj_total):
+  if adj_total <= 0:
+    textmsg("ERROR: adj_total <= 0, cannot compute final %")
+  else:
+    finalPercA = WA / adj_total * 100
+    finalPercB = WB / adj_total * 100
+    finalPercC = WC / adj_total * 100
+    textmsg("Final % A/B/C: ", finalPercA, finalPercB, finalPercC)
+  end
+end
+
+
+# =====================================================
+# RECIPE INITIALIZATION
+# =====================================================
+
+# powA/B/C  : strings (e.g. "MCC", "CCS", "MAGNESIUM_STEARATE")
+# total     : initial total weight (g)
+# ratioA/B/C: fractions (0..1), e.g. 0.3, 0.2, 0.5
+def recipe_init(powA, powB, powC, total, ratioA, ratioB, ratioC):
+  global powder_names  = [powA, powB, powC]
+  global powder_ratios = [ratioA, ratioB, ratioC]
+  global total_weight  = total
+
+  global powder_targets = [total*ratioA, total*ratioB, total*ratioC]
+  global powder_actuals = [0.0, 0.0, 0.0]
+
+  global current_powder_index = 0
+  global ratio_adjusted = False
+  global dose_start_weight = 0.0
+
+  dose_counter = 0
+  WA = 0.0
+  WB = 0.0
+  WC = 0.0
+
+  sort_powders_by_ratio()
+
+  # NOTE: you call these from your main flow when you want:
+  send_powder_labels()
+  send_init_recipe(total)
+end
+
+
+# =====================================================
+# POSITION + CAMERA HELPERS (YOUR EXISTING LOGIC)
+# =====================================================
+
+def get_position_for_powder(Pow_name):
+  if pos1_powder == Pow_name:
+    return "Position1"
+  elif pos2_powder == Pow_name:
+    return "Position2"
+  elif pos3_powder == Pow_name:
+    return "Position3"
+  else:
+    return -1
+  end
+end
+
+def extract_powder_name(raw_str):
+  local idx_open  = str_find(raw_str, "(")
+  local idx_close = str_find(raw_str, ")")
+
+  if (idx_open < 0) or (idx_close < 0):
+    return raw_str
+  end
+
+  local inside = ""
+  local i = idx_open + 1
+  while i < idx_close:
+    inside = str_cat(inside, str_at(raw_str, i))
+    i = i + 1
+  end
+
+  local idx_comma = str_find(inside, ",")
+  if idx_comma < 0:
+    return inside
+  end
+
+  local powder = ""
+  local j = idx_comma + 1
+  while j < str_len(inside):
+    powder = str_cat(powder, str_at(inside, j))
+    j = j + 1
+  end
+
+  return powder
+end
+
+def get_response_from_camera(target):
+  movel(target, a=0.1, v=0.12, r=0)
+  visor_trigger("1", "3.0", "arm")
+  global response = visor_getResponse(1)
+end
+
+
+# =====================================================
+# RECIPE STEP SELECTION
+# =====================================================
+
+# Call recipe_next() before each dosing run.
+# Returns True if a powder exists, False if done.
+def recipe_next():
+  if (current_powder_index >= 3):
+    return False
+  end
+
+  local i = powder_order[current_powder_index]
+  global Pow_name = powder_names[i]
+  global target_weight = powder_targets[i]
+
+  global powder_position = get_position_for_powder(Pow_name)
+
+  if (Pow_name == "CCS"):
+    W_now = 200.0
+  elif (Pow_name == "MCC"):
+    W_now = 131.0
+  else:
+    W_now = 100.0
+  end
+
+  return True
+end
+
+
+# =====================================================
+# DOSING START / END
+# =====================================================
+
+# Call at the beginning of each powder dosing run
+def dosing_start():
+  global dose_start_weight = get_weight()
+  global switch_spat_M = True
+  global switch_spat_S = True
+  global switch_spat_F_S = True
+end
+
+# Call after dosing is finished for current powder
+def dosing_end():
+  local idx = powder_order[current_powder_index]
+  local weight_after = get_weight()
+  local actual_weight = weight_after - dose_start_weight
+
+  # store actual weight
+  local tmp = powder_actuals
+  tmp[idx] = actual_weight
+  global powder_actuals = tmp
+
+  # save error
+  global last_dose_error = actual_weight - powder_targets[idx]
+
+  # store WA/WB/WC in dosing (sorted) order
+  record_final_weight_for_current_powder(actual_weight)
+
+  # one-time correction after first powder (ratio preserving)
+  if ((current_powder_index == 0) and (not ratio_adjusted)):
+    local j = powder_order[1]
+    local k = powder_order[2]
+
+    local ratio_first = powder_ratios[idx]
+    if (ratio_first > 0.0):
+      # new_total = actual / ratio_first
+      local new_total = actual_weight / ratio_first
+      if (new_total < 0.0):
+        new_total = 0.0
+      end
+
+      local ttmp = powder_targets
+      ttmp[idx] = actual_weight
+      ttmp[j]   = new_total * powder_ratios[j]
+      ttmp[k]   = new_total * powder_ratios[k]
+      global powder_targets = ttmp
+
+      global adj_total = new_total
+    end
+
+    global ratio_adjusted = True
+  end
+
+  global current_powder_index = current_powder_index + 1
+end

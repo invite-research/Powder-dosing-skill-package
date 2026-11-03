@@ -1,0 +1,611 @@
+#global SERVER_IP   = "192.168.12.139"
+
+
+global tcp_dosing = p[0,0,0.15052,3.1415,0,0]
+global tcp_default = p[0,0,0.161,3.1415,0,0]
+
+global container_id = 0
+global powder_id  = 0
+global bulk_density = 0
+global H          = 0
+global H_c          = 0
+global mouth_d     = 0
+global mouth_sh    = 0
+global length_c     = 0
+global diameter   = 0
+global empty_weight_g  = 0
+global volume_ml    = 0
+global shape_code   = 0
+global flow_code   = 0
+global shape = ""
+global Flowability = ""
+global full_weight_g = 0
+global cent_edge = 0
+global pick_2_base = 0.2 # distance from tcp to base of picking table
+global wall_thickness = 0.002
+
+def read_db_data():
+  
+  socket_open(SERVER_IP, SERVER_PORT)
+  sleep(0.5)
+  socket_send_string("GET_DATACODE_FLOATS")
+  sleep(5)
+
+  local fl = socket_read_ascii_float(14)
+  socket_close()
+
+  global container_id = fl[1]
+  global powder_id = fl[2]
+  global bulk_density = fl[3]
+  global H          = fl[4]/1000
+  global H_c          = fl[5]/1000
+  global mouth_d     = fl[6]/1000
+  global mouth_sh    = fl[7]/1000
+  global length_c     = fl[8]/1000
+  global diameter   = fl[9]/1000
+  global empty_weight_g = fl[10]
+  global volume_ml    = fl[11]
+  global full_weight_g = fl[12]
+  global flow_code   = fl[13]
+  global shape_code   = fl[14]
+
+	if (flow_code == 1.0):
+	  global Flowability = "MEDIUM"
+	elif (flow_code == 2.0):
+	  global Flowability = "LOW"
+	else:
+	  global Flowability = "HIGH"
+	end
+
+  if ( shape_code == 1.0): 
+	shape = "cylindrical"
+	cent_edge =  diameter 
+  else:
+	shape = "cubical"
+	cent_edge =  length_c 
+  end
+
+end
+
+def send_picking_info(Pow_name, target_weight):
+  socket_open(SERVER_IP, SERVER_PORT)
+  cmd = "PICK:"+Pow_name+";"+to_str(target_weight)
+  socket_send_string(cmd)
+  sleep(0.1)
+  socket_close()
+end
+
+#### POTS ####
+def tilt_send(angle):
+	socket_open(SERVER_IP, SERVER_PORT)
+	angle = 92.0 - angle
+	socket_send_string("TILT:"+to_str(angle))
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def CW_Rotate(angle):
+	socket_open(SERVER_IP, SERVER_PORT)
+	socket_send_string("CWROTATE:"+to_str(angle))
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def CCW_Rotate(angle):
+	socket_open(SERVER_IP, SERVER_PORT)
+	socket_send_string("CCWROTATE:"+to_str(angle))
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def CW_full_Rotate():
+	socket_open(SERVER_IP, SERVER_PORT)
+	socket_send_string("FULLROTATE:"+to_str(1))
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def CCW_full_Rotate():
+	socket_open(SERVER_IP, SERVER_PORT)
+	socket_send_string("FULLROTATE:"+to_str(-1))
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+
+def tilt_to_home():
+	socket_open(SERVER_IP, SERVER_PORT)
+	socket_send_string("HOME")
+	sync()
+	sleep(0.5)
+	socket_close()
+end
+#######
+def vibration_1():
+	set_analog_out(0,0.4)
+	sleep(1)
+	set_analog_out(0,0.0)
+	sleep(0)
+end
+
+def vibration_2():
+	set_analog_out(0,0.4)
+	sleep(0.8)
+	set_analog_out(0,0.0)
+	sleep(0.2)
+end
+
+def vibration_3():
+	set_analog_out(0,0.4)
+	sleep(0.5)
+	set_analog_out(0,0.0)
+	sleep(0.3)
+end
+
+def vibration_4():
+	set_analog_out(0,0.4)
+	sleep(0.5)
+	set_analog_out(0, 0.0)
+	sleep(0.5)
+end
+
+def vibration_5():
+	set_analog_out(0,0.4)
+	sleep(0.2)
+	set_analog_out(0, 0.0)
+	sleep(0.8)
+end
+
+##################
+
+global gear_2_holder = 0.018
+global gain_per_percent = 0.5
+global w_dosed_total = 0.0
+global last_scale = 0.0
+global tilt_angle_sent = 0.0
+global level = 0.0
+global target_g = 0.0
+global angle_max = 60
+global angle_min = 10
+global hinge_2_base = 0.0421
+global TCP_2_tip_x = 0.0047 
+global spatula_len = 0.182
+global spatula_offset = p[TCP_2_tip_x,0,spatula_len,0,0,0]
+global SPATULA_L_VOL_ML = 5.0        # 1 teaspoon = 5 mL
+global SPATULA_M_VOL_ML = 1.25       # 1/4 teaspoon = 1.25 mL
+global SPATULA_S_VOL_ML = 0.15625    # 1/32 teaspoon = 0.15625 mL
+global SPATULA_FLAT_M_VOL_ML  = 2.2
+global SPATULA_FLAT_S_VOL_ML  = 1.2   #based on caluclations using rho = m/V
+global ry_deg_safe = 0
+global ry_deg = 0
+
+global scoop_ct = 0
+global error_sum = 0.0
+global error_sq_sum = 0.0
+global scoop_g = 0.0
+#global w_dosed_total = 0.0
+
+global g_corr_max = 0.015
+global g_k = 0.0
+global g_k_min = 0.0
+global g_k_max = 0.06
+global g_alpha = 0.35
+global g_eta = 0.25
+global g_prev_cum_w = -1.0
+global g_depth_corr = 0.0	
+global avg_error = 0.0
+
+global g_beta = 0.3 
+global g_gain_scale = 0.05
+global scoop_status= ""
+
+
+global prev_weight = -1.0
+global rep_weight = -2.0
+
+def clamp(x, lo, hi):
+	if(x<lo):
+		return lo
+	elif (x>hi):
+		return hi
+	else:
+		return x
+	end
+end
+
+def compute_level_percent(W_now, weight_value):   # W_now = container+powder, weight_value = live scale reading
+    global delta = weight_value - last_scale
+
+    if (delta < 0.0):
+        delta = 0.0
+    end
+
+    global w_dosed_total = w_dosed_total + delta
+    global last_scale = weight_value     # update the last scale reading
+
+    local W_eff = W_now - w_dosed_total
+    if (W_eff <  empty_weight_g):
+        W_eff =  empty_weight_g
+    end
+
+    # Compute powder level %
+    level = 100.0 * (W_eff -  empty_weight_g) / (full_weight_g -  empty_weight_g)
+
+    # Clamp to 0–100
+    level = clamp(level, 0, 100)
+  textmsg("deb 1 = ", level)
+    return level
+end
+
+def deg2rad(d):
+	return d*3.141592/180
+end
+
+def my_abs(val):
+	if (val<0):
+		return -val
+	else:
+		return val
+	end
+end
+
+def compute_tilt_deg(level_percent):
+	angle = angle_min + gain_per_percent*(100.0-level_percent)
+	
+  	textmsg("deb 2 = ", angle)
+	return clamp(angle, angle_min, angle_max)
+end
+
+def tilt(level_percentage):
+	new_angle = compute_tilt_deg(level_percentage)
+  	textmsg("deb angle 1 = ", new_angle)
+	global angle_rel = new_angle - tilt_angle_sent
+  	textmsg("deb 2 = ", angle_rel)
+	
+	if my_abs(angle_rel)>2.0:
+  		textmsg("deb loop")
+		tilt_send(new_angle)
+		global angle_deg = new_angle
+  		textmsg("deb 2 = ", angle_deg)
+		global tilt_angle_sent = new_angle
+		global p_center_vertical = center_pose()
+		global p_center = updated_center_pose(p_center_vertical, angle_deg)
+	end
+  	textmsg("deb loop exit")
+	
+	tilt_send(angle_deg)
+  	textmsg("deb angle 2 =", angle_deg)
+
+end
+
+def compute_scoop_depth(level, weight_value, target_g):	
+  	
+	global scoop_depth_rel = ((100.0-level)/100.0)*(H -mouth_sh)
+	if (g_prev_cum_w<0):
+		g_prev_cum_w = weight_value
+		g_depth_corr = 0.0
+	else:
+		global scoop_g = weight_value-g_prev_cum_w
+		g_prev_cum_w = weight_value
+
+		local error = target_g - scoop_g
+		local error_norm = error/target_g
+		local g_target = clamp(g_gain_scale * my_abs(error_norm), g_k_min,g_k_max)
+
+		g_target = clamp(g_target, g_k_min, g_k_max)
+		global g_k = (1.0-g_eta)*g_k + g_eta * g_target
+
+		local corr_proposed = g_k*error
+		g_depth_corr = (1.0-g_alpha)*g_depth_corr + g_alpha*corr_proposed
+		g_depth_corr = clamp(corr_proposed, -g_corr_max, g_corr_max)
+	end
+	
+	global scoop_depth = scoop_depth_rel + g_depth_corr
+	global scoop_depth = clamp(scoop_depth, 0.0, H)
+	return scoop_depth
+end
+
+def correction_reset():
+	global g_k = 0.0
+	global g_depth_corr = 0.0	
+	global g_prev_cum_w = weight_value
+end
+
+def get_scoop_weight(spatula, bulk_density):
+
+	local vol = 0
+
+	if (spatula == "spatula_L"):
+		vol = SPATULA_L_VOL_ML
+		global spatula_depth = 0.015
+		global spatula_mid   = 0.016
+		global spatula_ry    = 0.0
+
+	elif (spatula == "spatula_M"):
+		vol = SPATULA_M_VOL_ML
+		global spatula_depth = 0.010
+		global spatula_mid   = 0.0105
+		global spatula_ry    = 0.0
+
+	elif (spatula == "spatula_S"):
+		vol = SPATULA_S_VOL_ML
+		global spatula_depth = 0.008
+		global spatula_mid   = 0.006
+		global spatula_ry    = 0.0
+
+	elif (spatula == "spatula_flat_M"):
+		vol = SPATULA_FLAT_M_VOL_ML
+		global spatula_depth = 0.01
+		global spatula_mid   = 0.02
+		global spatula_ry    = 7.0
+
+	elif (spatula == "spatula_flat_S"):
+		vol = SPATULA_FLAT_S_VOL_ML
+		global spatula_depth = 0.005
+		global spatula_mid   = 0.016
+		global spatula_ry    = 2.0
+
+	else:
+		textmsg("Unknown spatula type")
+		return 0.0
+	end
+	global target_g = vol * bulk_density
+	return target_g
+
+end
+
+def select_spatula(Flowability, level, diff, bulk_density, mouth_d ):
+
+    local k = 1.1
+    global powder_height = (H  - mouth_sh ) * level/100
+
+    if (Flowability == "LOW"):
+        local gFM = get_scoop_weight("spatula_flat_M", bulk_density)
+		local level_ok_FM = (mouth_d >= 0.05)
+        local level_ok_FM = (spatula_mid  < powder_height)
+        local diff_ok_FM  = (diff > k * gFM)
+        local flatM_ok = level_ok_FM and diff_ok_FM
+        if (flatM_ok):
+            return "spatula_flat_M"
+        else:
+            return "spatula_flat_S"
+        end
+    end
+
+    local gL = get_scoop_weight("spatula_L", bulk_density)
+    local mouth_ok_L = (mouth_d  >= 0.05)
+    local level_ok_L = (spatula_mid < powder_height)
+    local diff_ok_L  = (diff > k * gL)
+
+    local large_ok = mouth_ok_L and level_ok_L and diff_ok_L
+    local gM = get_scoop_weight("spatula_M", bulk_density)
+    local level_ok_M = (spatula_mid < powder_height)
+    local diff_ok_M  = (diff > k * gM)
+
+    local medium_ok = level_ok_M and diff_ok_M
+
+    if (large_ok):
+        return "spatula_L"
+    elif (medium_ok):
+        return "spatula_M"
+    else:
+        return "spatula_S"
+    end
+end
+
+def after_scoop():
+	set_tcp(tcp_dosing)
+	set_analog_out(0,0.0)
+	tilt_send(angle_deg)
+	sleep(0.5)
+	movel(lifted_pose, a=0.05, v=0.2)
+	movel(tilted_pose_in_base2, a=0.05, v=0.2)
+	set_analog_out(0,0.4)
+	movel(pose_trans(tilted_pose_in_base2, p[0,0,0,0,0,2.0]), a=0.05, v=0.2)
+	set_analog_out(0,0.0)
+	movel(tilted_pose_in_base2, a=0.05, v=0.2)
+	movel(lifted_pose, a=0.05, v=0.2)
+	tilt_to_home()
+	set_tcp(tcp_default)
+end
+
+def center_pose():
+	global p_translated = container_place
+	#global p_translated = pots_axis_temp
+
+	#cx = p_translated[0]
+	#cy = p_translated[1]
+	#cz = p_translated[2]
+
+	global p_center_vertical_temp = pose_trans(p_translated, p[0,0,0, deg2rad(90), 0, 0])
+	cx = p_center_vertical_temp[0]
+	cy = p_center_vertical_temp[1]
+	cz = p_center_vertical_temp[2]
+	rx = p_center_vertical_temp[3]
+	ry = p_center_vertical_temp[4]
+	rz = p_center_vertical_temp[5]
+
+	global p_center_vertical_temp = p[cx,cy,cz, 0, 0, rz]
+	trans_rel = p[0,0,-pick_2_base+H,0,0,0]
+	global p_center_vertical =  pose_trans(p_center_vertical_temp, trans_rel)
+	return p_center_vertical
+end
+
+def updated_center_pose(p_center_vertical, angle_deg):
+	hinge_pose = pose_trans(p_center_vertical, p[0,0,-hinge_2_base-gear_2_holder-H ,0,0,0]) 
+	local_rel = pose_trans(pose_inv(hinge_pose), p_center_vertical)
+
+	rot_tilt = p[0,0,0, -deg2rad(angle_deg),0,0]
+	local_rel_tilted = pose_trans(rot_tilt, local_rel)
+	
+	global p_center = pose_trans(hinge_pose, local_rel_tilted)
+	return p_center
+end
+
+def scoop_powder(p_center):	
+	vibration_voltage = 0.4
+	global scoop_radius_default = 0.0
+
+	scoop_radius_default = mouth_d /2 - spatula_depth - wall_thickness
+	scoop_safe_entry_pose = pose_trans(p_center, p[-TCP_2_tip_x,0,spatula_len+0.05,0,0,0])
+	scoop_entry_pose = pose_trans(p_center, p[-TCP_2_tip_x,0,spatula_len,0,0,0])
+	
+	movel(scoop_safe_entry_pose, a=0.1, v=0.25)
+	movel(scoop_entry_pose, a=0.1, v=0.25)
+	
+	scoop_start_rel_int = p[0, 0, -mouth_sh , 0, 0, 0]
+	scoop_start_pose_int = pose_trans(scoop_entry_pose, scoop_start_rel_int)
+	
+	movel(scoop_start_pose_int, a=0.1, v=0.25)
+
+	#local ry_deg = map_tilt_to_ry_deg(angle_deg,level)
+	#local ry_result = map_tilt_to_ry_deg(angle_deg,level)
+
+	#global scoop_depth = compute_scoop_depth(level,weight_value, target_g)
+
+	global ry = deg2rad(90-angle_deg)
+
+	#global ry_safe = ry_result[0]
+	#global ry = deg2rad(ry_result[1])
+
+	if (spatula_mid < powder_height):
+		
+		global total_depth = mouth_sh + scoop_depth + spatula_mid
+		global total_depth = clamp(total_depth, 0, H - wall_thickness)
+
+		safe_scoop_pivot = (mouth_d  - spatula_depth)/(total_depth)
+		global ry_safe = asin(safe_scoop_pivot)
+
+		scoop_start_rel = p[scoop_radius_default, 0, -total_depth, 0, 0, 0]
+
+		rot_mid = p[0, 0, 0, 0, 0, 0.785]
+		rot_end = p[0, 0, 0, 0, 0, 1.5708]
+
+		scoop_via_rel = pose_trans(rot_mid, scoop_start_rel)
+		scoop_end_rel = pose_trans(rot_end, scoop_start_rel)
+
+		scoop_start_pose = pose_trans(scoop_entry_pose, scoop_start_rel)
+		scoop_via_pose = pose_trans(scoop_entry_pose, scoop_via_rel)
+		scoop_end_pose = pose_trans(scoop_entry_pose, scoop_end_rel)
+
+		movel(scoop_start_pose, a=0.1, v=0.25)
+		
+		if (level<90.0):
+			CW_full_Rotate()
+		end
+
+		movec(scoop_via_pose, scoop_end_pose, a=0.03, v=0.02)
+		sleep(1.0)
+		
+		# safe_retention
+		local pivot_pose = pose_trans(scoop_end_pose, p[0,0,total_depth-spatula_len,0,0,0])
+		local end_rel = pose_trans(pose_inv(pivot_pose), scoop_end_pose)
+		local end_rel_tilted = pose_trans(end_rel, p[0, 0, 0, 0, ry_safe-deg2rad(spatula_ry), 0])
+		local tilted_pose_in_base = pose_trans(pivot_pose, p[0,0,0,end_rel_tilted[3],end_rel_tilted[4], end_rel_tilted[5]])
+		local tilted_pose_in_base = pose_trans(tilted_pose_in_base, p[0, 0, spatula_len-total_depth, 0, 0, 0])
+		# sptula pivoted around the container rim of the mouth at ry_safe
+		movel(tilted_pose_in_base, a=0.03, v=0.1)
+		
+		global safe_x = sin(ry_safe)*(total_depth-mouth_sh - (mouth_d - spatula_depth)*tan(ry_safe/2))
+		global safe_z = cos(ry_safe)*(total_depth-mouth_sh - (mouth_d - spatula_depth)*tan(ry_safe/2))
+		
+		local safe_up = pose_trans(tilted_pose_in_base, p[-safe_x,0,safe_z,0,0,0])
+		movel(safe_up, a=0.03, v=0.1)
+		
+		# full exit 
+		local pivot_pose2 = pose_trans(scoop_entry_pose, p[0,0,-spatula_len,0,0,0])
+		local end_rel2 = pose_trans(pose_inv(pivot_pose2), tilted_pose_in_base)
+		#popup("is the spatula crashing front? ", blocking = True)
+		local end_rel_tilted2 = pose_trans(end_rel2, p[0, 0, 0, 0, ry-ry_safe-deg2rad(spatula_ry), 0])
+		
+	else : # emptying logic
+		CCW_full_Rotate()
+		
+		spatula_base = pose_trans(scoop_entry_pose, p[0, 0, -H+wall_thickness, 0, 0, 0])
+		local pivot_pose2 = pose_trans(scoop_entry_pose, p[0,0,-spatula_len,0,0,0])
+		# tilt inwards
+		global in_angle = -atan((cent_edge/2-spatula_depth)/H)
+		spatula_tilt_rel = pose_trans(pose_inv(pivot_pose2), spatula_base)
+
+		spatula_tilt = pose_trans(spatula_tilt_rel, p[0, 0, 0, -in_angle, 0, 0])
+		global tilted_pose = pose_trans(pivot_pose2, p[0,0,0,spatula_tilt[3],spatula_tilt[4], spatula_tilt[5]])
+		
+		global tilted_pose = pose_trans(tilted_pose, p[0,0,spatula_len-H+wall_thickness,0,0,0])
+		
+		movel(tilted_pose,a=0.1, v=0.25)
+		
+		rotate90=pose_trans(tilted_pose,p[0,0,0,0,0,1.5708])
+		
+		#sleep(1)
+		#Rotate()
+		#sleep(0.2)
+		movel(rotate90, a=0.1, v=0.1)
+		#popup("is the spatula crashing front? ", blocking = True)
+		movel(pose_trans(scoop_start_pose_int,p[0,0,0,0,0,1.5708]), a=0.03, v=0.1)
+		# full exit 
+		#local pivot_pose2 = pose_trans(scoop_entry_pose, p[0,0,-spatula_len,0,0,0])
+		local end_rel2 = pose_trans(pose_inv(scoop_entry_pose), rotate90)
+		local end_rel_tilted2 = pose_trans(end_rel2, p[0, 0, 0, 0, ry-in_angle-deg2rad(spatula_ry), 0])
+	end
+
+	# exit flat spoon
+	global tilted_pose_in_base2 = pose_trans(pivot_pose2, p[0,0,0,end_rel_tilted2[3],end_rel_tilted2[4], end_rel_tilted2[5]])
+	global tilted_pose_in_base2 = pose_trans(tilted_pose_in_base2, p[0, 0, spatula_len-spatula_mid, 0, 0, 0])
+	# spaula exited at center of the mouth at ry
+	movel(tilted_pose_in_base2, a=0.03, v=0.1)
+	if(scoop_status== "normal"):
+		
+		if (spatula=="spatula_flat_S" or spatula=="spatula_S"):
+			vib_thread=True
+			vibration_3()
+			#sleep(1)
+			#vib_thread = False
+			local ry_level = deg2rad(10)
+		else:
+			vib_thread=True
+			set_analog_out(0,0.4)
+			local ry_level = deg2rad(25)
+		end
+		
+		# remove excess
+		local pivot_pose_level = pose_trans(tilted_pose_in_base2, p[0,0,-spatula_len,0,0,0])
+		local end_rel_level = pose_trans(pose_inv(pivot_pose_level), tilted_pose_in_base2)
+		local end_rel_tilted_level = pose_trans(end_rel_level, p[0, 0, 0, 0, -ry_level, 0])
+		local end_rel_tilted_level2 = pose_trans(pivot_pose_level, p[0, 0, 0,end_rel_tilted_level[3],end_rel_tilted_level[4], end_rel_tilted_level[5]])
+		local end_rel_tilted_level2 = pose_trans(end_rel_tilted_level2, p[0,0,spatula_len,0,0,0])
+		movel(end_rel_tilted_level2, a=0.03, v=0.1)
+
+		movel(tilted_pose_in_base2, a=0.03, v=0.1)
+		vib_thread=False
+		set_analog_out(0, 0.0)
+	else: 
+		set_analog_out(0, 0.0)
+	end
+	global lifted_pose = pose_trans(tilted_pose_in_base2, p[-0.04,0,0.04,0,0,0]) # safety distance away from the container 
+	
+	movel(lifted_pose, a=0.03, v=0.1)
+	tilt_to_home()	
+end
+
+def auto_tilt_and_scoop(W_now, target_weight, weight_value):
+	set_tcp(tcp_dosing)
+	global level = compute_level_percent(W_now, weight_value)
+
+	global spatula = select_spatula(Flowability, level, diff, bulk_density, mouth_d )
+	textmsg("deb 4 = ", spatula)
+	global target_g = get_scoop_weight(spatula, bulk_density)
+	textmsg("deb 5 = ", target_g)
+
+	global scoop_depth = compute_scoop_depth(level, weight_value, target_g)
+  	textmsg("deb 6 = ", scoop_depth)
+	tilt(level)
+	
+	scoop_powder(p_center)
+
+	#textmsg("deb 7 - sucess")
+ 	set_tcp(tcp_default)
+end

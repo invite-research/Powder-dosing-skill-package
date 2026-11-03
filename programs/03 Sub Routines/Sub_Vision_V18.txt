@@ -1,0 +1,206 @@
+ Program
+   Variables Setup
+   BeforeStart
+     Script: SCRIPT Transitions V6.5.script
+     Script: SCRIPT Utility V5.3.script
+     Script: SCRIPT Vision Config V0.2.script
+     Script: 001 SCRIPT Errors and Warnings Deifnes V0.2.script
+     'Calibration'
+     reset_error()
+     Action≔131
+     ITM_ID≔1
+     JIG≔7
+     CMD_Stop≔ False 
+     PSE_T≔get_actual_tcp_pose()
+     MoveJ
+       PSE_T
+     Set
+   Robot Program
+     PreSettings
+       CAM_LM_Detected≔ False 
+       CAM_Captures≔0
+       CAM_Pose≔p[0,0,0,0,0,0]
+       CAM_LM_Refinmnt≔ False 
+       CAM_LM_Refined≔ False 
+       CAM_LM_Deviatn≔p[0,0,0,0,0,0]
+       CAM_LM_ID≔0
+       CAM_Done≔ False 
+       CAM_CNT_Obj≔0
+       CAM_Result = []
+       OBJ_Detected≔ False 
+       FRM_Reference≔p[0,0,0,0,0,0]
+     '=========='
+     Switch Action
+       Case 13
+         'Read'
+       Case 15
+         'Detect'
+       Case 131
+         Read (SensoPart)
+           Action_Info≔"search for landmark"
+           CAM_LM≔CAM_LMs[4]
+           CAM_Relation≔CAM_LM.capture_relation
+           go to capture pose
+             'PSE_T≔get_capture_pose(CAM_LM)'
+             'PSE_T≔pose_RPY2RotVec(p[-0.425, 0.125, 0.500, 2.13, -2.13, -0.186])'
+             If ITM_ID≟1 and JIG≟7
+               PSE_T≔uLM_Cap_SSRack
+             ElseIf ITM_ID≟5 and JIG≟7
+               PSE_T≔FRM_Cap_SSRack
+             'ElseIf ITM_ID≟13 and JIG≟7'
+             ElseIf ITM_ID≟1 and JIG≟15
+               MoveJ
+                 Container_mid_1
+                 'Container_capt'
+               PSE_T≔FRM_Container_const
+             ElseIf ITM_ID≟1 and JIG≟21
+               PSE_T≔FRM_PoTS_const
+             ElseIf ITM_ID≟1 and JIG≟17
+               MoveJ
+                 trigger_otw
+               PSE_T≔FRM_weigh_scale_const
+             do_transition(PSE_T, keep_rxry=False)
+             Set
+             MoveJ
+               PSE_T
+             CAM_Pose≔get_actual_tcp_pose()
+           Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop
+             adjust capture pose
+               If CAM_LM_Detected and CAM_LM_Refinmnt
+                 PSE_T≔p[0,0,0.300,0,0,0]
+                 CAM_Pose≔PSE_T
+                 If  not is_reachable(FRM_Reference,[PSE_T])
+                   Error
+                     set_error(ERROR_POSE_NOT_REACHABLE)
+                 If  not ERROR.FLAG
+                   MoveJ
+                     PSE_T
+                   CAM_LM_Refined≔ True 
+               ElseIf  not CAM_LM_Detected and CAM_Captures>0
+                 MoveL
+                   If FRM_Reference≟p[0,0,0,0,0,0]
+                     PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="cubic", range_max=[0.150,0.150,0.015])
+                     'PSE_T≔CAM_Pose'
+                     'PSE_T[0] = PSE_T[0]+floor(random()*10-5)/100'
+                     'PSE_T[1] = PSE_T[1]+floor(random()*10-5)/100'
+                     'PSE_T[2] = PSE_T[2]+floor(random()*10-5)/100'
+                   Else
+                     PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+                     CAM_LM_Refined≔ True 
+                   If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))
+                     Comment
+                     PSE_T
+                   Else
+                     'If random pose is out of reach, set the initial cam pose'
+                     PSE_T≔CAM_Pose
+             Wait: 2.0
+             trigger
+               If ITM_ID≟1 and JIG≟7
+                 # 1 VISOR Trigger
+               ElseIf ITM_ID≟5 and JIG≟7
+                 # 1 VISOR Trigger
+               ElseIf ITM_ID≟13 and JIG≟7
+                 # 1 VISOR Trigger
+               ElseIf ITM_ID≟1 and JIG≟15
+                 # 1 VISOR Trigger
+               ElseIf ITM_ID≟1 and JIG≟21
+                 # 1 VISOR Trigger
+               ElseIf ITM_ID≟1 and JIG≟17
+                 # 1 VISOR Trigger
+               'init'
+               TM_3D_Found≔visor_partsFound(1)
+               If TM_3D_Found>0
+                 CAM_LM_Detected≔ True 
+                 CAM_Captures≔0
+               Else
+                 CAM_LM_Detected≔ False 
+                 CAM_Captures≔CAM_Captures+1
+               'CAM_LM_Deviatn≔visor_getPose3d(1, 0)'
+               'If CAM_LM_Deviatn≠PSE_Z'
+             result
+               If CAM_LM_Detected
+                 If (CAM_LM_Refinmnt and CAM_LM_Refined) or  not CAM_LM_Refinmnt
+                   'Switch CAM_LM.id'
+                   If ITM_ID≟1 and JIG≟7
+                     CAM_LM_SSRack≔visor_getPose3d(1, 0)
+                   ElseIf ITM_ID≟5 and JIG≟7
+                     CAM_LM_SSRack≔visor_getPose3d(1, 0)
+                   'ElseIf ITM_ID≟13 and JIG≟7'
+                   ElseIf ITM_ID≟1 and JIG≟15
+                     CAM_LM_cont≔visor_getPose3d(1, 0)
+                     Trigger≔get_actual_tcp_pose()
+                   ElseIf ITM_ID≟1 and JIG≟21
+                     CAM_LM_cont≔visor_getPose3d(1, 0)
+                     Trigger≔get_actual_tcp_pose()
+                   ElseIf ITM_ID≟1 and JIG≟17
+                     CAM_LM_cont≔visor_getPose3d(1, 0)
+                     Trigger≔get_actual_tcp_pose()
+                   CAM_Done≔ True 
+               ElseIf  not CAM_LM_Detected and CAM_Captures<CAM_PRM_Retries
+                 CAM_LM_Refined≔ False 
+               ElseIf CAM_Captures≥CAM_PRM_Retries
+                 CAM_Done≔ True 
+                 Error
+                   set_error(ERROR_NO_LANDMARK)
+       Case 151
+         Detect (SensoPart)
+           go to capture pose
+             FRM_Reference≔FRM_Cap_SSRack
+             PSE_T≔p[0,0,-0.00,0,0,0]
+             do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=False)
+             JNT_Q≔get_actual_joint_positions()
+             JNT_Q≔[JNT_Q[0], JNT_Q[1], JNT_Q[2], JNT_Q[3], JNT_Q[4], 0]
+             Set
+             movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_T), qnear=JNT_Q))
+             CAM_Pose≔pose_trans(pose_inv(FRM_Reference), get_actual_tcp_pose())
+           Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop
+             If  not OBJ_Detected and CAM_Captures>0
+               MoveL
+                 If FRM_Reference≟p[0,0,0,0,0,0]
+                   'PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="cubic", range_max=[0.020,0.020,0.020])'
+                   PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[15,15,0])
+                 Else
+                   PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+                 If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))
+                   PSE_T
+                 Else
+                   'If random pose is out of reach, set the initial cam pose'
+                   PSE_T≔CAM_Pose
+                   PSE_T
+             Wait: 0.5
+             Set
+             # 1 VISOR Trigger
+             If visor_isResponseOk(1)
+               CAM_CNT_Obj≔visor_partsFound(1)
+               CAM_OBJ_Pose≔visor_getPose3d(1, 0)
+               If CAM_CNT_Obj>0
+                 CAM_OBJ_Color≔visor_getAdditionalData(1, 0)
+                 CAM_DetectScore≔to_num(visor_getAdditionalData(1, 1))/1000
+                 OBJ_Detected≔ True 
+             Else
+               CAM_Captures≔CAM_Captures+1
+             If OBJ_Detected
+               Get object data
+                 PRC_CntDetect≔0
+                 Loop PRC_CntDetect<CAM_CNT_Obj
+                   get object and jig number
+                     If ITM_ID≟1 and JIG≟7
+                       FRM_Reference≔FRM_Cap_SSRack
+                     ElseIf ITM_ID≟5 and JIG≟7
+                       FRM_Reference≔uLM_Cap_SSRack
+                     'Else'
+                     PSE_T≔pose_trans(pose_inv(FRM_Reference), CAM_OBJ_Pose)
+                     CAM_Result.append(get_pattern_counter(PSE_T, "X", pattern=[10, 5], patternsize=[0.181, 0.081]))
+                   PRC_CntDetect≔PRC_CntDetect+1
+               CAM_Done≔ True 
+             ElseIf CAM_Captures≥CAM_PRM_Retries
+               CAM_Done≔ True 
+             Else
+               CAM_Captures≔CAM_Captures+1
+     '=========='
+     PostSettings
+       FRM_Reference≔p[0,0,0,0,0,0]
+       Set
+       CAM_Pose≔p[0,0,0,0,0,0]
+       Action≔0
+       Action_Info≔""

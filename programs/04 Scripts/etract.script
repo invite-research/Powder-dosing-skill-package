@@ -1,0 +1,36 @@
+def extract_powder_name(raw_str):
+
+    # 1. find "(" and ")"
+    local idx_open  = str_find(raw_str, "(")
+    local idx_close = str_find(raw_str, ")")
+
+    if (idx_open < 0) or (idx_close < 0):
+        return raw_str
+    end
+
+    # 2. Build the string inside parentheses manually
+    # Example: "005,CCS"
+    local inside = ""
+    local i = idx_open + 1
+    while i < idx_close:
+        inside = str_cat(inside, str_at(raw_str, i))
+        i = i + 1
+    end
+
+    # 3. Find the comma
+    local idx_comma = str_find(inside, ",")
+
+    if idx_comma < 0:
+        return inside     # no comma found
+    end
+
+    # 4. Extract everything after comma (powder name)
+    local powder = ""
+    local j = idx_comma + 1
+    while j < str_len(inside):
+        powder = str_cat(powder, str_at(inside, j))
+        j = j + 1
+    end
+
+    return powder
+end

@@ -1,0 +1,318 @@
+############# SCRIPT uLM Defines ###############
+#*****************************************************
+# Customer          :   URG
+# Product Name      :   uLabMobile
+#****************************************************
+# Controller/Robot  :   UR5e
+# Software          :   5.17
+# Dependencies      :   Factory Script, Logs Script
+# How To            :   Define Constants depending on the Project, don't go to big in Listsize as it will exceed the URScript limits
+#****************************************************
+# Author            :   D.Kreugel
+# Copyright (c)     :   United Robotics Group Health and Food GmbH
+#                       An der Riede 2
+#                       28816 Stuhr
+#                       Germany
+#****************************************************
+# Description       :   Defines all Enums and Global reachable Varibles/Datastructures
+# Version           :   0.2
+# Created           :   18.07.2024
+# Updated           :   
+#****************************************************
+# Modifications     :   
+#
+# Date              :  
+# Name              :   
+# Reason            :   
+#****************************************************
+# TODO find better place for the Search Funktions for the Object Lists, documentation
+
+
+POS_Z = p[0,0,0,0,0,0]
+
+# DEFAULTS ROBOT MOVEMENTS
+DEFAULT = struct(SPEED=0.8, ACCELERATION=0.6)
+
+# ENUMS
+Objects = struct(NONE=0, CC_SAMPLE=1, CC_RACK=2, COAG_SAMPLE=3, COAG_RACK=4, HEMA_SAMPLE=5, HEMA_RACK=6, INPUT_RACK=7, CF_RACK=8, ANY_SAMPLE=9, ANY_RACK=10, TARA_SAMPLE=11, BUTTON=12, XN550_DRAWER=13, COBAS_RACK=14)
+ObjectType = struct(NONE=0,SAMPLE=1,RACK=2, BUTTON=3, DRAWER=4)
+
+ActionManipulator = struct(NONE=0, PICK=1, PLACE=2, DECAP=12, PUSH=3, RELEASE=21, GRASP=20, MOVE_TO=19, DRAWER_OPEN=51, DRAWER_CLOSE=52)
+ActionAMR = struct(NONE=0, LOAD_MISSION=31, START_MISSION=32, NAVIGATE=33, ACKNOWLEDGE=34, READ=35)
+ActionCamera = struct(NONE=0, INSPECT=16, DETECT=15, DETECT_OBJECTS=17)
+Device = struct(MANIPULATOR=1, AMR=2, CAMERA=3)
+Patterns = struct(NONE="NONE", TARA="TARA", CENTRIFUGE="CENTRIFUGE",CENTRIFUGE_MAGAZINE="CENTRIFUGE_MAGAZINE",SYSMEX_XN550="SYSMEX_XN550",COBAS="COBAS",COBAS_MAGAZINE="COBAS_MAGAZINE",INPUT="INPUT",NOK="NOK",DRAWER_XN550="DRAWER_XN550",ARCHIVE="ARCHIVE")
+CommandStatus = struct(EXECUTED=0, UNFINISHED=1)
+
+# Constants
+MAX_CAPTURE_ATTEMPTS = 8
+# Maximum Size of the Datastructures
+MAX_ITEM_OBJ = 40
+MAX_GRIPPER_OBJ = 10
+MAX_LANDMARK_OBJ = 10
+MAX_PATTERN_OBJ = 30
+MAX_ITEM_MODEL_OBJ = 20
+MAX_VISION_CONFIG_OBJ = 10
+MAX_CAPTURE_RESULTS = 55
+MAX_MOVEMENT_OBJ = 50
+
+CON=False
+
+# for Marburg Approach
+LAST_CAPTURE = make_list(0, "", MAX_CAPTURE_RESULTS)
+
+# Initialize the Datastructures in order to store related Data and use them in structs without length issues
+
+OBJECT_MAP = make_list(0 ,create_object(), MAX_ITEM_OBJ)
+ITEM_MAP = make_list(0, create_item(), MAX_ITEM_OBJ)
+ITEM_MODEL_MAP = make_list(0, create_pattern(), MAX_ITEM_MODEL_OBJ)
+GRIPPER_CONFIG_MAP = make_list(0, create_gripper_config(), MAX_PATTERN_OBJ)
+VISION_CONFIG_MAP = make_list(0, create_vision_config(), MAX_VISION_CONFIG_OBJ)
+INSPECT_CONFIG_MAP = make_list(0, create_inspect_config(), MAX_VISION_CONFIG_OBJ)
+LANDMARK_MAP = make_list(0, create_landmark(), MAX_LANDMARK_OBJ)
+MOVEMENT_MAP = make_list(0, create_movement(), MAX_MOVEMENT_OBJ)
+
+OBJECT_REFERENCE_HEIGHT = 81
+
+
+# functions to search in the datastructures which are defined in the factories
+
+################# MOVEMENT ###############
+
+def find_movement_by_frame_and_action(frame,action):
+    local i = 0
+    local ii = 0
+    while (i < MOVEMENT_MAP.length()):
+        if (MOVEMENT_MAP[i].frame == frame):
+            while(ii < MOVEMENT_MAP[i].actionlist.length()):
+                if (MOVEMENT_MAP[i].actionlist[ii] == action):
+                    log_info("Movement found: [" + to_str(MOVEMENT_MAP[i].description) + "]")
+                    return MOVEMENT_MAP[i]
+                end
+                ii = ii + 1
+            end
+            ii = 0
+        end
+        i = i + 1
+    end
+    log_warning("no movement found for frame: [" + to_str(frame) + "]")
+    return create_movement(frame=frame)  # Return default pattern if not found
+end
+
+def find_item_by_lsitem_and_action(ls_item, action):
+    local i = 0
+    while (i < ITEM_MAP.length()):
+        if (ITEM_MAP[i].ls_item == ls_item):
+            local ii = 0
+            while (ii < ITEM_MAP[i].actionlist.length()):
+                if (ITEM_MAP[i].actionlist[ii] == action):
+                    log_info("Item found: [" + to_str(ITEM_MAP[i].description) + "]")
+                    return ITEM_MAP[i]
+                end
+                ii = ii + 1
+            end
+        end
+        i = i + 1
+    end
+    log_warning("Item not found for station[" + to_str(ls_item) + "] and action[" + to_str(action) + "]")
+    return create_item()  # Return default item if not found
+end
+################# PATTERN ###################
+
+def find_pattern_by_name(name):
+    local i = 0
+    while (i < ITEM_MODEL_MAP.length()):
+        if (ITEM_MODEL_MAP[i].name == name):
+            log_info("Item Model found: [" + to_str(ITEM_MODEL_MAP[i].description) + "]")
+            return ITEM_MODEL_MAP[i]
+        end
+        i = i + 1
+    end
+    log_warning("Item Model not found for name[" + to_str(name) + "]")
+    return create_pattern()  # Return default pattern if not found
+end
+
+def is_in_list(list,val):
+    local i = 0
+    while(i<list.length()):
+        if(list[i]==val):
+            return True
+        end
+        i=i+1
+    end
+    return False
+end 
+
+def get_next_valid_patternslot(item_model, counter):
+    local i = 0
+    local temp = 0
+    local max_slots = item_model.pattern_size[0] * item_model.pattern_size[1]
+    log_info("blocked positions:" + to_str(item_model.blocked) + "| current pos: " + to_str(counter))
+    while (i < item_model.blocked.length()):
+        if(item_model.blocked[i] <= counter and item_model.blocked[i] != -1):
+            temp = temp + 1
+        end
+        i = i + 1
+    end
+
+    if(is_in_list(item_model.blocked,counter+temp)):
+        while(is_in_list(item_model.blocked,counter+temp)):
+            temp=temp+1
+        end
+    end
+    log_info("changed position in rack to nbr:" + to_str(counter+temp))
+
+    return counter+temp
+
+end
+
+################# OBJECT ###################
+
+# def find_object_by_material(material):
+#   local i = 0
+#   log_info("Trying to find object by color:", to_str(material))
+#   while (i < OBJECT_MAP.length()):
+#       if (OBJECT_MAP[i].material == material):
+#           log_info("Object model found:", to_str(OBJECT_MAP[i]))
+#           return OBJECT_MAP[i]
+#       end
+#       i = i + 1
+#   end
+#   return OBJ_DEFAULT  # Return default pattern if not found
+# end
+
+def find_object_by_objectname(objectname):
+    local i = 0
+    #log_info("Trying to find object by color:", to_str(objectname))
+    while (i < OBJECT_MAP.length()):
+        if (OBJECT_MAP[i].obj_name == objectname):
+            log_info("Object Model found: [" + to_str(OBJECT_MAP[i].description) + "]")
+            return OBJECT_MAP[i]
+        end
+        i = i + 1
+    end
+    log_warning("no Object Model found for objectname:[" + to_str(objectname) + "]")
+    return create_object()
+end
+
+def find_smallest_object():
+    local i = 0
+    local min_size = OBJECT_MAP[0].height
+    #log_info("Trying to find object by color:", to_str(objectname))
+    while (i < OBJECT_MAP.length()):
+        if (OBJECT_MAP[i].height <= min_size and OBJECT_MAP[i].height != 0):
+            log_info("smaller object found: [" + to_str(OBJECT_MAP[i].description) + "]")
+            min_size = OBJECT_MAP[i].height
+        end
+        i = i + 1
+    end
+    return min_size
+end
+
+def find_gripper_config_by_objectname(objectname):
+local i = 0
+while (i < GRIPPER_CONFIG_MAP.length()):
+    #log_info("gripper config:",to_str(GRIPPER_CONFIG_MAP[i]))
+    if (GRIPPER_CONFIG_MAP[i].object == objectname):
+        log_info("found gripper parameters [" + to_str(GRIPPER_CONFIG_MAP[i]) + "]")
+        return GRIPPER_CONFIG_MAP[i]
+    end
+    i = i + 1
+end
+
+log_warning("no gripper parameters found for object type: " + to_str(objectname))
+return create_gripper_config()
+end
+# Function to find a landmark by item
+def find_landmark_by_id(lm_id):
+    local i = 0
+    while i < LANDMARK_MAP.length():
+        if LANDMARK_MAP[i].lm_id == lm_id:
+            log_info("found landmark with id(" + to_str(lm_id) + "): [" + to_str(LANDMARK_MAP[i].description) + "]")
+            return LANDMARK_MAP[i]
+        end
+        i = i + 1
+    end
+    log_warning("landmark not found for lm_id [" + to_str(lm_id) + "]")
+    return create_landmark()
+end
+# Function to find a landmark by item
+def find_landmark_by_capture_pos(capture_pos):
+    local i = 0
+    while i < LANDMARK_MAP.length():
+        if LANDMARK_MAP[i].capture_pos == capture_pos:
+            log_info("found landmark by capture_pos [" + to_str(LANDMARK_MAP[i].description) + "]")
+            return LANDMARK_MAP[i]
+        end
+        i = i + 1
+    end
+    log_warning("Landmark not found for capture_pos: [" + to_str(capture_pos) + "]")
+    return create_landmark()
+end
+
+def update_landmark_by_capture_pos(capture_pos, lm_pos):
+    local i = 0
+    while i < LANDMARK_MAP.length():
+        if LANDMARK_MAP[i].capture_pos == capture_pos:
+            log_info("updated landmark from [" + to_str(LANDMARK_MAP[i].description) + "]")
+            LANDMARK_MAP[i].actual_frame = lm_pos
+            return True
+        end
+        i = i + 1
+    end
+    log_warning("Landmark not found for capture_pos: [" + to_str(capture_pos) + "]")
+    return False
+end
+
+def update_landmark_by_id(lm_id,lm_pos):
+    local i = 0
+    while i < LANDMARK_MAP.length():
+        if LANDMARK_MAP[i].lm_id == lm_id:
+            log_info("updated landmark.actual_frame from [" + to_str(LANDMARK_MAP[i].description + "]"))
+            LANDMARK_MAP[i].actual_frame = lm_pos
+            return True
+        end
+        i = i + 1
+    end
+    log_warning("Landmark not found for lm_id " + to_str(lm_id))
+    return False
+end
+
+def find_vision_config_by_frame(frame):
+    local i = 0
+    while i < VISION_CONFIG_MAP.length():
+        if VISION_CONFIG_MAP[i].capture_pos == frame:
+            log_info("Vision Config found: [" + to_str(VISION_CONFIG_MAP[i].description) + "]")
+            return VISION_CONFIG_MAP[i]
+        end
+        i = i + 1
+    end
+    log_info("Vision Config not found for frame: " + to_str(frame))
+    return create_vision_config()
+end
+
+def find_vision_config_by_itemid(id):
+    local i = 0
+    while i < VISION_CONFIG_MAP.length():
+        if VISION_CONFIG_MAP[i].item_id == id:
+            log_info("Vision Config found: [" + to_str(VISION_CONFIG_MAP[i].description) + "]")
+            return VISION_CONFIG_MAP[i]
+        end
+        i = i + 1
+    end
+    log_info("Vision Config not found for item: " + to_str(id))
+    return create_vision_config()
+end
+
+def find_inspect_config_by_itemid(id):
+    local i = 0
+    while i < INSPECT_CONFIG_MAP.length():
+        if INSPECT_CONFIG_MAP[i].item_id == id:
+            log_info("Inspect Config found: [" + to_str(INSPECT_CONFIG_MAP[i].description) + "]")
+            return INSPECT_CONFIG_MAP[i]
+        end
+        i = i + 1
+    end
+    log_info("Inspect Config not found for item: " + to_str(id))
+    return create_inspect_config()
+end

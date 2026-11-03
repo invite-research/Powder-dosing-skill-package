@@ -1,0 +1,309 @@
+def scooping_init():
+	global diameter = 0.07 #qr input
+             	global TCP_to_tip = 0.020
+	#global container_height = 0.120   #d
+	global container_height = 0.0950   #n qr input
+	global neckandcontainer_height = 0.33 #qr input
+	global cube_lenght = 0.0666 #qr input
+	global bottle_diameter = 0.05 # qr input
+	global container_id = 1 # qr input
+	global reach_margin = 0.03
+
+	global angle_min = 18.0
+	global angle_max = 68.0
+	global gain_per_percent = 0.5
+
+	global level_bias_below_center = 0.020
+
+	global level = 0.0
+	global tilt_angle_sent = 0.0
+	global w_dosed_total = 0.0
+	global last_scale = 0.0
+	global g_z0_hi = 0.036 #n
+	#global g_z100_hi = 0.0942 #n 127.5-33.3= 94.2
+	global g_z100_hi = 0.146
+	#global g_z100_hi = container_height-neckandcontainer_height #n 127.5-33.3= 94.2
+	global g_z_min = 0.05
+	global g_z_max = 0.150
+
+	#global g_exp = 0.80
+	#global g_k = 0.03
+	#global g_alpha = 0.7
+	global g_corr_max = 0.010
+
+	global g_prev_cum_w = -1.0
+	global g_depth_corr = 0.0	
+	global spatula_len = 0.17
+	global target_g = 0.0
+	global scoop_ct = 0
+	global error_sum = 0.0
+	global error_sq_sum = 0.0
+	global scoop_g = 0.0
+	global w_dosed_total = 0.0
+
+	if (Pow_name=="NaCl"):
+		#global W_FULL = 625.00 #d
+		global W_FULL = 444.10 #n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_exp = 0.80
+		global g_k = 0.03
+		global g_alpha = 0.7
+	elif (Pow_name == "Mannitol"):
+		global W_FULL = 300.00#n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_exp = 0.82
+		global g_k = 0.025
+		global g_alpha = 0.6
+	elif (Pow_name == "MCC"):
+		global W_FULL = 280.0#n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_exp = 0.82
+		global g_k = 0.035
+		global g_alpha = 0.7
+	elif (Pow_name == "CCS"):
+		global W_FULL = 250.0#n qr input
+		global W_EMPTY = 51.381
+		global g_exp = 0.82
+		global g_k = 0.035
+		global g_alpha = 0.7
+	elif (Pow_name == "Magnesium_stearate"):
+		global W_FULL = 200.0#n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_exp = 0.84
+		global g_k = 0.025
+		global g_alpha = 0.6
+	elif (Pow_name == "lactose_fine"):
+		global W_FULL = 330.0#n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_exp = 0.84
+		global g_k = 0.025
+		global g_alpha = 0.55
+	else:
+		popup("Unkwon powder type. Using default NaCl settings.", title="Calibration Warning")
+		global W_FULL = 300.0#n qr input
+		global W_EMPTY = 30.691 #qr input
+		global g_k = 0.03
+		global g_alpha = 0.7
+	end
+
+
+end
+
+def clamp(x, lo, hi):
+	if(x<lo):
+		return lo
+	elif (x>hi):
+		return hi
+	else:
+		return x
+	end
+end
+
+def compute_level_percent(W_now, weight_value):
+	local delta = weight_value - last_scale
+	if (delta<0.0):
+		delta = 0.0
+	end
+	global w_dosed_total = w_dosed_total + delta
+	last_scale = weight_value
+	
+	local W_eff = W_now-w_dosed_total
+	if (W_eff<W_EMPTY):
+		W_eff = W_EMPTY
+	end
+	
+	level = 100.0* (W_eff -W_EMPTY)/ (W_FULL-W_EMPTY)
+	level = clamp(level,0.0,100.0)
+
+	return level
+end
+
+def compute_tilt_deg(level_percent):
+	angle = angle_min + gain_per_percent*(100.0-level_percent)
+	return clamp(angle, angle_min, angle_max)
+end
+
+
+def tilt(level_percentage):
+	new_angle = compute_tilt_deg(level_percentage)
+	global angle_rel = new_angle - tilt_angle_sent
+	
+	if my_abs(angle_rel)>2.0:
+		tilt_send(new_angle)
+		global angle_deg = new_angle
+		global tilt_angle_sent = new_angle
+		global p_center = updated_center_pose(p_center_vertical, angle_deg)
+	end
+	
+	if (level<85.0):
+		tilt_send(angle_deg)
+	end
+end
+
+def compute_scoop_depth(level, cum_w, target_g):
+	if (level >=10.0):
+		ratio = level/100.0
+		corrected = pow(ratio, g_exp)
+		base_z = g_z0_hi + (g_z100_hi - g_z0_hi)*corrected
+		
+	elif (level<10.00 and level>=1.00): 
+		z0 = 0.023
+		z100 = 0.140
+		ratio2 = level/100.0
+		base_z = z0 +(z100-z0)*ratio2
+	else:
+		base_z = 0.016
+	end
+
+	if (g_prev_cum_w<0):
+		g_prev_cum_w = cum_w
+
+	else:
+		global scoop_g = cum_w-g_prev_cum_w
+		g_prev_cum_w = cum_w
+
+		e = target_g -scoop_g
+
+		corr_proposed = g_k*e
+		g_depth_corr = (1.0 -g_alpha)*g_depth_corr + g_alpha*corr_proposed
+		g_depth_corr = clamp(g_depth_corr, -g_corr_max, g_corr_max)
+	end
+
+	z_tip = base_z - g_depth_corr
+	z_tip = clamp(z_tip, g_z_min, g_z_max)
+
+
+	return z_tip
+end
+
+def my_abs(val):
+	if (val<0):
+		return -val
+	else:
+		return val
+	end
+end
+
+
+def select_spatula(Pow_name, level, diff,diameter):
+	if (Pow_name == "lactose_fine" or Pow_name== "Magnesium_stearate"):
+		if (level >10.0 and diff>0.6 and diameter>0.6):
+			return "spatula_flat_M"
+		else:
+			return "spatula_flat_S"
+		end
+
+	elif (Pow_name == "NaCl" and level >10.0 and diff>6.5 and diameter>0.6):
+		return "spatula_L"
+	elif(Pow_name == "NaCl" and level> 10.0 and diff<=6.5 and diameter>0.6):
+		return "spatula_M"
+	elif (Pow_name == "NaCl" and level >10.0 and diff>6.5 and diameter<0.6):
+		return "spatula_M"
+	elif(Pow_name == "NaCl" and level> 10.0 and diff<=6.5 and diameter<0.6):
+		return "spatula_M"
+	elif (Pow_name == "MCC" and level >10.0 and diff>2.0 and diameter>0.6):
+		return "spatula_L"
+	elif(Pow_name == "MCC" and level> 10.0 and diff<=2.0 and diameter>0.6):
+		return "spatula_M"
+	elif ((Pow_name == "Mannitol" or Pow_name == "CCS") and level >10.0 and diff>3.2 and diameter>0.6):
+		return "spatula_L"
+	elif ((Pow_name == "Mannitol" or Pow_name == "CCS") and level >10.0 and diff<=3.2 and diameter>0.6):
+		return "spatula_M"
+	elif( level>1.0 and level <= 10.0):
+		return "spatula_M"
+	else:
+		return "spatula_S"
+	end
+end
+
+global target_g_table = [
+	"NaCl", "spatula_L", "6.8",
+	"NaCl", "spatula_M", "1.75",
+	"NaCl", "spatula_S", "0.135",
+
+	"Mannitol", "spatula_L", "3.1",
+	"Mannitol", "spatula_M", "0.9",
+	"Mannitol", "spatula_S", "0.075",
+
+	"CCS", "spatula_L", "2.5",
+	"CCS", "spatula_M", "0.9",
+	"CCS", "spatula_S", "0.075",
+
+	"MCC", "spatula_L", "1.8",
+	"MCC", "spatula_M", "0.5",
+	"MCC", "spatula_S", "0.05",
+
+	"Magnesium_stearate", "spatula_flat_M", "0.5",
+	"Magnesium_stearate", "spatula_flat_S", "0.25",
+
+	"lactose_fine", "spatula_flat_M", "1.0",
+	"lactose_fine", "spatula_flat_S", "0.7"]
+
+def get_target_g(Pow_name, spat_name):
+	local i = 0
+	local n = length(target_g_table)
+	while (i < n):
+		if (target_g_table[i] == Pow_name and target_g_table[i+1] == spat_name):
+			return to_num(target_g_table[i+2])
+		end
+		i = i+3
+	end
+	popup("No target_g match for: ", Pow_name, ", ", spatula)
+	
+end
+def auto_tilt_and_scoop(W_now, target_weight, weight_value):
+	level = compute_level_percent(W_now, weight_value)
+
+	global spatula = select_spatula(Pow_name, level, diff,diameter)
+	global target_g = get_target_g(Pow_name, spatula)
+
+	global scoop_depth = compute_scoop_depth(level, weight_value, target_g)
+
+	tilt(level)
+	#p_center = get_actual_tcp_pose()
+
+	if (scoop_ct < 5 and g_prev_cum_w>0.0):
+		#local scoop_g = scoop_g
+		local error = target_g - scoop_g
+		error_sum = error_sum + error
+		error_sq_sum = error_sq_sum + error*error
+		scoop_ct = scoop_ct+1
+
+		if (scoop_ct==5):
+			local avg_error = error_sum/5.0
+			#local std_dev = sqrt(error_sq_sum/5.0) - (avg_error*avg_error))
+
+			if (my_abs(avg_error)>1.0):
+				g_k = 0.055
+				g_alpha = 0.85
+			elif (my_abs(avg_error)>0.6):
+				g_k= 0.045
+				g_alpha =0.75
+			elif (my_abs(avg_error)> 0.3):
+				g_k = 0.035
+				g_alpha = 0.65
+			elif (my_abs(avg_error)>0.1):
+				g_k = 0.025
+				g_alpha = 0.55
+			else:
+				g_k = 0.015
+				g_alpha = 0.45
+			end
+		end
+	end
+
+	scoop_powder(p_center)
+end
+
+# 
+def after_scoop():
+	tilt_send(angle_deg)
+	sleep(0.5)
+	movel(lifted_pose, a=0.05, v=0.2)
+	movel(tilted_pose_in_base, a=0.05, v=0.2)
+	set_analog_out(0,0.4)
+	movel(pose_trans(tilted_pose_in_base, p[-0.01,0,0,0,0,2.0]), a=0.05, v=0.2)
+	set_analog_out(0,0.0)
+	movel(lifted_pose, a=0.05, v=0.2)
+	tilt_to_home()
+end

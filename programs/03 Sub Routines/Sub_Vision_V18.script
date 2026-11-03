@@ -1,0 +1,4254 @@
+def Sub_Vision_V18():
+  global _hidden_verificationVariable=0
+  set_gravity([0.0, 0.0, 9.82])
+  set_safety_mode_transition_hardness(1)
+  set_target_payload(1.740000, [-0.004000, -0.019000, 0.051000], [0.003875, 0.003875, 0.003875, 0.000000, 0.000000, 0.000000])
+  set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+  set_tool_communication(True, 115200, 0, 1, 1.5, 3.5)
+  set_tool_output_mode(0)
+  set_tool_digital_output_mode(0, 1)
+  set_tool_digital_output_mode(1, 1)
+  set_tool_voltage(24)
+  modbus_add_signal("192.168.12.20", 255, 3, 2, "MiR_Mode", False)
+  modbus_set_signal_update_frequency("MiR_Mode", 10)
+  modbus_add_signal("192.168.12.20", 255, 4, 2, "MiR_State", False)
+  modbus_set_signal_update_frequency("MiR_State", 10)
+  modbus_add_signal("192.168.12.20", 255, 5, 2, "MiR_Error_ID", False)
+  modbus_set_signal_update_frequency("MiR_Error_ID", 10)
+  modbus_add_signal("192.168.12.20", 255, 7, 2, "MiR_Battery_Lvl", False)
+  modbus_set_signal_update_frequency("MiR_Battery_Lvl", 10)
+  modbus_add_signal("192.168.12.20", 255, 18, 2, "MiR_Mis_Queue", False)
+  modbus_set_signal_update_frequency("MiR_Mis_Queue", 10)
+  modbus_add_signal("192.168.12.20", 255, 1, 1, "MiR_CMD_Stop", False)
+  modbus_set_signal_update_frequency("MiR_CMD_Stop", 10)
+  modbus_add_signal("192.168.12.20", 255, 2, 1, "MiR_CMD_Abort", False)
+  modbus_set_signal_update_frequency("MiR_CMD_Abort", 10)
+  modbus_add_signal("192.168.12.20", 255, 3, 1, "MiR_CMD_Clear_Q", False)
+  modbus_set_signal_update_frequency("MiR_CMD_Clear_Q", 10)
+  modbus_add_signal("192.168.12.20", 255, 4, 1, "MiR_CMD_Clear_E", False)
+  modbus_set_signal_update_frequency("MiR_CMD_Clear_E", 10)
+  modbus_add_signal("192.168.12.20", 255, 5, 1, "MiR_CMD_Start", False)
+  modbus_set_signal_update_frequency("MiR_CMD_Start", 10)
+  modbus_add_signal("192.168.12.20", 255, 1001, 2, "T2O_Current_Pos", False)
+  modbus_set_signal_update_frequency("T2O_Current_Pos", 10)
+  modbus_add_signal("192.168.12.20", 255, 1003, 2, "T2O_Warning_ID", False)
+  modbus_set_signal_update_frequency("T2O_Warning_ID", 10)
+  modbus_add_signal("192.168.12.20", 255, 1005, 2, "T2O_Error_ID", False)
+  modbus_set_signal_update_frequency("T2O_Error_ID", 10)
+  modbus_add_signal("192.168.12.20", 255, 1019, 3, "O2T_Target_Pos", False)
+  modbus_set_signal_update_frequency("O2T_Target_Pos", 10)
+  modbus_add_signal("192.168.12.20", 255, 1017, 3, "O2T_Action", False)
+  modbus_set_signal_update_frequency("O2T_Action", 10)
+  modbus_add_signal("192.168.12.20", 255, 1000, 1, "O2T_Mis_Charge", False)
+  modbus_set_signal_update_frequency("O2T_Mis_Charge", 1)
+  modbus_add_signal("192.168.12.20", 255, 1004, 1, "O2T_Mis_Main", False)
+  modbus_set_signal_update_frequency("O2T_Mis_Main", 1)
+  modbus_add_signal("192.168.12.20", 255, 1007, 2, "T2O_Nav_Attemps", False)
+  modbus_set_signal_update_frequency("T2O_Nav_Attemps", 10)
+  modbus_add_signal("192.168.12.20", 255, 1009, 2, "T2O_Done", False)
+  modbus_set_signal_update_frequency("T2O_Done", 10)
+  modbus_add_signal("192.168.12.20", 255, 1021, 3, "O2T_Acknowledge", False)
+  modbus_set_signal_update_frequency("O2T_Acknowledge", 10)
+  modbus_add_signal("192.168.12.20", 255, 1011, 2, "T2O_Charging", False)
+  modbus_set_signal_update_frequency("T2O_Charging", 10)
+  modbus_add_signal("192.168.12.20", 255, 12, 2, "MiR_Position_X1", False)
+  modbus_set_signal_update_frequency("MiR_Position_X1", 10)
+  modbus_add_signal("192.168.12.20", 255, 13, 2, "MiR_Position_X2", False)
+  modbus_set_signal_update_frequency("MiR_Position_X2", 10)
+  modbus_add_signal("192.168.12.20", 255, 14, 2, "MiR_Position_Y1", False)
+  modbus_set_signal_update_frequency("MiR_Position_Y1", 10)
+  modbus_add_signal("192.168.12.20", 255, 15, 2, "MiR_Position_Y2", False)
+  modbus_set_signal_update_frequency("MiR_Position_Y2", 10)
+  modbus_add_signal("192.168.12.20", 255, 1023, 3, "O2T_Footprint", False)
+  modbus_set_signal_update_frequency("O2T_Footprint", 10)
+  modbus_add_signal("192.168.12.20", 255, 1025, 3, "O2T_ProtectOff", False)
+  modbus_set_signal_update_frequency("O2T_ProtectOff", 10)
+  modbus_add_signal("192.168.12.20", 255, 1027, 3, "O2T_Dock", False)
+  modbus_set_signal_update_frequency("O2T_Dock", 10)
+  modbus_add_signal("192.168.12.20", 255, 16, 2, "MiR_Theta_1", False)
+  modbus_set_signal_update_frequency("MiR_Theta_1", 10)
+  modbus_add_signal("192.168.12.20", 255, 17, 2, "MiR_Theta_2", False)
+  modbus_set_signal_update_frequency("MiR_Theta_2", 10)
+  modbus_add_signal("192.168.12.197", 255, 0, 0, "WM_Sensor1", False)
+  modbus_set_signal_update_frequency("WM_Sensor1", 2)
+  modbus_add_signal("192.168.12.197", 255, 1, 0, "WM_Sensor2", False)
+  modbus_set_signal_update_frequency("WM_Sensor2", 2)
+  modbus_add_signal("192.168.12.197", 255, 2, 0, "WM_Sensor3", False)
+  modbus_set_signal_update_frequency("WM_Sensor3", 2)
+  modbus_set_runstate_dependent_choice("MiR_CMD_Stop",0)
+  modbus_set_runstate_dependent_choice("MiR_CMD_Abort",0)
+  modbus_set_runstate_dependent_choice("MiR_CMD_Clear_Q",0)
+  modbus_set_runstate_dependent_choice("MiR_CMD_Clear_E",0)
+  modbus_set_runstate_dependent_choice("MiR_CMD_Start",0)
+  modbus_set_runstate_dependent_choice("O2T_Target_Pos",0)
+  modbus_set_runstate_dependent_choice("O2T_Action",0)
+  modbus_set_runstate_dependent_choice("O2T_Mis_Charge",0)
+  modbus_set_runstate_dependent_choice("O2T_Mis_Main",0)
+  modbus_set_runstate_dependent_choice("O2T_Acknowledge",0)
+  modbus_set_runstate_dependent_choice("O2T_Footprint",0)
+  modbus_set_runstate_dependent_choice("O2T_ProtectOff",0)
+  modbus_set_runstate_dependent_choice("O2T_Dock",0)
+  set_standard_analog_input_domain(0, 1)
+  set_standard_analog_input_domain(1, 1)
+  set_tool_analog_input_domain(0, 1)
+  set_tool_analog_input_domain(1, 1)
+  set_analog_outputdomain(0, 1)
+  set_analog_outputdomain(1, 1)
+  set_input_actions_to_default()
+  set_standard_digital_input_action(1, "freedrive")
+  set_gp_boolean_input_action(0, "freedrive")
+  set_runstate_standard_digital_outputs([0])
+  set_runstate_configurable_digital_outputs([5])
+  set_runstate_standard_digital_output_to_value(0, 1)
+  set_runstate_configurable_digital_output_to_value(5, 1)
+  set_runstate_configurable_digital_output_to_value(6, 2)
+  set_runstate_configurable_digital_output_to_value(7, 2)
+  global AMR_AtTarget=True
+  global ARM_Referenced=False
+  global PROCESS_Info="process control"
+  global AMR_Step=0
+  global STATE=2
+  global AMR_Free=False
+  global AMR_PosTarget=0
+  global PSE_G_H=p[0, 0, 0, 0, 0, 0]
+  global PSE_T=p[0.20812, -0.35998, 0.51852, -0.10812, -0.00883, -1.5456]
+  global PSE_R=p[0, 0, 0, 0, 0, 0]
+  global AMR_PosActual=0
+  global PSE_G=p[0, 0, 0, 0, 0, 0]
+  global PSE_A=p[0, 0, 0, 0, 0, 0]
+  global PSE_C_S=p[0, 0, 0, 0, 0, 0]
+  global PSE_C_H=p[0, 0, 0, 0, 0, 0]
+  global PSE_C_E=p[0, 0, 0, 0, 0, 0]
+  global PSE_T_H=p[0, 0, 0, 0, 0, 0]
+  global AMR_Done=False
+  global STATE_Info="Stopped"
+  global PROCESS_Step=3
+  global PSE_A_H=p[0, 0, 0, 0, 0, 0]
+  global PSE_R_H=p[0, 0, 0, 0, 0, 0]
+  global JNT_A=[0, 0, 0, 0, 0, 0]
+  global JNT_S=[0, 0, 0, 0, 0, 0]
+  global ITM_ID=1
+  global JIG=7
+  global JIG_Slot=0
+  global OBJ_Type=3
+  global PSE_Z=p[0, 0, 0, 0, 0, 0]
+  global CAM_LM_Detected=True
+  global CAM_LM_ID=0
+  global CAM_LM_Refinmnt=False
+  global CAM_Captures=0
+  global CAM_Done=True
+  global CAM_LM_Refined=False
+  global CAM_PRM_Retries=15
+  global AMR_Battery=100
+  global WRK_Done=False
+  global ITM_Prepared=True
+  global ITM_Manipulated=True
+  global AMR_Charging=False
+  global Action=0
+  global Task_info="Pick Rack"
+  global Action_Info=""
+  global OBJ_Picked=False
+  global TM_St_Stopping="0/2/50/2"
+  global STATE_Times=[11403.06641, 186394.54688, 1116.67456, 513611.75, 9569.55176, 174723.17188, 3112.35132, 3697.48828, 160.11218, 18951.36133, 20.288, 0.258, 385.68799, 0.256, 0, 0, 0]
+  global TM_St_Stopped="2/3/46/34"
+  global TM_St_Resetting="0/0/18/36"
+  global TM_St_Idle="5/22/40/11"
+  global TM_St_Starting="0/2/39/28"
+  global TM_St_Execute="2/0/30/57"
+  global TM_St_Holding="0/0/2/40"
+  global TM_St_Held="0/5/15/51"
+  global TM_St_Unholding="0/0/0/20"
+  global TM_St_Suspendin="0/0/0/0"
+  global TM_St_Suspended="0/0/6/25"
+  global TM_St_Unsuspend="0/0/0/0"
+  global TM_St_Completin="0/0/51/52"
+  global TM_St_Complete="0/1/1/37"
+  global TM_St_Aborting="00/00/00/00"
+  global TM_St_Aborted="00/00/00/00"
+  global TM_St_Clearing="00/00/00/00"
+  global CMD_Stop=False
+  global STP_Info=""
+  global WRK_Step=0
+  global WRK_Info=""
+  global AMR_FootprintID=1
+  global JNT_Z=[0, 0, 0, 0, 0, 0]
+  global CAM_LM_Offset=p[0, 0, 0, 0, 0, 0]
+  global CAM_LM_Deviatn=p[-0.01155, -0.0085, -0.00004, 0.00008, -0.00054, 0.04807]
+  global ITM_ID_List=[1, 2, 3, 4, 5, 6, 7, 8, 9]
+  global JNT_Q=[-0.93699, -1.29699, -1.87564, -1.53965, 1.57318, 0]
+  global OBJ_TCP=p[0, 0.08604, 0.29117, 0, -3.14159, 0]
+  global OBJ_GRP_Offset=p[0, 0, 0.15, 0, 0, 0]
+  global Task_ID=0
+  global PRC_Force_Decap=False
+  global PRC_Reset=True
+  global CAM_CNT_Obj=0
+  global OBJ_Nbr=0
+  global GRP_Offset=p[0, 0, 0, 0, 0, 0]
+  global GRP_Open_Pos=26
+  global CMD_Hold=False
+  global CAM_OBJ_Color="219896"
+  global JIG_Offset=p[0, 0, -0.02, 0, 0, 0]
+  global PRM_TO_Read_BC=5
+  global FRM_Cap_SSTable=p[-0.016967573121606263,-0.40400204697571473,0.38260340622591243,-0.02922089502099556,-0.06392179077884524,-0.1002591721781215]
+  global FRM_Capture_Cen=p[-0.350002433865069,0.09999194422544704,0.39999652960929194,0.27390617458472216,0.27390634457500074,1.5534190527760867]
+  global FRM_Capture_IN=p[0.14713742172916425,-0.4519990092180261,0.4999842175595519,1.716719843449274E-5,-5.967839199117233E-5,-3.141512274892885]
+  global FRM_Centrifuge=p[-0.7614196357228254,0.13174165134832883,-0.40322998589848,0.051405105423226086,-0.012254257775454075,1.5210337802987177]
+  global FRM_Reference=p[0.037336091997987535,-0.4406264710010116,0.068,-1.262803123355624E-4,5.936340393818811E-5,1.555930709958477]
+  global FRM_SS_SSTable=p[-0.01698098054203743,-0.4040017136880736,0.38259724387465677,-0.029197030792984854,-0.0639088826130567,-0.100256251989041]
+  global Point_1=p[0.2081263125177857,-0.3599791678165105,0.5185441459160179,-0.10811970219604171,-0.008888807917879517,-1.545577592629993]
+  global SAF_ULM_Back=p[0.0,0.25,0.0,-1.5707963267948966,0.0,0.0]
+  global SAF_ULM_Bottom=p[0.0,0.0,0.175,0.0,-3.1411853059779946,6.144646783253781E-5]
+  global SAF_ULM_Front=p[0.0,-0.8,0.0,1.5707963267948966,0.0,0.0]
+  global SAF_ULM_Left=p[0.4,0.0,0.0,0.0,1.5707963267948966,0.0]
+  global SAF_ULM_Right=p[-0.4,0.0,0.0,0.0,-1.5707963267948966,0.0]
+  global ULM_3FG=p[-0.030765235416747628,-0.34863465891472667,0.11149054734541389,7.2843954880442725E-6,3.2734537498386845E-5,-1.435325785999641]
+  global ULM_Cap_Bin=p[-0.12316329765932782,-0.4098278596576781,0.14198991197145228,-6.657399187550977E-6,1.3420469380535953E-5,-1.224067184229265]
+  global ULM_Cap_SSRack=p[0.2081160008341453,-0.3599872612596103,0.435988008021699,1.0511950088141139E-5,-3.0609236133791744E-5,-1.545652660310075]
+  global ULM_Cent_Racks=p[-0.18545280836253272,-0.6127182427471424,0.0092,-2.5489681018192384E-4,1.5011949774034494E-5,0.002017828229688311]
+  global ULM_Input=p[0.0566,-0.517,3.6739403974420597E-19,0.0,0.0,0.0]
+  global ULM_Output=p[-0.03848915736486644,-0.4320501686344275,0.0,-6.433221303631731E-5,4.4743073056790854E-4,-3.1218466433891914]
+  global ULM_SS_Rack=p[0.10632309590147214,-0.34077190554774633,0.09796137898532595,-0.03666738739963484,0.027603916451402907,-1.6059871687860023]
+  # begin: URCap Installation Node
+  #   Source: UR Connect, 1.13.60, Universal Robots
+  #   Type: UR Connect
+  myurRPC = rpc_factory("xmlrpc","http://127.0.0.1:40474")
+  # end: URCap Installation Node
+  # begin: URCap Installation Node
+  #   Source: Robotiq_Grippers, 1.8.4.4844, Robotiq Inc.
+  #   Type: Vacuum
+  #################################################
+  # Vacuum Grip Check
+  #################################################
+  
+  vacuumGripCheckThread1 = 0
+  vacuumGripCheckThread2 = 0
+  vacuumGripCheckThread3 = 0
+  vacuumGripCheckThread4 = 0
+  vacuumGripCheckThread1Running = False
+  vacuumGripCheckThread2Running = False
+  vacuumGripCheckThread3Running = False
+  vacuumGripCheckThread4Running = False
+  vacuumGripCheckSocketId = "1"
+  vacuumGripCheckThreadStarted = False
+  
+  thread vacuumGripCheck():
+    gripper_socket = vacuumGripCheckSocketId
+    vacuumGripCheckThreadStarted = True
+  
+    while (True):
+      objectDetectedDebounceCtr = 0
+  
+      while (objectDetectedDebounceCtr < 3):
+        if(rq_is_vacuum_obj_detected(gripper_socket="1")):
+          objectDetectedDebounceCtr = objectDetectedDebounceCtr + 1
+        else:
+          objectDetectedDebounceCtr = 0
+        end
+        sleep(0.1)
+      end
+  
+      objectNotDetectedDebounceCtr = 0
+  
+      while objectNotDetectedDebounceCtr < 3:
+        if (not rq_is_vacuum_obj_detected(gripper_socket="1")):
+          objectNotDetectedDebounceCtr = objectNotDetectedDebounceCtr + 1
+        else:
+          objectNotDetectedDebounceCtr = 0
+        end
+        sleep(0.1)
+      end
+  
+      socket_open("127.0.0.1",29999,"dashboardServerSocket")
+      socket_send_line("pause","dashboardServerSocket")
+      socket_send_string("popup Vacuum grip check has detected an object drop.", "dashboardServerSocket")
+      socket_send_byte(10, "dashboardServerSocket")
+      socket_close("dashboardServerSocket")
+  
+      sync()
+    end
+  end
+  
+  def startVacuumGripCheckThread(gripperId="1"):
+    vacuumGripCheckSocketId = gripperId
+    threadHandle = run vacuumGripCheck()
+    waitForVacuumGripCheckThreadStarted()
+    return threadHandle
+  end
+  
+  def stopVacuumGripCheckThread(threadHandle):
+    kill threadHandle
+  end
+  
+  def waitForVacuumGripCheckThreadStarted():
+    while (not(vacuumGripCheckThreadStarted)):
+      sync()
+    end
+    vacuumGripCheckThreadStarted = False
+  end
+  #################################################
+  # End - Vacuum Grip Check
+  #################################################
+  
+  #################################################
+  # Stops the pump on a distance travelled
+  #################################################
+  global stopPumpDistance = 100
+  global stopPumpSocketId = "0"
+  global stopPumpThreadStarted = [False, False, False, False]
+  global stopPumpThreadHandles = [0, 0, 0, 0]
+  
+  thread stopPumpOnDistanceTravelled():
+    distance = stopPumpDistance
+    socketId = stopPumpSocketId
+    stopPumpThreadStarted[rq_socket_to_index(socketId)] = True
+  
+    measuredDistance = waitForDistanceTravelled(distance)
+  
+    rq_stop(socketId)
+  
+    stopPumpThreadStarted[rq_socket_to_index(socketId)] = False
+  end
+  
+  def waitForDistanceTravelled(distance):
+    startingPose = get_actual_tcp_pose()
+    measuredDistance = 0
+    while (measuredDistance < distance):
+      sleep(0.1)
+      measuredDistance = point_dist(get_actual_tcp_pose(), startingPose)
+    end
+  
+    return measuredDistance
+  end
+  
+  def startStopPumpOnDistanceTravelledThread(distance, gripper_socket="1"):
+    if (stopPumpThreadStarted[rq_socket_to_index(gripper_socket)]):
+      return 0
+    end
+  
+    global stopPumpDistance = distance
+    global stopPumpSocketId = gripper_socket
+    stopPumpThreadHandles[rq_socket_to_index(gripper_socket)] = run stopPumpOnDistanceTravelled()
+    waitForStopPumpOnDistanceTravelledThreadStarted(gripper_socket)
+    return stopPumpThreadHandles[rq_socket_to_index(gripper_socket)]
+  end
+  
+  def waitForStopPumpOnDistanceTravelledThreadStarted(gripper_socket="1"):
+    while (not(stopPumpThreadStarted[rq_socket_to_index(gripper_socket)])):
+      sync()
+    end
+  end
+  
+  def stopStopPumpOnDistanceTravelledThread(gripper_socket="1"):
+    handle = stopPumpThreadHandles[rq_socket_to_index(gripper_socket)]
+    threadIsRunning = stopPumpThreadStarted[rq_socket_to_index(gripper_socket)]
+    if (threadIsRunning):
+      kill handle
+      clear_socket_buffer(gripper_socket, 0.01)
+      stopPumpThreadHandles[rq_socket_to_index(gripper_socket)] = 0
+    end
+  end
+  #################################################
+  # End - Stops the pump on a distance travelled
+  #################################################
+  
+  #################################################
+  # Vacuum general functions
+  #################################################
+  def rq_wait_for_vacuum_object_detected(gripper_socket="1"):
+      while (not rq_is_vacuum_obj_detected(gripper_socket)):
+          if (rq_is_vacuum_timeout(gripper_socket)):
+              return False
+          end
+          sync()
+      end
+      return True
+  end
+  
+  def rq_wait_for_vacuum_object_secured(gripper_socket="1"):
+      while (not rq_is_vacuum_obj_secured(gripper_socket)):
+          if (rq_is_vacuum_timeout(gripper_socket)):
+              return False
+          end
+          sync()
+      end
+      return True
+  end
+  
+  def rq_wait_for_vacuum_object_suction_complete(gripper_socket="1"):
+      remaining_retries = 50
+  
+       # Wait for suction started
+      while (not rq_is_vacuum_obj_in_suction(gripper_socket) and
+             not rq_is_vacuum_obj_detected(gripper_socket) and
+             remaining_retries > 0):
+          sleep(0.01)
+          remaining_retries = remaining_retries - 1
+      end
+  
+      # Wait for suction completed
+      while (rq_is_vacuum_obj_in_suction(gripper_socket)):
+          if (rq_is_vacuum_timeout(gripper_socket)):
+              return False
+          end
+          sleep(0.01)
+      end
+  
+      return True
+  end
+  
+  def rq_wait_for_vacuum_object_not_detected(gripper_socket="1"):
+      while (rq_is_vacuum_obj_detected(gripper_socket)):
+          sleep(0.01)
+      end
+  end
+  
+  def rq_is_vacuum_obj_detected(gripper_socket="1"):
+      gOBJ = rq_get_var("OBJ", 1, gripper_socket)
+      sync()
+      return is_vacuum_OBJ_object_detected(gOBJ)
+  end
+  
+  def rq_is_vacuum_obj_secured(gripper_socket="1"):
+      gOBJ = rq_get_var("OBJ", 1, gripper_socket)
+      sync()
+      return is_vacuum_OBJ_object_secured(gOBJ)
+  end
+  
+  def rq_is_vacuum_obj_in_suction(gripper_socket="1"):
+      gOBJ = rq_get_var("OBJ", 1, gripper_socket)
+      sync()
+  
+      if(is_vacuum_OBJ_object_in_motion(gOBJ)):
+          return True
+      else:
+          return False
+      end
+  end
+  
+  def rq_is_vacuum_timeout(gripper_socket="1"):
+      gFLT = rq_get_var("FLT", 2, gripper_socket)
+      sync()
+  
+      if(gFLT ==6):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_vacuum_OBJ_object_in_motion(gOBJ):
+      if (gOBJ == 0):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_vacuum_OBJ_object_detected(gOBJ):
+      if (gOBJ == 1 or gOBJ == 2):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_vacuum_OBJ_object_secured(gOBJ):
+      if (gOBJ == 2):
+          return True
+      end
+  
+      return False
+  end
+  
+  def rq_set_pressure_timeout_minimum_vacuum(pressure, timeout, minimum, gripper_socket="1"):
+      rq_set_pos_spd_for(pressure, timeout, minimum, gripper_socket)
+  end
+  
+  def is_FLT_vacuum_timeout(gFLT):
+    if (gFLT == 6):
+        return True
+    end
+  
+    return False
+  end
+  
+  def is_continuous_grip(maximum_vacuum):
+    return maximum_vacuum == 0
+  end
+  
+  def rq_vacuum_release(advanced_mode=False, shutoff_distance_cm=5, wait_for_object_released=True, gripper_socket="1"):
+    local shutoff_distance = scale(shutoff_distance_cm, [0, 99], [0.00, 0.99])
+    local pressure = 255
+    local minimum = 0
+    local timeout = 255
+    rq_vacuum_release_raw(advanced_mode, pressure, minimum, timeout, shutoff_distance, wait_for_object_released, gripper_socket)
+  end
+  
+  def rq_vacuum_release_raw(advanced_mode, pressure, minimum, timeout, shutoff_distance, wait_for_object_released, gripper_socket):
+    rq_reset_fault_and_activate(gripper_socket)
+    rq_set_pressure_timeout_minimum_vacuum(pressure, timeout, minimum, gripper_socket)
+  
+    if advanced_mode:
+      rq_set_gripper_mode(1, gripper_socket)
+    else:
+      rq_set_gripper_mode(0, gripper_socket)
+    end
+  
+    rq_set_GTO_and_wait(1, gripper_socket)
+  
+    if wait_for_object_released:
+      while (rq_is_vacuum_obj_detected(gripper_socket)):
+        rq_set_pressure_timeout_minimum_vacuum(pressure, timeout, minimum, gripper_socket)
+  
+        if advanced_mode:
+          rq_set_gripper_mode(1, gripper_socket)
+        else:
+          rq_set_gripper_mode(0, gripper_socket)
+        end
+  
+        rq_set_GTO_and_wait(1, gripper_socket)
+        sleep(0.01)
+      end
+    end
+  
+    if advanced_mode:
+      startStopPumpOnDistanceTravelledThread(shutoff_distance, gripper_socket)
+    end
+  end
+  
+  def rq_vacuum_grip(advanced_mode=False, maximum_vacuum=60, minimum_vacuum=40, timeout_ms=3000, wait_for_object_detected=True, gripper_socket="1"):
+    local pressure = scale(maximum_vacuum, [0, 100], [100, 0])
+    local minimum = scale(minimum_vacuum, [0, 100], [100, 0])
+    local timeout = scale(timeout_ms, [0, 25500], [0, 255])
+    rq_vacuum_grip_raw(advanced_mode, pressure, minimum, timeout, gripper_socket)
+    if wait_for_object_detected:
+          suction_completed = rq_wait_for_vacuum_object_suction_complete(gripper_socket)
+          if(not suction_completed):
+              rq_set_var("GTO", 0, gripper_socket)
+          end
+    end
+  end
+  
+  def rq_vacuum_grip_raw(advanced_mode, pressure, minimum, timeout, gripper_socket):
+    stopStopPumpOnDistanceTravelledThread(gripper_socket)
+    rq_reset_fault_and_activate(gripper_socket)
+  
+    rq_set_pressure_timeout_minimum_vacuum(pressure, timeout, minimum, gripper_socket)
+  
+    if advanced_mode:
+      rq_set_gripper_mode(1, gripper_socket)
+    else:
+      rq_set_gripper_mode(0, gripper_socket)
+    end
+  
+    rq_set_GTO_and_wait(1, gripper_socket)
+  
+  end
+  
+  def rq_reset_fault_and_activate(gripper_socket):
+      gFLT = rq_get_var("FLT", 2, gripper_socket)
+  
+      if(not is_FLT_no_fault(gFLT)):
+          if(is_FLT_vacuum_timeout(gFLT)):
+              rq_set_GTO_and_wait(0, gripper_socket)
+          elif(is_FLT_faulted(gFLT)):
+              rq_set_GTO_and_wait(0, gripper_socket)
+              rq_set_var("ACT", 1, gripper_socket)
+          end
+      elif(not rq_is_gripper_activated(gripper_socket)):
+          rq_set_GTO_and_wait(0, gripper_socket)
+          rq_set_var("ACT", 1, gripper_socket)
+      end
+  end
+  #################################################
+  # End - Vacuum general functions
+  #################################################
+  vacuumGripCheckWarningTitle = "Vacuum grip check"
+  vacuumGripCheckWarningMessage = "Vacuum gripper object lost"
+  vacuumGripTimeoutTitle = "Vacuum gripper fault"
+  vacuumGripTimeoutMessage = "Grip has timed out"
+  # end: URCap Installation Node
+  # begin: URCap Installation Node
+  #   Source: SensoPart VISOR Robotic, 2.0.0, SensoPart Industriesensorik GmbH
+  #   Type: VISOR Robotic
+  visor_xml_rpc_client = rpc_factory("xmlrpc", "http://127.0.0.1:" + to_str(34321) + "/RPC2\")
+  
+  #######################################
+  # Settings
+  visor__errInterrupt = True
+  visor__debugLvl = 1
+  
+  #######################################
+  # Variables
+  visor__varSendReqOk = [False,False,False,False,False,False,False,False]
+  visor__varRespOk = [False,False,False,False,False,False,False,False]
+  visor__partsFound = [0,0,0,0,0,0,0,0]
+  visor__objPos_1 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_2 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_3 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_4 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_5 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_6 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_7 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__objPos_8 = [ p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0], p[0,0,0,0,0,0] ]
+  visor__easyPickNodeId = ""
+  visor__easyPickDeviceId = 0
+  
+  #######################################
+  # Public functions
+  def visor_isSendReqOk(device_id):
+    visor__checkDeviceId(device_id)
+    return visor__varSendReqOk[device_id - 1]
+  end
+  
+  def visor_isResponseOk(device_id):
+    visor__checkDeviceId(device_id)
+    return visor__varRespOk[device_id - 1]
+  end
+  
+  def visor_getResponse(device_id):
+    visor__checkDeviceId(device_id)
+    return visor_xml_rpc_client.Update.getResponse(device_id - 1)
+  end
+  
+  def visor_terminal(device_id, request, opt_timeout = 3000):
+    visor__checkDeviceId(device_id)
+    while (not visor__sendRequest(device_id - 1, opt_timeout, request)):
+      if visor__popup("Send terminal request failed"):
+        return None
+      end
+    end
+  end
+  
+  def visor_changeJob(device_id, jobName, opt_timeout = 3000):
+    visor__checkDeviceId(device_id)
+    visor__sendReqWaitSuccess(device_id - 1, opt_timeout, "CJN1" + visor__valToStr(str_len(jobName), 3) + jobName, "Send change job request failed","Change job failed")
+  end
+  
+  def visor_trigger(device_id, opt_timeout = 3000, opt_setup = "fix"):
+    visor__checkDeviceId(device_id)
+  
+    # Reset variables
+    visor__partsFound[device_id -1] = 0
+  
+    # Execute trigger
+    if (opt_setup =="arm"):
+      visor__sendReqWaitSuccess(device_id - 1, opt_timeout, "TRR100" + visor__poseToVisorStr(get_actual_tcp_pose()), "Send trigger failed","Trigger not successful")
+    else:
+      visor__sendReqWaitSuccess(device_id - 1, opt_timeout, "TRX00", "Send trigger failed","Trigger not successful")
+    end
+  
+    # Parse trigger response
+    if (not visor_xml_rpc_client.Update.parseTriggerResult(device_id - 1)):
+      visor__logMsg("VISOR, unable to parse trigger result, maybe wrong format", True)
+      visor__popup("Incorrect Trigger Response<br>Did you configure the telegram for the used detector in SensoConfig correctly?")
+      halt
+    end
+    visor__partsFound[device_id - 1] = visor_xml_rpc_client.Update.getTriggerPartsFound(device_id - 1)
+    local i = 0
+    while (i < visor__partsFound[device_id - 1]):
+      visor__setObjPos(device_id, visor_xml_rpc_client.Update.getTriggerObjPos(device_id - 1, i), i)
+      i = i + 1
+    end
+  end
+  
+  def visor_partsFound(device_id):
+    visor__checkDeviceId(device_id)
+    return visor__partsFound[device_id - 1]
+  end
+  
+  def visor_resetResult(device_id):
+    visor__checkDeviceId(device_id)
+    visor__partsFound[device_id -1] = 0
+  end
+  
+  def visor_getObjPos(device_id, idx):
+    visor__checkDeviceId(device_id)
+    visor__checkResultIdx(idx)
+    return visor__getObjPos(device_id, idx)
+  end
+  
+  def visor_getPose2d(device_id, idx, opt_refPose=p[0,0,0,0,0,0]):
+    visor__checkDeviceId(device_id)
+    visor__checkResultIdx(idx)
+    local objPos = visor__getObjPos(device_id, idx)
+    local refPose = pose_trans(opt_refPose, p[0,0,0,0,0,d2r(objPos[5])])
+    return p[objPos[0] / 1000, objPos[1] / 1000, refPose[2], refPose[3], refPose[4], refPose[5]]
+  end
+  
+  def visor_getPose3d(device_id, idx):
+    visor__checkDeviceId(device_id)
+    visor__checkResultIdx(idx)
+    local objPos = visor__getObjPos(device_id, idx)
+    local angles = rpy2rotvec([d2r(objPos[3]), d2r(objPos[4]), d2r(objPos[5])])
+    return p[objPos[0] / 1000, objPos[1] / 1000, objPos[2] / 1000, angles[0], angles[1], angles[2]]
+  end
+  
+  def visor_getAdditionalData(device_id, opt_idx=999):
+    visor__checkDeviceId(device_id)
+    return visor_xml_rpc_client.Update.getTriggerAdditionalData(device_id - 1, opt_idx)
+  end
+  
+  def visor_getCalibSetImgPose(setNo):
+    return visor_xml_rpc_client.Update.getCalibSetImagePose(setNo)
+  end
+  
+  def visor_easyPickUpdate(device_id, param, value):
+    visor__checkDeviceId(device_id)
+    return visor_xml_rpc_client.Update.setEasyPickUpdate(device_id - 1, param, to_str(value))
+  end
+  
+  def visor_activateOffset(device_id, detector_no, offset_mode, opt_timeout = 3000):
+    visor__checkDeviceId(device_id)
+  
+    # Check detector number
+    if (detector_no < 0) or (detector_no > 999):
+      visor__logMsg("VISOR, invalid detector no: " + to_str(detector_no), True)
+      visor__popup("Invalid detector no")
+      halt
+    end
+  
+    # Check offset_mode
+    if (offset_mode != 0) and (offset_mode != 3):
+      visor__logMsg("VISOR, invalid offset mode: " + to_str(offset_mode), True)
+      visor__popup("Invalid offset mode")
+      halt
+    end
+  
+    # Send request
+    local spp_request = "SPP" + visor__valToStr(detector_no, 3) + "030" + "00001" + to_str(offset_mode)
+    visor__sendReqWaitSuccess(device_id - 1, opt_timeout, spp_request, "Activate offset failed", "Activate offset failed")
+  
+    return visor__varRespOk[device_id - 1]
+  end
+  
+  def visor_teachOffset(device_id, detector_no, offset_pose, opt_timeout = 3000):
+    visor__checkDeviceId(device_id)
+  
+    # Check detector number
+    if (detector_no < 0) or (detector_no > 999):
+      visor__logMsg("VISOR, invalid detector no: " + to_str(detector_no), True)
+      visor__popup("Invalid detector nr")
+      halt
+    end
+  
+    # Send request
+    local spp_request = "SPP" + visor__valToStr(detector_no, 3) + "035" + "00048" + visor__poseToVisorStr(offset_pose)
+    visor__sendReqWaitSuccess(device_id - 1, opt_timeout, spp_request, "Teach offset failed", "Teach offset failed")
+  
+    return visor__varRespOk[device_id - 1]
+  end
+  
+  def visor_calcCenter3d(device_id, visor1_pose, visor2_pose, opt_timeout = 3000):
+  	visor__checkDeviceId(device_id)
+  
+  	local rf_mf_pose = p[0,0,0,0,0,0]
+  	local mid_pose = p[0,0,0,0,0,0]
+  
+  	# get rm_mf
+  	visor__sendReqWaitSuccess(device_id - 1, opt_timeout, "CGP1015", "Calculate center 3D not successful" , "Calculate center 3D not successful")
+      local response = visor_xml_rpc_client.Update.getResponse(device_id - 1)
+      if (visor__varSendReqOk[device_id - 1] and visor__varRespOk[device_id - 1]):
+        local loopIdx = 0
+        while (loopIdx < 6):
+          rf_mf_pose[loopIdx] = to_num(str_sub(response,18+(loopIdx*8),8))/1000
+          if (loopIdx > 2) and (loopIdx < 6):
+            rf_mf_pose[loopIdx] = d2r(rf_mf_pose[loopIdx])
+          end
+          loopIdx = loopIdx + 1
+        end
+      end
+      local axis_angle = rpy2rotvec([(rf_mf_pose[3]),(rf_mf_pose[4]),(rf_mf_pose[5])])
+  	rf_mf_pose[3] = axis_angle[0]
+  	rf_mf_pose[4] = axis_angle[1]
+  	rf_mf_pose[5] = axis_angle[2]
+  
+  	# invert rf_mf_pose
+      local rm_mf_pose_inverse = pose_inv(rf_mf_pose)
+  
+      # transform visor poses to measurement frame
+      local visor1_pose_trans = pose_trans(rm_mf_pose_inverse, visor1_pose)
+      local visor2_pose_trans = pose_trans(rm_mf_pose_inverse, visor2_pose)
+  
+      # calculate angle in measurement frame
+      local dx = (visor2_pose_trans[0]-visor1_pose_trans[0])
+      local dy = (visor2_pose_trans[1]-visor1_pose_trans[1])
+      mid_pose[5] = atan(dy/dx)
+      axis_angle = rpy2rotvec([(mid_pose[3]),(mid_pose[4]),(mid_pose[5])])
+      mid_pose[3] = axis_angle[0]
+  	mid_pose[4] = axis_angle[1]
+  	mid_pose[5] = axis_angle[2]
+  
+      # transform back to robot frame
+      mid_pose = pose_trans(rf_mf_pose, mid_pose)
+  
+      # center of x, y, z
+      mid_pose[0] = (visor1_pose[0]+visor2_pose[0])/2
+      mid_pose[1] = (visor1_pose[1]+visor2_pose[1])/2
+      mid_pose[2] = (visor1_pose[2]+visor2_pose[2])/2
+  
+  	return mid_pose
+  end
+  
+  def visor_easyPickCheckIdent(node_id, device_id):
+    return (visor__easyPickNodeId == node_id) and (visor__easyPickDeviceId == device_id)
+  end
+  
+  def visor_easyPickSetIdent(node_id, device_id):
+    visor__easyPickNodeId = node_id
+    visor__easyPickDeviceId = device_id
+  end
+  
+  #######################################
+  # Private functions
+  def visor__checkDeviceId(device_id):
+    if (device_id < 1) or (device_id > 8):
+      visor__logMsg("VISOR, invalid device id: " + to_str(device_id), True)
+      visor__popup("Invalid device id")
+      halt
+    end
+  end
+  
+  def visor__checkResultIdx(idx):
+    if (idx < 0) or (idx > 9):
+      visor__logMsg("VISOR, invalid result index: " + to_str(idx), True)
+      visor__popup("Invalid result index")
+      halt
+    end
+  end
+  
+  def visor__logMsg(message, important=False):
+    if (visor__debugLvl == 2) or important:
+      textmsg(message)
+    end
+  end
+  
+  def visor__popup(message, warn=False, err=True):
+    if visor__errInterrupt:
+      popup(message, title="VISOR", warning=warn, error=err, blocking=True)
+    end
+    return (not visor__errInterrupt)
+  end
+  
+  def visor__sendReqWaitSuccess(device_id, timeout, request, msgSendErr, msgRespErr):
+    while True:
+      if visor__sendRequest(device_id, timeout, request):
+        if visor__varRespOk[device_id]:
+          return None
+        else:
+          if visor__popup(msgRespErr, True, False):
+            return None
+          end
+        end
+      else:
+        if visor__popup(msgSendErr):
+          return None
+        end
+      end
+    end
+  end
+  
+  def visor__sendRequest(device_id, timeout, request):
+    visor__logMsg("VISOR, send_request: " + request)
+    visor__varSendReqOk[device_id] = visor_xml_rpc_client.Update.sendRequest(device_id, timeout, request)
+    visor__varRespOk[device_id] = visor_xml_rpc_client.Update.isResponseOk(device_id)
+    local response = visor_xml_rpc_client.Update.getResponse(device_id)
+    visor__logMsg("VISOR, response: " + response)
+    return visor__varSendReqOk[device_id]
+  end
+  
+  def visor__valToStr(val, digits=0):
+    local s = to_str(val)
+    local delta = digits - str_len(s)
+    local negative = False
+    if (str_at(s, 0) == "-"):
+      negative = True
+      s = str_sub(s, 1)
+    end
+    while (delta > 0):
+      s = "0" + s
+      delta = delta -1
+    end
+    if negative:
+      s = "-" + s
+    end
+    return s
+  end
+  
+  def visor__setObjPos(device_id, pose, idx):
+    if (device_id == 1):
+      visor__objPos_1[idx] = pose
+    elif (device_id == 2):
+      visor__objPos_2[idx] = pose
+    elif (device_id == 3):
+      visor__objPos_3[idx] = pose
+    elif (device_id == 4):
+      visor__objPos_4[idx] = pose
+    elif (device_id == 5):
+      visor__objPos_5[idx] = pose
+    elif (device_id == 6):
+      visor__objPos_6[idx] = pose
+    elif (device_id == 7):
+      visor__objPos_7[idx] = pose
+    elif (device_id == 8):
+      visor__objPos_8[idx] = pose
+    end
+  end
+  
+  def visor__getObjPos(device_id, idx):
+    if (device_id == 1):
+      return visor__objPos_1[idx]
+    elif (device_id == 2):
+      return visor__objPos_2[idx]
+    elif (device_id == 3):
+      return visor__objPos_3[idx]
+    elif (device_id == 4):
+      return visor__objPos_4[idx]
+    elif (device_id == 5):
+      return visor__objPos_5[idx]
+    elif (device_id == 6):
+      return visor__objPos_6[idx]
+    elif (device_id == 7):
+      return visor__objPos_7[idx]
+    elif (device_id == 8):
+      return visor__objPos_8[idx]
+    end
+  end
+  
+  def visor__poseToVisorStr(tcpPose, useAxisAngle=False):
+    # Convert to RPY, default VISOR configuration
+    local rpy = rotvec2rpy([tcpPose[3], tcpPose[4], tcpPose[5]])
+  
+    poseStr = ""
+    i = 0
+    while (i < 6):
+      if (i > 2):
+        # Rotation, use RPY or axis angle and multiply by 1000
+        if (not useAxisAngle):
+          tcpPose[i] = r2d(rpy[i-3])
+        end
+        tcpPose[i] = floor(tcpPose[i] * 1000)
+      else:
+        # Location, convert to [mm] and multiply by 1000
+        tcpPose[i] = floor(tcpPose[i] * 1000000)
+      end
+      # Convert value to valid format (prefixing with '0')
+      # and add to pose string
+      poseStr = poseStr + visor__valToStr(tcpPose[i], 8)
+      i = i + 1
+    end
+    return poseStr
+  end
+  # end: URCap Installation Node
+  # begin: URCap Installation Node
+  #   Source: Robotiq_Grippers, 1.8.4.4844, Robotiq Inc.
+  #   Type: Gripper
+  rq_gripper_socket_ip_address = "127.0.0.1"
+  rq_gripper_socket_port = 63352
+  
+  rq_comm_check_fail_counter = [0, 0, 0, 0]
+  
+  rq_read_act = [-1, -1, -1, -1]
+  rq_read_gto = [-1, -1, -1, -1]
+  rq_read_for = [-1, -1, -1, -1]
+  rq_read_spe = [-1, -1, -1, -1]
+  rq_read_obj = [-1, -1, -1, -1]
+  rq_read_sta = [-1, -1, -1, -1]
+  rq_read_flt = [-1, -1, -1, -1]
+  rq_read_pos = [-1, -1, -1, -1]
+  rq_read_pre = [-1, -1, -1, -1]
+  rq_read_lbp = [-1, -1, -1, -1]
+  rq_read_lrd = [-1, -1, -1, -1]
+  rq_read_lbl = [-1, -1, -1, -1]
+  rq_read_lgn = [-1, -1, -1, -1]
+  rq_read_msc = [-1, -1, -1, -1]
+  rq_read_mod = [-1, -1, -1, -1]
+  rq_read_cou = [-1, -1, -1, -1]
+  rq_read_ncy = [-1, -1, -1, -1]
+  rq_read_dst = [-1, -1, -1, -1]
+  rq_read_pco = [-1, -1, -1, -1]
+  
+  rq_string_initial_value = "N/A"
+  
+  rq_read_snu_1 = rq_string_initial_value
+  rq_read_snu_2 = rq_string_initial_value
+  rq_read_snu_3 = rq_string_initial_value
+  rq_read_snu_4 = rq_string_initial_value
+  
+  rq_read_fwv_1 = rq_string_initial_value
+  rq_read_fwv_2 = rq_string_initial_value
+  rq_read_fwv_3 = rq_string_initial_value
+  rq_read_fwv_4 = rq_string_initial_value
+  
+  rq_read_ver_1 = rq_string_initial_value
+  rq_read_ver_2 = rq_string_initial_value
+  rq_read_ver_3 = rq_string_initial_value
+  rq_read_ver_4 = rq_string_initial_value
+  
+  rq_read_act_req = [True, True, True, True]
+  rq_read_gto_req = [True, True, True, True]
+  rq_read_for_req = [True, True, True, True]
+  rq_read_spe_req = [True, True, True, True]
+  rq_read_obj_req = [True, True, True, True]
+  rq_read_sta_req = [True, True, True, True]
+  rq_read_flt_req = [True, True, True, True]
+  rq_read_pos_req = [True, True, True, True]
+  rq_read_pre_req = [True, True, True, True]
+  rq_read_lbp_req = [True, True, True, True]
+  rq_read_lrd_req = [True, True, True, True]
+  rq_read_lbl_req = [True, True, True, True]
+  rq_read_lgn_req = [True, True, True, True]
+  rq_read_msc_req = [True, True, True, True]
+  rq_read_mod_req = [True, True, True, True]
+  rq_read_cou_req = [True, True, True, True]
+  rq_read_ncy_req = [True, True, True, True]
+  rq_read_dst_req = [True, True, True, True]
+  rq_read_pco_req = [True, True, True, True]
+  
+  rq_read_snu_1_req = False
+  rq_read_snu_2_req = False
+  rq_read_snu_3_req = False
+  rq_read_snu_4_req = False
+  
+  rq_read_fwv_1_req = False
+  rq_read_fwv_2_req = False
+  rq_read_fwv_3_req = False
+  rq_read_fwv_4_req = False
+  
+  rq_read_ver_1_req = False
+  rq_read_ver_2_req = False
+  rq_read_ver_3_req = False
+  rq_read_ver_4_req = False
+  
+  rq_write_act_request = [False, False, False, False]
+  rq_write_gto_request = [False, False, False, False]
+  rq_write_atr_request = [False, False, False, False]
+  rq_write_ard_request = [False, False, False, False]
+  rq_write_pos_request = [False, False, False, False]
+  rq_write_lbp_request = [False, False, False, False]
+  rq_write_lrd_request = [False, False, False, False]
+  rq_write_lbl_request = [False, False, False, False]
+  rq_write_lgn_request = [False, False, False, False]
+  rq_write_msc_request = [False, False, False, False]
+  rq_write_mod_request = [False, False, False, False]
+  
+  rq_write_act = [-1, -1, -1, -1]
+  rq_write_gto = [-1, -1, -1, -1]
+  rq_write_atr = [-1, -1, -1, -1]
+  rq_write_ard = [-1, -1, -1, -1]
+  rq_write_for = [-1, -1, -1, -1]
+  rq_write_spe = [-1, -1, -1, -1]
+  rq_write_pos = [-1, -1, -1, -1]
+  rq_write_lbp = [-1, -1, -1, -1]
+  rq_write_lrd = [-1, -1, -1, -1]
+  rq_write_lbl = [-1, -1, -1, -1]
+  rq_write_lgn = [-1, -1, -1, -1]
+  rq_write_msc = [-1, -1, -1, -1]
+  rq_write_mod = [-1, -1, -1, -1]
+  
+  rq_write_act_previous = rq_write_act
+  rq_write_gto_previous = rq_write_gto
+  rq_write_atr_previous = rq_write_atr
+  rq_write_ard_previous = rq_write_ard
+  rq_write_for_previous = rq_write_for
+  rq_write_spe_previous = rq_write_spe
+  rq_write_pos_previous = rq_write_pos
+  rq_write_lbp_previous = rq_write_lbp
+  rq_write_lrd_previous = rq_write_lrd
+  rq_write_lbl_previous = rq_write_lbl
+  rq_write_lgn_previous = rq_write_lgn
+  rq_write_msc_previous = rq_write_msc
+  rq_write_mod_previous = rq_write_mod
+  
+  gripper_connected = [False, False, False, False]
+  gripper_socket_open = [False, False, False, False]
+  rq_comm_clear_socket_buffer_enabled = [True, True, True, True]
+  rq_comm_check_counter = 0
+  rq_gripper_communication_thread_started = False
+  
+  thread rq_gripper_communication():
+      rq_comm_read_constants()
+      rq_comm_read_variables()
+      rq_comm_initialize_write_values()
+  
+      while(True):
+          rq_comm_clear_socket_buffer()
+          rq_comm_check()
+          rq_comm_read_variables()
+          rq_comm_write_variables()
+  
+          rq_gripper_communication_thread_started = True
+          sync()
+      end
+  end
+  
+  def rq_socket_to_index(gripper_socket="1"):
+      # Patch in case gripper_socket is an integer
+      gripper_socket_string = str_cat("", gripper_socket)
+  
+      if(gripper_socket_string == "1"):
+          return 0
+      elif(gripper_socket_string == "2"):
+          return 1
+      elif(gripper_socket_string == "3"):
+          return 2
+      elif(gripper_socket_string == "4"):
+          return 3
+      end
+      return 0
+  end
+  
+  def rq_index_to_socket(index=0):
+      if(index == 0):
+          return "1"
+      elif(index == 1):
+          return "2"
+      elif(index == 2):
+          return "3"
+      elif(index == 3):
+          return "4"
+      end
+      return "1"
+  end
+  
+  def rq_comm_check():
+      index = 0
+      rq_comm_check_fail_counter_max = 99999
+  
+      if(rq_comm_check_counter < 50):
+          rq_comm_check_counter = rq_comm_check_counter + 1
+      else:
+          rq_comm_check_counter = 0
+  
+          while(index <= 3):
+              socket = rq_index_to_socket(index)
+  
+              if(gripper_connected[index]):
+                  # Patch in case gripper_socket is an integer
+                  gripper_socket_string = str_cat("", socket)
+  
+                  sid_list = rq_get_sid(socket)
+                  is_gripper_in_sid_list = rq_is_gripper_in_sid_list(gripper_socket_string, sid_list)
+  
+                  if(is_gripper_in_sid_list):
+                      rq_comm_check_fail_counter[index] = 0
+                  else:
+                      rq_comm_check_fail_counter[index] = rq_comm_check_fail_counter[index] + 1
+                  end
+  
+                  if(rq_comm_check_fail_counter[index] > rq_comm_check_fail_counter_max):
+                      message = str_cat("Communication lost with Robotiq's Gripper Slave ID ", gripper_socket_string)
+                      popup(message, "Communication Error", False, True, True)
+                  end
+              end
+              index = index + 1
+          end
+      end
+  end
+  
+  def rq_init_comm_if_connected(gripper_sid=9, gripper_socket="1"):
+      if(not is_gripper_socket_open(gripper_socket)):
+        open_gripper_socket(gripper_socket)
+      end
+  
+      socket_sid_set = rq_set_sid(gripper_sid, gripper_socket)
+  
+      if(socket_sid_set):
+          # Patch in case gripper_socket is an integer
+          gripper_socket_string = str_cat("", gripper_socket)
+  
+          sid_list = rq_get_sid(gripper_socket)
+          is_gripper_in_sid_list = rq_is_gripper_in_sid_list(gripper_socket_string, sid_list)
+  
+          if(is_gripper_in_sid_list):
+              rq_set_gripper_connected(gripper_socket_string)
+              return True
+          end
+      end
+  
+      return False
+  end
+  
+  def open_gripper_socket(gripper_socket="1"):
+      is_open = socket_open(rq_gripper_socket_ip_address, rq_gripper_socket_port, gripper_socket)
+      set_gripper_socket_open(gripper_socket, is_open)
+  end
+  
+  def is_gripper_socket_open(gripper_socket="1"):
+      return gripper_socket_open[rq_socket_to_index(gripper_socket)]
+  end
+  
+  def set_gripper_socket_open(gripper_socket, is_open):
+      gripper_socket_open[rq_socket_to_index(gripper_socket)] = is_open
+  end
+  
+  def rq_set_gripper_connected(gripper_id="1"):
+      gripper_connected[rq_socket_to_index(gripper_id)] = True
+  end
+  
+  def rq_is_gripper_connected(gripper_id="1"):
+      return gripper_connected[rq_socket_to_index(gripper_id)]
+  end
+  
+  def rq_set_sid(gripper_sid=9, gripper_socket="1"):
+      socket_set_var("SID", gripper_sid,  gripper_socket)
+      ack = socket_read_byte_list(3, gripper_socket)
+      return is_ack(ack)
+  end
+  
+  def rq_get_sid(gripper_socket="1"):
+      socket_send_string("GET SID", gripper_socket)
+      sid_list = socket_read_byte_list(17, gripper_socket)
+      return sid_list
+  end
+  
+  def rq_wait_for_gripper_connected():
+      gripper_socket = "gripper_conn_socket"
+      socket_open(rq_gripper_socket_ip_address, rq_gripper_socket_port, gripper_socket)
+  
+      remainingRetries = 2000
+      sid_list = rq_get_sid(gripper_socket)
+      gripper_is_connected = rq_is_any_gripper_connected(sid_list)
+  
+      while(not gripper_is_connected and remainingRetries > 0):
+          remainingRetries = remainingRetries - 1
+          sid_list = rq_get_sid(gripper_socket)
+          gripper_is_connected = rq_is_any_gripper_connected(sid_list)
+      end
+  
+      socket_close(gripper_socket)
+  end
+  
+  def rq_is_any_gripper_connected(sid_list):
+      is_gripper_1_connected = rq_is_gripper1_in_sid_list(sid_list)
+      is_gripper_2_connected = rq_is_gripper2_in_sid_list(sid_list)
+      is_gripper_3_connected = rq_is_gripper3_in_sid_list(sid_list)
+      is_gripper_4_connected = rq_is_gripper4_in_sid_list(sid_list)
+  
+      return is_gripper_1_connected or is_gripper_2_connected or is_gripper_3_connected or is_gripper_4_connected
+  end
+  
+  def rq_is_gripper_ascii_in_sid_list(gripper_ascii_sid, sid_list):
+      sid_list_length = sid_list[0]
+      sid_list_empty_length = 2
+  
+      if (sid_list_length <= sid_list_empty_length):
+          return False
+      end
+  
+      sid1 = sid_list[2]
+      sid2 = sid_list[5]
+      sid3 = sid_list[8]
+      sid4 = sid_list[11]
+  
+      return sid1 == gripper_ascii_sid or sid2 == gripper_ascii_sid or sid3 == gripper_ascii_sid or sid4 == gripper_ascii_sid
+  end
+  
+  def rq_is_gripper_in_sid_list(gripper_socket_string, sid_list):
+      if(gripper_socket_string == "1"):
+          return rq_is_gripper1_in_sid_list(sid_list)
+      elif(gripper_socket_string == "2"):
+          return rq_is_gripper2_in_sid_list(sid_list)
+      elif(gripper_socket_string == "3"):
+          return rq_is_gripper3_in_sid_list(sid_list)
+      elif(gripper_socket_string == "4"):
+          return rq_is_gripper4_in_sid_list(sid_list)
+      end
+      return False
+  end
+  
+  def rq_is_gripper1_in_sid_list(sid_list):
+      gripper_1_sid_ascii = 57
+      return rq_is_gripper_ascii_in_sid_list(gripper_1_sid_ascii, sid_list)
+  end
+  
+  def rq_is_gripper2_in_sid_list(sid_list):
+      gripper_2_sid_ascii = 50
+      return rq_is_gripper_ascii_in_sid_list(gripper_2_sid_ascii, sid_list)
+  end
+  
+  def rq_is_gripper3_in_sid_list(sid_list):
+      gripper_3_sid_ascii = 51
+      return rq_is_gripper_ascii_in_sid_list(gripper_3_sid_ascii, sid_list)
+  end
+  
+  def rq_is_gripper4_in_sid_list(sid_list):
+      gripper_4_sid_ascii = 52
+      return rq_is_gripper_ascii_in_sid_list(gripper_4_sid_ascii, sid_list)
+  end
+  
+  def rq_comm_clear_socket_buffer():
+      index = 0
+  
+      while(index <= 3):
+          socket = rq_index_to_socket(index)
+  
+          if(gripper_connected[index] and rq_comm_clear_socket_buffer_enabled[index]):
+              byte_in_buffer = socket_read_byte_list(1, socket, 0.002)
+              while(byte_in_buffer[0] >= 1):
+                  byte_in_buffer = socket_read_byte_list(1, socket, 0.002)
+              end
+              rq_comm_clear_socket_buffer_enabled[index] = False
+          end
+          index = index + 1
+      end
+  end
+  
+  def rq_comm_initialize_write_values():
+      index = 0
+  
+      while(index <= 3):
+          socket = rq_index_to_socket(index)
+  
+          if(gripper_connected[index]):
+  
+              if(rq_write_act[index] == -1 and rq_read_act[index] != -1):
+                  rq_write_act[index] = rq_read_act[index]
+                  rq_write_act_previous[index] = rq_read_act[index]
+              elif(rq_write_act_previous[index] == -1 and rq_read_act[index] != -1):
+                  rq_write_act_previous[index] = rq_read_act[index]
+              end
+  
+              if(rq_write_gto[index] == -1 and rq_read_gto[index] != -1):
+                  rq_write_gto[index] = rq_read_gto[index]
+                  rq_write_gto_previous[index] = rq_read_gto[index]
+              elif(rq_write_gto_previous[index] == -1 and rq_read_gto[index] != -1):
+                  rq_write_gto_previous[index] = rq_read_gto[index]
+              end
+  
+              if(rq_write_for[index] == -1 and rq_read_for[index] != -1):
+                  rq_write_for[index] = rq_read_for[index]
+                  rq_write_for_previous[index] = rq_read_for[index]
+              elif(rq_write_for_previous[index] == -1 and rq_read_for[index] != -1):
+                  rq_write_for_previous[index] = rq_read_for[index]
+              end
+  
+              if(rq_write_spe[index] == -1 and rq_read_spe[index] != -1):
+                  rq_write_spe[index] = rq_read_spe[index]
+                  rq_write_spe_previous[index] = rq_read_spe[index]
+              elif(rq_write_spe_previous[index] == -1 and rq_read_spe[index] != -1):
+                  rq_write_spe_previous[index] = rq_read_spe[index]
+              end
+  
+              if(rq_write_pos[index] == -1 and rq_read_pos[index] != -1):
+                  rq_write_pos[index] = rq_read_pos[index]
+                  rq_write_pos_previous[index] = rq_read_pos[index]
+              elif(rq_write_pos_previous[index] == -1 and rq_read_pos[index] != -1):
+                  rq_write_pos_previous[index] = rq_read_pos[index]
+              end
+  
+              if(rq_write_lbp[index] == -1 and rq_read_lbp[index] != -1):
+                  rq_write_lbp[index] = rq_read_lbp[index]
+                  rq_write_lbp_previous[index] = rq_read_lbp[index]
+              elif(rq_write_lbp_previous[index] == -1 and rq_read_lbp[index] != -1):
+                  rq_write_lbp_previous[index] = rq_read_lbp[index]
+              end
+  
+              if(rq_write_lrd[index] == -1 and rq_read_lrd[index] != -1):
+                  rq_write_lrd[index] = rq_read_lrd[index]
+                  rq_write_lrd_previous[index] = rq_read_lrd[index]
+              elif(rq_write_lrd_previous[index] == -1 and rq_read_lrd[index] != -1):
+                  rq_write_lrd_previous[index] = rq_read_lrd[index]
+              end
+  
+              if(rq_write_lbl[index] == -1 and rq_read_lbl[index] != -1):
+                  rq_write_lbl[index] = rq_read_lbl[index]
+                  rq_write_lbl_previous[index] = rq_read_lbl[index]
+              elif(rq_write_lbl_previous[index] == -1 and rq_read_lbl[index] != -1):
+                  rq_write_lbl_previous[index] = rq_read_lbl[index]
+              end
+  
+              if(rq_write_lgn[index] == -1 and rq_read_lgn[index] != -1):
+                  rq_write_lgn[index] = rq_read_lgn[index]
+                  rq_write_lgn_previous[index] = rq_read_lgn[index]
+              elif(rq_write_lgn_previous[index] == -1 and rq_read_lgn[index] != -1):
+                  rq_write_lgn_previous[index] = rq_read_lgn[index]
+              end
+  
+              if(rq_write_msc[index] == -1 and rq_read_msc[index] != -1):
+                  rq_write_msc[index] = rq_read_msc[index]
+                  rq_write_msc_previous[index] = rq_read_msc[index]
+              elif(rq_write_msc_previous[index] == -1 and rq_read_msc[index] != -1):
+                  rq_write_msc_previous[index] = rq_read_msc[index]
+              end
+  
+              if(rq_write_mod[index] == -1 and rq_read_mod[index] != -1):
+                  rq_write_mod[index] = rq_read_mod[index]
+                  rq_write_mod_previous[index] = rq_read_mod[index]
+              elif(rq_write_mod_previous[index] == -1 and rq_read_mod[index] != -1):
+                  rq_write_mod_previous[index] = rq_read_mod[index]
+              end
+  
+          end
+          index = index + 1
+      end
+  end
+  
+  def rq_comm_set_var(var, value=0, gripper_socket="1"):
+      socket_set_var(var, value, gripper_socket)
+      return socket_read_byte_list(3, gripper_socket)
+  end
+  
+  def rq_comm_set_pos_spe_for(pos=0, speed=0, force=0, gripper_socket="1"):
+      socket_send_string("SET POS", gripper_socket)
+      socket_send_byte(32, gripper_socket)
+      socket_send_string(pos, gripper_socket)
+      socket_send_byte(32, gripper_socket)
+      socket_send_string("SPE", gripper_socket)
+      socket_send_byte(32, gripper_socket)
+      socket_send_string(speed, gripper_socket)
+      socket_send_byte(32, gripper_socket)
+      socket_send_string("FOR", gripper_socket)
+      socket_send_byte(32, gripper_socket)
+      socket_send_string(force, gripper_socket)
+      socket_send_byte(10, gripper_socket)
+      return socket_read_byte_list(3, gripper_socket)
+  end
+  
+  def rq_comm_read_variables():
+      index = 0
+  
+      while(index <= 3):
+          socket = rq_index_to_socket(index)
+  
+          if(gripper_connected[index]):
+  
+              if(rq_read_act_req[index]):
+                  rq_read_act[index] = socket_get_var("ACT", socket)
+                  rq_read_act_req[index] = False
+              end
+  
+              if(rq_read_gto_req[index]):
+                  rq_read_gto[index] = socket_get_var("GTO", socket)
+                  rq_read_gto_req[index] = False
+              end
+  
+              if(rq_read_pre_req[index]):
+                  rq_read_pre[index] = socket_get_var("PRE", socket)
+                  rq_read_pre_req[index] = False
+              end
+  
+              if(rq_read_pos_req[index]):
+                  rq_read_pos[index] = socket_get_var("POS", socket)
+                  rq_read_pos_req[index] = False
+              end
+  
+              if(rq_read_spe_req[index]):
+                  rq_read_spe[index] = socket_get_var("SPE", socket)
+                  rq_read_spe_req[index] = False
+              end
+  
+              if(rq_read_for_req[index]):
+                  rq_read_for[index] = socket_get_var("FOR", socket)
+                  rq_read_for_req[index] = False
+              end
+  
+              if(rq_read_obj_req[index]):
+                  rq_read_obj[index] = socket_get_var("OBJ", socket)
+                  rq_read_obj_req[index] = False
+              end
+  
+              if(rq_read_sta_req[index]):
+                  rq_read_sta[index] = socket_get_var("STA", socket)
+                  rq_read_sta_req[index] = False
+              end
+  
+              if(rq_read_mod_req[index]):
+                  rq_read_mod[index] = socket_get_var("MOD", socket)
+                  rq_read_mod_req[index] = False
+              end
+  
+              if(rq_read_flt_req[index]):
+                  rq_read_flt[index] = socket_get_var("FLT",socket)
+                  rq_read_flt_req[index] = False
+              end
+  
+              if(rq_read_lbp_req[index]):
+                  rq_read_lbp[index] = socket_get_var("LBP", socket)
+                  rq_read_lbp_req[index] = False
+              end
+  
+              if(rq_read_lrd_req[index]):
+                  rq_read_lrd[index] = socket_get_var("LRD", socket)
+                  rq_read_lrd_req[index] = False
+              end
+  
+              if(rq_read_lbl_req[index]):
+                  rq_read_lbl[index] = socket_get_var("LBL",socket)
+                  rq_read_lbl_req[index] = False
+              end
+  
+              if(rq_read_lgn_req[index]):
+                  rq_read_lgn[index] = socket_get_var("LGN", socket)
+                  rq_read_lgn_req[index] = False
+              end
+  
+              if(rq_read_msc_req[index]):
+                  rq_read_msc[index] = socket_get_var("MSC", socket)
+                  rq_read_msc_req[index] = False
+              end
+  
+              if(rq_read_cou_req[index]):
+                  rq_read_cou[index] = socket_get_var("COU", socket)
+                  rq_read_cou_req[index] = False
+              end
+  
+              if(rq_read_ncy_req[index]):
+                  rq_read_ncy[index] = socket_get_var("NCY", socket)
+                  rq_read_ncy_req[index] = False
+              end
+  
+              if(rq_read_dst_req[index]):
+                  rq_read_dst[index] = socket_get_var("DST", socket)
+                  rq_read_dst_req[index] = False
+              end
+  
+              if(rq_read_pco_req[index]):
+                  rq_read_pco[index] = socket_get_var("PCO", socket)
+                  rq_read_pco_req[index] = False
+              end
+          end
+          index = index + 1
+      end
+  end
+  
+  def rq_comm_read_constants():
+  
+      if(gripper_connected[0]):
+          while(rq_read_snu_1 == rq_string_initial_value):
+              socket_send_string("GET SNU", "1")
+              rq_read_snu_1 = socket_read_string("1")
+          end
+  
+          while(rq_read_fwv_1 == rq_string_initial_value):
+              socket_send_string("GET FWV", "1")
+              rq_read_fwv_1 = socket_read_string("1")
+          end
+  
+          while(rq_read_ver_1 == rq_string_initial_value):
+              socket_send_string("GET VER", "1")
+              rq_read_ver_1 = socket_read_string("1")
+          end
+      end
+  
+      if(gripper_connected[1]):
+          while(rq_read_snu_2 == rq_string_initial_value):
+              socket_send_string("GET SNU", "2")
+              rq_read_snu_2 = socket_read_string("2")
+          end
+  
+          while(rq_read_fwv_2 == rq_string_initial_value):
+              socket_send_string("GET FWV", "2")
+              rq_read_fwv_2 = socket_read_string("2")
+          end
+  
+          while(rq_read_ver_2 == rq_string_initial_value):
+              socket_send_string("GET VER", "2")
+              rq_read_ver_2 = socket_read_string("2")
+          end
+      end
+  
+      if(gripper_connected[2]):
+          while(rq_read_snu_3 == rq_string_initial_value):
+              socket_send_string("GET SNU", "3")
+              rq_read_snu_3 = socket_read_string("3")
+          end
+  
+          while(rq_read_fwv_3 == rq_string_initial_value):
+              socket_send_string("GET FWV", "3")
+              rq_read_fwv_3 = socket_read_string("3")
+          end
+  
+          while(rq_read_ver_3 == rq_string_initial_value):
+              socket_send_string("GET VER", "3")
+              rq_read_ver_3 = socket_read_string("3")
+          end
+      end
+  
+      if(gripper_connected[3]):
+          while(rq_read_snu_4 == rq_string_initial_value):
+              socket_send_string("GET SNU", "4")
+              rq_read_snu_4 = socket_read_string("4")
+          end
+  
+          while(rq_read_fwv_4 == rq_string_initial_value):
+              socket_send_string("GET FWV", "4")
+              rq_read_fwv_4 = socket_read_string("4")
+          end
+  
+          while(rq_read_ver_4 == rq_string_initial_value):
+              socket_send_string("GET VER", "4")
+              rq_read_ver_4 = socket_read_string("4")
+          end
+      end
+  end
+  
+  def rq_comm_write_variables():
+      index = 0
+  
+      while(index <= 3):
+          socket = rq_index_to_socket(index)
+  
+          if(gripper_connected[index]):
+  
+              if(rq_write_act_request[index]):
+                  if(is_ack(rq_comm_set_var("ACT", rq_write_act[index], socket))):
+                      rq_write_act_previous[index] = rq_write_act[index]
+                      rq_write_act_request[index] = False
+                  end
+              end
+  
+              if(rq_write_gto_request[index]):
+                  if(is_ack(rq_comm_set_var("GTO", rq_write_gto[index], socket))):
+                      rq_write_gto_previous[index] = rq_write_gto[index]
+                      rq_write_gto_request[index] = False
+                  end
+              end
+  
+              if(rq_write_atr_request[index]):
+                  if(is_ack(rq_comm_set_var("ATR", rq_write_atr[index], socket))):
+                      rq_write_atr_previous[index] = rq_write_atr[index]
+                      rq_write_atr_request[index] = False
+                  end
+              end
+  
+              if(rq_write_ard_request[index]):
+                  if(is_ack(rq_comm_set_var("ARD", rq_write_ard[index], socket))):
+                      rq_write_ard_previous[index] = rq_write_ard[index]
+                      rq_write_ard_request[index] = False
+                  end
+              end
+  
+              if(rq_write_pos_request[index]):
+                  if(is_ack(rq_comm_set_pos_spe_for(rq_write_pos[index], rq_write_spe[index], rq_write_for[index], socket))):
+                      rq_write_pos_previous[index] = rq_write_pos[index]
+                      rq_write_spe_previous[index] = rq_write_spe[index]
+                      rq_write_for_previous[index] = rq_write_for[index]
+                      rq_write_pos_request[index] = False
+                  end
+              end
+  
+              if(rq_write_lbp_request[index]):
+                  if(is_ack(rq_comm_set_var("LBP", rq_write_lbp[index], socket))):
+                      rq_write_lbp_previous[index] = rq_write_lbp[index]
+                      rq_write_lbp_request[index] = False
+                  end
+              end
+  
+              if(rq_write_lrd_request[index]):
+                  if(is_ack(rq_comm_set_var("LRD", rq_write_lrd[index], socket))):
+                      rq_write_lrd_previous[index] = rq_write_lrd[index]
+                      rq_write_lrd_request[index] = False
+                  end
+              end
+  
+              if(rq_write_lbl_request[index]):
+                  if(is_ack(rq_comm_set_var("LBL", rq_write_lbl[index], socket))):
+                      rq_write_lbl_previous[index] = rq_write_lbl[index]
+                      rq_write_lbl_request[index] = False
+                  end
+              end
+  
+              if(rq_write_lgn_request[index]):
+                  if(is_ack(rq_comm_set_var("LGN", rq_write_lgn[index], socket))):
+                      rq_write_lgn_previous[index] = rq_write_lgn[index]
+                      rq_write_lgn_request[index] = False
+                  end
+              end
+  
+              if(rq_write_msc_request[index]):
+                  if(is_ack(rq_comm_set_var("MSC", rq_write_msc[index], socket))):
+                      rq_write_msc_previous[index] = rq_write_msc[index]
+                      rq_write_msc_request[index] = False
+                  end
+              end
+  
+              if(rq_write_mod_request[index]):
+                  if(is_ack(rq_comm_set_var("MOD", rq_write_mod[index], socket))):
+                      rq_write_mod_previous[index] = rq_write_mod[index]
+                      rq_write_mod_request[index] = False
+                  end
+              end
+          end
+          index = index + 1
+      end
+  end
+  
+  def rq_activate(gripper_socket="1"):
+      if (not rq_is_gripper_activated(gripper_socket)):
+          rq_reset(gripper_socket)
+  
+          while(not rq_get_var("ACT", 1, gripper_socket) == 0 or not rq_get_var("STA", 1, gripper_socket) == 0):
+              rq_reset(gripper_socket)
+              sync()
+          end
+  
+          rq_set_var("ACT",1, gripper_socket)
+      end
+  end
+  
+  def rq_activate_and_wait(gripper_socket="1"):
+      if (not rq_is_gripper_activated(gripper_socket)):
+          rq_activate(gripper_socket)
+          sleep(1.0)
+  
+          while(not rq_get_var("ACT", 1, gripper_socket) == 1 or not rq_get_var("STA", 1, gripper_socket) == 3):
+              sleep(0.1)
+          end
+  
+          sleep(0.5)
+      end
+  end
+  
+  def rq_activate_all_grippers(reset=False):
+      if(gripper_connected[0]):
+          rq_reset_and_activate("1", reset)
+      end
+  
+      if(gripper_connected[1]):
+          rq_reset_and_activate("2", reset)
+      end
+  
+      if(gripper_connected[2]):
+          rq_reset_and_activate("3", reset)
+      end
+  
+      if(gripper_connected[3]):
+          rq_reset_and_activate("4", reset)
+      end
+  end
+  
+  def rq_reset_and_activate(gripper_socket="1", reset=False):
+      if(reset):
+          rq_reset(gripper_socket)
+          rq_activate_and_wait(gripper_socket)
+      elif(not rq_is_gripper_activated(gripper_socket)):
+          rq_activate_and_wait(gripper_socket)
+      end
+  end
+  
+  def rq_reset(gripper_socket="1"):
+      rq_set_var("ACT", 0, gripper_socket)
+      rq_set_var("ATR", 0, gripper_socket)
+  
+      while(not rq_get_var("ACT", 1, gripper_socket) == 0 or not rq_get_var("STA", 1, gripper_socket) == 0):
+          rq_set_var("ACT", 0, gripper_socket)
+          rq_set_var("ATR", 0, gripper_socket)
+          sync()
+      end
+  
+      sleep(0.5)
+  end
+  
+  def rq_auto_release_open_and_wait(gripper_socket="1"):
+      rq_set_var("ATR",0, gripper_socket)
+      rq_set_var("ARD",0, gripper_socket)
+      rq_set_var("ACT",1, gripper_socket)
+      sleep(0.1)
+      rq_set_var("ATR",1, gripper_socket)
+  
+      rq_wait_autorelease_completed(gripper_socket)
+  end
+  
+  def rq_auto_release_close_and_wait(gripper_socket="1"):
+      rq_set_var("ATR",0, gripper_socket)
+      rq_set_var("ARD",1, gripper_socket)
+      rq_set_var("ACT",1, gripper_socket)
+      sleep(0.1)
+      rq_set_var("ATR",1, gripper_socket)
+  
+      rq_wait_autorelease_completed(gripper_socket)
+  end
+  
+  def rq_wait_autorelease_completed(gripper_socket="1"):
+      remainingRetries = 20
+      gFLT = rq_get_var("FLT", 2, gripper_socket)
+  
+      while(not is_FLT_autorelease_in_progress(gFLT) and remainingRetries > 0):
+          remainingRetries = remainingRetries - 1
+          gFLT = rq_get_var("FLT", 2, gripper_socket)
+          sleep(0.1)
+      end
+  
+      remainingRetries = 100
+      gFLT = rq_get_var("FLT", 2, gripper_socket)
+  
+      while(not is_FLT_autorelease_completed(gFLT) and remainingRetries > 0):
+          remainingRetries = remainingRetries - 1
+          gFLT = rq_get_var("FLT", 2, gripper_socket)
+          sleep(0.1)
+      end
+  end
+  
+  def rq_set_force(force, gripper_socket="1"):
+      force = floor(scale(force, [0, 255], [0.0, 255.0]))
+      rq_set_var("FOR", force, gripper_socket)
+  end
+  
+  def rq_set_speed(speed, gripper_socket="1"):
+      speed = floor(scale(speed, [0, 255], [0.0, 255.0]))
+      rq_set_var("SPE", speed, gripper_socket)
+  end
+  
+  def rq_open(gripper_socket="1"):
+      rq_move(0, gripper_socket)
+  end
+  
+  def rq_close(gripper_socket="1"):
+      rq_move(255, gripper_socket)
+  end
+  
+  def rq_open_and_wait(gripper_socket="1"):
+      rq_move_and_wait(0, gripper_socket)
+  end
+  
+  def rq_close_and_wait(gripper_socket="1"):
+      rq_move_and_wait(255, gripper_socket)
+  end
+  
+  def rq_move(pos, gripper_socket="1"):
+      rq_set_pos(pos, gripper_socket)
+      rq_go_to(gripper_socket)
+  end
+  
+  def rq_move_and_wait(pos, gripper_socket="1"):
+      rq_move(pos, gripper_socket)
+  
+      while (not rq_is_motion_complete(gripper_socket)):
+          # wait for motion completed
+          sync()
+      end
+  end
+  
+  def rq_wait_for_pos_request(pos, gripper_socket="1"):
+      gPRE = rq_get_var("PRE", 3, gripper_socket)
+  
+      while (gPRE != pos):
+          rq_set_var("POS", pos, gripper_socket)
+          sync()
+          gPRE = rq_get_var("PRE", 3, gripper_socket)
+      end
+  end
+  
+  def rq_wait_pos_spe_for_request(pos, speed, force, gripper_socket="1"):
+      gPRE = rq_get_var("PRE", 3, gripper_socket)
+  
+      while (gPRE != pos):
+          rq_set_pos_spe_for_var(pos, speed, force, gripper_socket)
+          sync()
+          gPRE = rq_get_var("PRE", 3, gripper_socket)
+      end
+  end
+  
+  def rq_wait_for_pos(pos, gripper_socket="1"):
+      rq_wait_for_pos_request(pos, gripper_socket)
+  
+      # Wait for the gripper motion to complete
+      while (not rq_is_motion_complete(gripper_socket)):
+          # wait for motion completed
+          sync()
+          rq_set_var("GTO", 1, gripper_socket)
+      end
+  end
+  
+  def rq_wait(gripper_socket="1"):
+      # Wait for the gripper motion to complete
+      while (not rq_is_motion_complete(gripper_socket)):
+          sync()
+          # The following patch is for Robotiq's Camera issue when communication is lost, but not the activation
+          # the communication driver reset the GTO bit
+          rq_set_var("GTO", 1, gripper_socket)
+      end
+  end
+  
+  def rq_wait_for_object_detected(gripper_socket="1"):
+      # Wait the object detection
+      while (not rq_is_object_detected(gripper_socket)):
+          sync()
+      end
+  end
+  
+  # set the position
+  def rq_set_pos(pos, gripper_socket="1"):
+      pos = floor(scale(pos, [0, 255], [0.0, 255.0]))
+      rq_set_var("POS", pos, gripper_socket)
+      rq_wait_for_pos_request(pos, gripper_socket)
+  end
+  
+  def rq_set_pos_spd_for(pos, speed, force, gripper_socket="1"):
+      pos = floor(scale(pos, [0, 255], [0.0, 255.0]))
+      speed = floor(scale(speed, [0, 255], [0.0, 255.0]))
+      force = floor(scale(force, [0, 255], [0.0, 255.0]))
+  
+      rq_set_pos_spe_for_var(pos, speed, force, gripper_socket)
+  end
+  
+  def rq_set_gripper_max_current_mA(current_mA, gripper_socket="1"):
+      current = floor(current_mA / 10)
+  
+      rq_set_var("MSC", current, gripper_socket)
+      current_read = rq_get_var("MSC", 1, gripper_socket)
+  
+      while(current_read != current):
+          rq_set_var("MSC", current, gripper_socket)
+          current_read = rq_get_var("MSC", 1, gripper_socket)
+      end
+  end
+  
+  def rq_set_gripper_mode(mode, gripper_socket="1"):
+      rq_set_var("MOD", mode, gripper_socket)
+  end
+  
+  def rq_set_gripper_max_cur(current_mA, gripper_socket="1"):
+      rq_set_gripper_max_current_mA(current_mA, gripper_socket)
+  end
+  
+  def rq_get_gripper_max_current_mA(gripper_socket="1"):
+      current = rq_get_var("MSC", 1, gripper_socket)
+  
+      if(current == -1):
+          current_mA = current
+      else:
+          current_mA = current * 10
+      end
+  
+      return current_mA
+  end
+  
+  def rq_get_gripper_max_cur(gripper_socket="1"):
+      return rq_get_gripper_max_current_mA(gripper_socket)
+  end
+  
+  def rq_set_max_current_for_all_grippers():
+      current_mA = rq_get_max_current_mA()
+  
+      if(gripper_connected[0]):
+          rq_set_gripper_max_current_mA(current_mA, "1")
+      end
+  
+      if(gripper_connected[1]):
+          rq_set_gripper_max_current_mA(current_mA, "2")
+      end
+  
+      if(gripper_connected[2]):
+          rq_set_gripper_max_current_mA(current_mA, "3")
+      end
+  
+      if(gripper_connected[3]):
+          rq_set_gripper_max_current_mA(current_mA, "4")
+      end
+  end
+  
+  def rq_get_max_current_mA():
+      max_current_mA = 0
+  
+      if(rq_current_limit_enabled):
+          nb_connected_grippers = rq_get_nb_connected_grippers()
+  
+          if(nb_connected_grippers == 1):
+              max_current_mA = 600
+          elif(nb_connected_grippers > 1):
+              max_current_mA = 450
+          end
+      else:
+  
+      end
+  
+      return max_current_mA
+  end
+  
+  def rq_get_nb_connected_grippers():
+      nb_connected_grippers = 0
+  
+      if(gripper_connected[0]):
+          nb_connected_grippers = nb_connected_grippers + 1
+      end
+  
+      if(gripper_connected[1]):
+          nb_connected_grippers = nb_connected_grippers + 1
+      end
+  
+      if(gripper_connected[2]):
+          nb_connected_grippers = nb_connected_grippers + 1
+      end
+  
+      if(gripper_connected[3]):
+          nb_connected_grippers = nb_connected_grippers + 1
+      end
+  
+      return nb_connected_grippers
+  end
+  
+  def rq_list_of_bytes_to_value(list_of_bytes):
+      value = -1
+  
+      # response list length
+      if (list_of_bytes[0] == 1):
+          value = list_of_bytes[1] - 48
+      elif (list_of_bytes[0] == 2):
+          value = (list_of_bytes[1] - 48) * 10 + (list_of_bytes[2] - 48)
+      elif (list_of_bytes[0] == 3):
+          value = (list_of_bytes[1] - 48) * 100 + (list_of_bytes[2] - 48) * 10 + (list_of_bytes[3] - 48)
+      end
+  
+      return value
+  end
+  
+  def rq_is_motion_complete(gripper_socket="1"):
+      gOBJ = rq_get_var("OBJ", 1, gripper_socket)
+      sync()
+      return is_OBJ_gripper_at_position(gOBJ) or is_OBJ_object_detected(gOBJ)
+  end
+  
+  def rq_is_gripper_activated(gripper_socket="1"):
+      gSTA = rq_get_var("STA", 1, gripper_socket)
+      sync()
+      return is_STA_gripper_activated(gSTA)
+  end
+  
+  def rq_is_object_detected(gripper_socket="1"):
+      gOBJ = rq_get_var("OBJ", 1, gripper_socket)
+      sync()
+      return is_OBJ_object_detected(gOBJ)
+  end
+  
+  def rq_current_pos(gripper_socket="1"):
+      gPOS = rq_get_var("POS", 1, gripper_socket)
+      sync()
+      return gPOS
+  end
+  
+  def rq_motor_current(gripper_socket="1"):
+      rq_current = rq_get_var("COU", 1, gripper_socket)
+      sync()
+      return rq_current * 10
+  end
+  
+  def rq_print_connected_grippers():
+      if(gripper_connected[0]):
+          textmsg("Gripper 1 : ", "connected and socket open.")
+      end
+  
+      if (gripper_connected[1]):
+          textmsg("Gripper 2 : ", "connected and socket open.")
+      end
+  
+      if (gripper_connected[2]):
+          textmsg("Gripper 3 : ", "connected and socket open.")
+      end
+  
+      if (gripper_connected[3]):
+          textmsg("Gripper 4 : ", "connected and socket open.")
+      end
+  end
+  
+  def rq_print_gripper_fault_code(gripper_socket="1"):
+      gFLT = rq_get_var("FLT", 2, gripper_socket)
+  
+      if(is_FLT_no_fault(gFLT)):
+          textmsg("Gripper Fault : ", "No Fault (0x00)")
+      elif (is_FLT_action_delayed(gFLT)):
+          textmsg("Gripper Fault : ", "Priority Fault: Action delayed, initialization must be completed prior to action (0x05)")
+      elif (is_FLT_not_activated(gFLT)):
+          textmsg("Gripper Fault : ", "Priority Fault: The activation must be set prior to action (0x07)")
+      elif (is_FLT_autorelease_in_progress(gFLT)):
+          textmsg("Gripper Fault : ", "Minor Fault: Automatic release in progress (0x0B)")
+      elif (is_FLT_overcurrent(gFLT)):
+          textmsg("Gripper Fault : ", "Minor Fault: Overcurrent protection triggered (0x0E)")
+      elif (is_FLT_autorelease_completed(gFLT)):
+          textmsg("Gripper Fault : ", "Major Fault: Automatic release completed (0x0F)")
+      else:
+          textmsg("Gripper Fault : ", "Unknown Fault")
+      end
+  end
+  
+  def rq_print_gripper_num_cycles(gripper_socket="1"):
+      num_cycles = rq_get_var("NCY", 1, gripper_socket)
+  
+      if(num_cycles == -1):
+          textmsg("Gripper Cycle Number : ", "Number of cycles is unreachable.")
+      else:
+          textmsg("Gripper Cycle Number : ", num_cycles)
+      end
+  end
+  
+  def rq_print_gripper_driver_state(gripper_socket="1"):
+      driver_state = rq_get_var("DST", 1, gripper_socket)
+  
+      if(driver_state == 0):
+          textmsg("Gripper Driver State : ", "RQ_STATE_INIT")
+      elif(driver_state == 1):
+          textmsg("Gripper Driver State : ", "RQ_STATE_LISTEN")
+      elif(driver_state == 2):
+          textmsg("Gripper Driver State : ", "RQ_STATE_READ_INFO")
+      elif(driver_state == 3):
+          textmsg("Gripper Driver State : ", "RQ_STATE_ACTIVATION")
+      else:
+          textmsg("Gripper Driver State : ", "RQ_STATE_RUN")
+      end
+  end
+  
+  def rq_print_gripper_serial_number(gripper_socket="1"):
+      serial_number = rq_get_var_string("SNU", 1, gripper_socket)
+      textmsg("Gripper Serial Number : ", serial_number)
+  end
+  
+  def rq_print_gripper_firmware_version(gripper_socket="1"):
+      firmware_version = rq_get_var_string("FWV", 1, gripper_socket)
+      textmsg("Gripper Firmware Version : ", firmware_version)
+  end
+  
+  def rq_print_gripper_driver_version(gripper_socket="1"):
+      driver_version = rq_get_var_string("VER", 1, gripper_socket)
+      textmsg("Gripper Driver Version : ", driver_version)
+  end
+  
+  def rq_print_gripper_connection_state(gripper_socket="1"):
+      connection_state = rq_get_var("PCO", 1, gripper_socket)
+  
+      if (connection_state == 0):
+          textmsg("Gripper Connection State : ", "No connection problem detected")
+      else:
+          textmsg("Gripper Connection State : ", "Connection problem detected")
+      end
+  end
+  
+  # Returns True if list_of_bytes is [3, 'a', 'c', 'k']
+  def is_ack(list_of_bytes):
+  
+      # list length is not 3
+      if (list_of_bytes[0] != 3):
+          return False
+      end
+  
+      # first byte not is 'a'?
+      if (list_of_bytes[1] != 97):
+          return False
+      end
+  
+      # first byte not is 'c'?
+      if (list_of_bytes[2] != 99):
+          return False
+      end
+  
+      # first byte not is 'k'?
+      if (list_of_bytes[3] != 107):
+          return False
+      end
+  
+      return True
+  end
+  
+  # Returns True if list_of_bytes is not [3, 'a', 'c', 'k']
+  def is_not_ack(list_of_bytes):
+      if (is_ack(list_of_bytes)):
+          return False
+      else:
+          return True
+      end
+  end
+  
+  def is_STA_gripper_activated (gSTA):
+      if (gSTA == 3):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_OBJ_object_detected (gOBJ):
+      if (gOBJ == 1 or gOBJ == 2):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_OBJ_gripper_at_position (gOBJ):
+      if (gOBJ == 3):
+          return True
+      end
+  
+      return False
+  end
+  
+  def is_not_OBJ_gripper_at_position (gOBJ):
+      if (is_OBJ_gripper_at_position(gOBJ)):
+          return False
+      else:
+          return True
+      end
+  end
+  
+  #### GTO Section ####
+  def rq_stop(gripper_socket="1"):
+      rq_set_var("GTO", 0, gripper_socket)
+  end
+  
+  def rq_set_GTO_and_wait(value, gripper_socket="1"):
+      rq_set_var("GTO" ,value, gripper_socket)
+      while(not is_GTO(value, rq_get_var("GTO", 1, gripper_socket))):
+        sync()
+      end
+  end
+  
+  def rq_go_to(gripper_socket="1"):
+      rq_set_var("GTO", 1, gripper_socket)
+  end
+  
+  
+  def is_GTO(goto_value, rGTO):
+      return rGTO == goto_value
+  end
+  #### GTO Section ####
+  
+  def is_FLT_no_fault(gFLT):
+      return gFLT == 0
+  end
+  
+  def is_FLT_warning(gFLT):
+      return gFLT >= 1 and gFLT <= 7
+  end
+  
+  def is_FLT_faulted(gFLT):
+      return gFLT >= 8
+  end
+  
+  def is_FLT_action_delayed(gFLT):
+      return gFLT == 5
+  end
+  
+  def is_FLT_not_activated(gFLT):
+      return gFLT == 7
+  end
+  
+  def is_FLT_autorelease_in_progress(gFLT):
+      return gFLT == 11
+  end
+  
+  def is_FLT_overcurrent(gFLT):
+      return gFLT == 14
+  end
+  
+  def is_FLT_autorelease_completed(gFLT):
+      return gFLT == 15
+  end
+  
+  def rq_set_var(var_name, var_value, gripper_socket="1"):
+      index = rq_socket_to_index(gripper_socket)
+  
+      enter_critical
+  
+      if (var_name == "ACT"):
+          rq_write_act[index] = var_value
+          rq_write_act_request[index] = True
+      elif (var_name == "GTO"):
+          rq_write_gto[index] = var_value
+          rq_write_gto_request[index] = True
+      elif (var_name == "ATR"):
+          rq_write_atr[index] = var_value
+          rq_write_atr_request[index] = True
+      elif (var_name == "ARD"):
+          rq_write_ard[index] = var_value
+          rq_write_ard_request[index] = True
+      elif (var_name == "FOR"):
+          rq_write_for[index] = var_value
+          rq_write_pos_request[index] = True
+      elif (var_name == "SPE"):
+          rq_write_spe[index] = var_value
+          rq_write_pos_request[index] = True
+      elif (var_name == "POS"):
+          rq_write_pos[index] = var_value
+          rq_write_pos_request[index] = True
+      elif (var_name == "LBP"):
+          rq_write_lbp[index] = var_value
+          rq_write_lbp_request[index] = True
+      elif (var_name == "LRD"):
+          rq_write_lrd[index] = var_value
+          rq_write_lrd_request[index] = True
+      elif (var_name == "LBL"):
+          rq_write_lbl[index] = var_value
+          rq_write_lbl_request[index] = True
+      elif (var_name == "LGN"):
+          rq_write_lgn[index] = var_value
+          rq_write_lgn_request[index] = True
+      elif (var_name == "MSC"):
+          rq_write_msc[index] = var_value
+          rq_write_msc_request[index] = True
+      elif (var_name == "MOD"):
+          rq_write_mod[index] = var_value
+          rq_write_mod_request[index] = True
+      end
+  
+      exit_critical
+  
+      if (var_name == "ACT"):
+          while(rq_write_act_request[index]):
+              sync()
+          end
+      elif (var_name == "GTO"):
+          while(rq_write_gto_request[index]):
+              sync()
+          end
+      elif (var_name == "ATR"):
+          while(rq_write_atr_request[index]):
+              sync()
+          end
+      elif (var_name == "ARD"):
+          while(rq_write_ard_request[index]):
+              sync()
+          end
+      elif (var_name == "FOR"):
+          while(rq_write_pos_request[index]):
+              sync()
+          end
+      elif (var_name == "SPE"):
+          while(rq_write_pos_request[index]):
+              sync()
+          end
+      elif (var_name == "POS"):
+          while(rq_write_pos_request[index]):
+              sync()
+          end
+      elif (var_name == "LBP"):
+          while(rq_write_lbp_request[index]):
+              sync()
+          end
+      elif (var_name == "LRD"):
+          while(rq_write_lrd_request[index]):
+              sync()
+          end
+      elif (var_name == "LBL"):
+          while(rq_write_lbl_request[index]):
+              sync()
+          end
+      elif (var_name == "LGN"):
+          while(rq_write_lgn_request[index]):
+              sync()
+          end
+      elif (var_name == "MSC"):
+          while(rq_write_msc_request[index]):
+              sync()
+          end
+      elif (var_name == "MOD"):
+          while(rq_write_mod_request[index]):
+              sync()
+          end
+      end
+  end
+  
+  def rq_set_pos_spe_for_var(pos, speed, force, gripper_socket="1"):
+      index = rq_socket_to_index(gripper_socket)
+  
+      enter_critical
+  
+      rq_write_for[index] = force
+      rq_write_spe[index] = speed
+      rq_write_pos[index] = pos
+      rq_write_pos_request[index] = True
+  
+      exit_critical
+  end
+  
+  def rq_get_var(var_name, nbr_bytes, gripper_socket="1"):
+      index = rq_socket_to_index(gripper_socket)
+      var_value = -1
+  
+      if (var_name == "ACT"):
+          enter_critical
+          rq_read_act_req[index] = True
+          exit_critical
+          while(rq_read_act_req[index]):
+              sync()
+          end
+          var_value = rq_read_act[index]
+  
+      elif (var_name == "GTO"):
+          enter_critical
+          rq_read_gto_req[index] = True
+          exit_critical
+          while(rq_read_gto_req[index]):
+              sync()
+          end
+          var_value = rq_read_gto[index]
+  
+      elif (var_name == "FOR"):
+          enter_critical
+          rq_read_for_req[index] = True
+          exit_critical
+          while(rq_read_for_req[index]):
+              sync()
+          end
+          var_value = rq_read_for[index]
+  
+      elif (var_name == "SPE"):
+          enter_critical
+          rq_read_spe_req[index] = True
+          exit_critical
+          while(rq_read_spe_req[index]):
+              sync()
+          end
+          var_value = rq_read_spe[index]
+  
+      elif (var_name == "OBJ"):
+          enter_critical
+          rq_read_obj_req[index] = True
+          exit_critical
+          while(rq_read_obj_req[index]):
+              sync()
+          end
+          var_value = rq_read_obj[index]
+  
+      elif (var_name == "STA"):
+          enter_critical
+          rq_read_sta_req[index] = True
+          exit_critical
+          while(rq_read_sta_req[index]):
+              sync()
+          end
+          var_value = rq_read_sta[index]
+  
+      elif (var_name == "FLT"):
+          enter_critical
+          rq_read_flt_req[index] = True
+          exit_critical
+          while(rq_read_flt_req[index]):
+              sync()
+          end
+          var_value = rq_read_flt[index]
+  
+      elif (var_name == "POS"):
+          enter_critical
+          rq_read_pos_req[index] = True
+          exit_critical
+          while(rq_read_pos_req[index]):
+              sync()
+          end
+          var_value = rq_read_pos[index]
+  
+      elif (var_name == "PRE"):
+          enter_critical
+          rq_read_pre_req[index] = True
+          exit_critical
+          while(rq_read_pre_req[index]):
+              sync()
+          end
+          var_value = rq_read_pre[index]
+  
+      elif (var_name == "LBP"):
+          enter_critical
+          rq_read_lbp_req[index] = True
+          exit_critical
+          while(rq_read_lbp_req[index]):
+              sync()
+          end
+          var_value = rq_read_lbp[index]
+  
+      elif (var_name == "LRD"):
+          enter_critical
+          rq_read_lrd_req[index] = True
+          exit_critical
+          while(rq_read_lrd_req[index]):
+              sync()
+          end
+          var_value = rq_read_lrd[index]
+  
+      elif (var_name == "LBL"):
+          enter_critical
+          rq_read_lbl_req[index] = True
+          exit_critical
+          while(rq_read_lbl_req[index]):
+              sync()
+          end
+          var_value = rq_read_lbl[index]
+  
+      elif (var_name == "LGN"):
+          enter_critical
+          rq_read_lgn_req[index] = True
+          exit_critical
+          while(rq_read_lgn_req[index]):
+              sync()
+          end
+          var_value = rq_read_lgn[index]
+  
+      elif (var_name == "MSC"):
+          enter_critical
+          rq_read_msc_req[index] = True
+          exit_critical
+          while(rq_read_msc_req[index]):
+              sync()
+          end
+          var_value = rq_read_msc[index]
+  
+      elif (var_name == "MOD"):
+          enter_critical
+          rq_read_mod_req[index] = True
+          exit_critical
+          while(rq_read_mod_req[index]):
+              sync()
+          end
+          var_value = rq_read_mod[index]
+  
+      elif (var_name == "NCY"):
+          enter_critical
+          rq_read_ncy_req[index] = True
+          exit_critical
+          while(rq_read_ncy_req[index]):
+              sync()
+          end
+          var_value = rq_read_ncy[index]
+  
+      elif (var_name == "PCO"):
+          enter_critical
+          rq_read_pco_req[index] = True
+          exit_critical
+          while(rq_read_pco_req[index]):
+              sync()
+          end
+          var_value = rq_read_pco[index]
+  
+      elif (var_name == "DST"):
+          enter_critical
+          rq_read_dst_req[index] = True
+          exit_critical
+          while(rq_read_dst_req[index]):
+              sync()
+          end
+          var_value = rq_read_dst[index]
+  
+      end
+  
+      return var_value
+  end
+  
+  def rq_get_var_string(var_name, nbr_bytes, gripper_socket="1"):
+      index = rq_socket_to_index(gripper_socket)
+      var_value = ""
+  
+      enter_critical
+  
+      if (var_name == "SNU"):
+          if(gripper_socket == "1"):
+              var_value = rq_read_snu_1
+          elif(gripper_socket == "2"):
+              var_value = rq_read_snu_2
+          elif(gripper_socket == "3"):
+              var_value = rq_read_snu_3
+          elif(gripper_socket == "4"):
+              var_value = rq_read_snu_4
+          end
+      elif (var_name == "FWV"):
+          if(gripper_socket == "1"):
+              var_value = rq_read_fwv_1
+          elif(gripper_socket == "2"):
+              var_value = rq_read_fwv_2
+          elif(gripper_socket == "3"):
+              var_value = rq_read_fwv_3
+          elif(gripper_socket == "4"):
+              var_value = rq_read_fwv_4
+          end
+      elif (var_name == "VER"):
+          if(gripper_socket == "1"):
+              var_value = rq_read_ver_1
+          elif(gripper_socket == "2"):
+              var_value = rq_read_ver_2
+          elif(gripper_socket == "3"):
+              var_value = rq_read_ver_3
+          elif(gripper_socket == "4"):
+              var_value = rq_read_ver_4
+          end
+      end
+  
+      exit_critical
+  
+      return var_value
+  end
+  
+  def rq_is_object_validated(gripper_selected, gripper_socket="1"):
+      if(gripper_selected):
+          if(rq_is_object_detected(gripper_socket)):
+              return True
+          else:
+              return False
+          end
+      else:
+          return True
+      end
+  end
+  
+  ############################################
+  # normalized functions (maps 0-100 to 0-255)
+  ############################################
+  def rq_set_force_norm(force_norm, gripper_socket="1"):
+      force_gripper = norm_to_gripper(force_norm)
+      rq_set_force(force_gripper, gripper_socket)
+  end
+  
+  def rq_set_speed_norm(speed_norm, gripper_socket="1"):
+      speed_gripper = norm_to_gripper(speed_norm)
+      rq_set_speed(speed_gripper, gripper_socket)
+  end
+  
+  def rq_move_norm(pos_norm, gripper_socket="1"):
+      pos_gripper = norm_to_gripper(pos_norm)
+      rq_move(pos_gripper, gripper_socket)
+  end
+  
+  def rq_move_and_wait_norm(pos_norm, gripper_socket="1"):
+      pos_gripper = norm_to_gripper(pos_norm)
+      rq_move_and_wait(pos_gripper, gripper_socket)
+  end
+  
+  def rq_set_pos_norm(pos_norm, gripper_socket="1"):
+      pos_gripper = norm_to_gripper(pos_norm)
+      rq_set_pos(pos_gripper, gripper_socket)
+  end
+  
+  def rq_current_pos_norm(gripper_socket="1"):
+      pos_gripper = rq_current_pos(gripper_socket)
+      pos_norm = gripper_to_norm(pos_gripper)
+      return pos_norm
+  end
+  
+  def gripper_to_norm(value_gripper):
+      value_norm = (value_gripper / 255) * 100
+      return floor(value_norm)
+  end
+  
+  def norm_to_gripper(value_norm):
+      value_gripper = (value_norm / 100) * 255
+      return ceil(value_gripper)
+  end
+  
+  def rq_get_position():
+      return rq_current_pos_norm()
+  end
+  
+  def rq_gripper_led_on(gripper_socket="1"):
+      rq_set_var("LBP",0, gripper_socket)
+  end
+  
+  def rq_gripper_led_off(gripper_socket="1"):
+      rq_set_var("LBP",1, gripper_socket)
+      rq_set_var("LRD",0, gripper_socket)
+      rq_set_var("LBL",0, gripper_socket)
+      rq_set_var("LGN",0, gripper_socket)
+  end
+  
+  def rq_gripper_led_force_red(gripper_socket="1"):
+      rq_set_var("LBP",1, gripper_socket)
+      rq_set_var("LRD",1, gripper_socket)
+      rq_set_var("LBL",0, gripper_socket)
+      rq_set_var("LGN",0, gripper_socket)
+  end
+  
+  def rq_gripper_led_force_blue(gripper_socket="1"):
+      rq_set_var("LBP",1, gripper_socket)
+      rq_set_var("LRD",0, gripper_socket)
+      rq_set_var("LBL",1, gripper_socket)
+      rq_set_var("LGN",0, gripper_socket)
+  end
+  
+  def rq_gripper_led_force_green(gripper_socket="1"):
+      rq_set_var("LBP",1, gripper_socket)
+      rq_set_var("LRD",0, gripper_socket)
+      rq_set_var("LBL",0, gripper_socket)
+      rq_set_var("LGN",1, gripper_socket)
+  end
+  
+  def rq_gripper_led_force_purple(gripper_socket="1"):
+      rq_set_var("LBP",1, gripper_socket)
+      rq_set_var("LRD",1, gripper_socket)
+      rq_set_var("LBL",1, gripper_socket)
+      rq_set_var("LGN",0, gripper_socket)
+  end
+  
+  ############################################
+  # mm/inches functions
+  ############################################
+  gripper_closed_norm = [100, 100, 100, 100]
+  gripper_open_norm = [0, 0, 0, 0]
+  gripper_closed_mm = [0, 0, 0, 0]
+  gripper_open_mm = [50, 50, 50, 50]
+  
+  def rq_current_pos_mm(gripper_socket=1):
+      pos_gripper = rq_current_pos(gripper_socket)
+      pos_mm = gripper_to_mm(pos_gripper, gripper_socket)
+      return round_value_2_dec(pos_mm)
+  end
+  
+  def rq_current_pos_inches(gripper_socket=1):
+      pos_gripper = rq_current_pos(gripper_socket)
+      pos_mm = gripper_to_mm(pos_gripper, gripper_socket)
+      pos_in = pos_mm / 25.4
+      return round_value_2_dec(pos_in)
+  end
+  
+  def rq_move_mm(pos_mm, gripper_socket=1):
+      pos_gripper = mm_to_gripper(pos_mm, gripper_socket)
+      rq_move(pos_gripper, gripper_socket)
+  end
+  
+  def rq_move_and_wait_mm(pos_mm, gripper_socket=1):
+      pos_gripper = mm_to_gripper(pos_mm, gripper_socket)
+      rq_move_and_wait(pos_gripper, gripper_socket)
+  end
+  
+  def rq_move_inches(pos_in, gripper_socket=1):
+      pos_mm = pos_in * 25.4
+      rq_move_mm(pos_mm, gripper_socket)
+  end
+  
+  def rq_move_and_wait_inches(pos_in, gripper_socket=1):
+      pos_mm = pos_in * 25.4
+      rq_move_and_wait_mm(pos_mm, gripper_socket)
+  end
+  
+  def get_closed_norm(gripper_socket):
+      return gripper_closed_norm[gripper_socket - 1]
+  end
+  
+  def get_open_norm(gripper_socket):
+      return gripper_open_norm[gripper_socket - 1]
+  end
+  
+  def get_closed_mm(gripper_socket):
+      return gripper_closed_mm[gripper_socket - 1]
+  end
+  
+  def get_open_mm(gripper_socket):
+      return gripper_open_mm[gripper_socket - 1]
+  end
+  
+  def set_closed_norm(closed_norm, gripper_socket):
+      gripper_closed_norm[gripper_socket - 1] = closed_norm
+  end
+  
+  def set_open_norm(open_norm, gripper_socket):
+      gripper_open_norm[gripper_socket - 1] = open_norm
+  end
+  
+  def set_closed_mm(closed_mm, gripper_socket):
+      gripper_closed_mm[gripper_socket - 1] = closed_mm
+  end
+  
+  def set_open_mm(open_mm, gripper_socket):
+      gripper_open_mm[gripper_socket - 1] = open_mm
+  end
+  
+  def gripper_to_mm(value_gripper, gripper_socket):
+      closed_norm = get_closed_norm(gripper_socket)
+      open_norm = get_open_norm(gripper_socket)
+      closed_mm = get_closed_mm(gripper_socket)
+      open_mm = get_open_mm(gripper_socket)
+  
+      value_norm = (value_gripper / 255) * 100
+  
+      slope = (closed_mm - open_mm) / (closed_norm - open_norm)
+      value_mm = slope * (value_norm - closed_norm) + closed_mm
+  
+      if (value_mm > open_mm):
+          value_mm_limited = open_mm
+      elif (value_mm < closed_mm):
+          value_mm_limited = closed_mm
+      else:
+          value_mm_limited = value_mm
+      end
+  
+      return value_mm_limited
+  end
+  
+  def mm_to_gripper(value_mm, gripper_socket):
+      closed_norm = get_closed_norm(gripper_socket)
+      open_norm = get_open_norm(gripper_socket)
+      closed_mm = get_closed_mm(gripper_socket)
+      open_mm = get_open_mm(gripper_socket)
+  
+      slope = (closed_norm - open_norm) / (closed_mm - open_mm)
+      value_norm = (value_mm - closed_mm) * slope + closed_norm
+  
+      value_gripper = value_norm * 255 / 100
+  
+      if (value_gripper > 255):
+          value_gripper_limited = 255
+      elif (value_gripper < 0):
+          value_gripper_limited = 0
+      else:
+          value_gripper_limited = round_value(value_gripper)
+      end
+  
+      return value_gripper_limited
+  end
+  
+  def round_value(value):
+      value_mod = value % 1
+  
+      if(value_mod < 0.5):
+          return floor(value)
+      else:
+          return ceil(value)
+      end
+  end
+  
+  def round_value_2_dec(value):
+      value_x_100 = value * 100
+      value_x_100_rounded = round_value(value_x_100)
+      return value_x_100_rounded / 100
+  end
+  
+  def clear_socket_buffer(gripper_socket="1", read_timeout = 0.1):
+      rq_comm_clear_socket_buffer_enabled[rq_socket_to_index(gripper_socket)] = True
+  end
+  
+  def rq_gripper_id_to_ascii(gripper_id):
+      if(gripper_id == "1"):
+          return 57
+      elif(gripper_id == "2"):
+          return 50
+      elif(gripper_id == "3"):
+          return 51
+      elif(gripper_id == "4"):
+          return 52
+      end
+  end
+  
+  def scale(value, rawRange, scaledRange):
+      def computeSlope(inputRange, outputRange):
+          outputRangeDelta = outputRange[1] - outputRange[0]
+          inputRangeDelta = inputRange[1] - inputRange[0]
+  
+          if (inputRangeDelta == 0):
+              return 0
+          else:
+              return outputRangeDelta / inputRangeDelta
+          end
+      end
+  
+      def computeIntercept(slope, inputRange, outputRange):
+          return outputRange[0] - (slope * inputRange[0])
+      end
+  
+      def clipScaledValue(outputScaledValue, outputRange):
+          if (outputRange[0] < outputRange[1]):
+              return clipWhenLowerLimitIsLessThanHigher(outputScaledValue, outputRange)
+          else:
+              return clipWhenLowerLimitIsGreaterThanHigherLimit(outputScaledValue, outputRange)
+          end
+      end
+  
+      def clipWhenLowerLimitIsGreaterThanHigherLimit(outputScaledValue, outputRange):
+          if (outputScaledValue < outputRange[1]):
+              return outputRange[1]
+          elif (outputScaledValue > outputRange[0]):
+              return outputRange[0]
+          else:
+              return outputScaledValue
+          end
+      end
+  
+      def clipWhenLowerLimitIsLessThanHigher(outputScaledValue, outputRange):
+          if (outputScaledValue < outputRange[0]):
+              return outputRange[0]
+          elif (outputScaledValue > outputRange[1]):
+              return outputRange[1]
+          else:
+              return outputScaledValue
+          end
+      end
+  
+      slope = computeSlope(rawRange, scaledRange)
+      intercept = computeIntercept(slope, rawRange, scaledRange)
+      scaledValue = slope * value + intercept
+      return clipScaledValue(scaledValue, scaledRange)
+  end
+  
+  def limit(value, range):
+      return scale(value, range, range)
+  end
+  
+  
+  rq_init_comm_if_connected(9, "1")
+  rq_init_comm_if_connected(2, "2")
+  rq_init_comm_if_connected(3, "3")
+  rq_init_comm_if_connected(4, "4")
+  rq_print_connected_grippers()
+  rq_gripper_communication_thread = run rq_gripper_communication()
+  set_closed_norm(97.6470588235294, 1)
+  set_open_norm(1.1764705882352942, 1)
+  set_closed_mm(0.0, 1)
+  set_open_mm(53.0, 1)
+  set_closed_norm(100.0, 2)
+  set_open_norm(0.0, 2)
+  set_closed_mm(0.0, 2)
+  set_open_mm(50.0, 2)
+  set_closed_norm(100.0, 3)
+  set_open_norm(0.0, 3)
+  set_closed_mm(0.0, 3)
+  set_open_mm(50.0, 3)
+  set_closed_norm(100.0, 4)
+  set_open_norm(0.0, 4)
+  set_closed_mm(0.0, 4)
+  set_open_mm(50.0, 4)
+  rq_current_limit_enabled = False
+  while(not rq_gripper_communication_thread_started):
+      sync()
+  end
+  # end: URCap Installation Node
+  step_count_2581160e_9cfb_469e_a03d_d458885a7034 = 0.0
+  thread Step_Counter_Thread_aa6b1da7_827f_4959_b392_c7c14bb9f4f5():
+    while (True):
+      step_count_2581160e_9cfb_469e_a03d_d458885a7034 = step_count_2581160e_9cfb_469e_a03d_d458885a7034 + 1.0
+      sync()
+    end
+  end
+  run Step_Counter_Thread_aa6b1da7_827f_4959_b392_c7c14bb9f4f5()
+  global CAM_Pose=p[0,0,0,0,0,0]
+  global CAM_Relation=""
+  $ 2 "BeforeStart"
+  $ 3 "Script: SCRIPT Transitions V6.5.script"
+  #*****************************************************
+  # customer          :   INTERNAL
+  # project name      :
+  #****************************************************
+  # controller        :   UR
+  # software          :   5.13
+  #****************************************************
+  # author            :   P. Koehnke
+  # Copyright (c)     :   United Robotics Group
+  #                       An der Riede 2
+  #                       28816 Stuhr
+  #                       Germany
+  #****************************************************
+  # description       :   transition between workareas
+  # version:      	:   1.2
+  # created           :   28.02.2024
+  # updated           :
+  #****************************************************
+  # modifications     :
+  #
+  # date              :
+  # name              :
+  # reason            :
+  #****************************************************
+  
+  ######################### further development #########################
+  #   - that the robot can switch the configuration, if necessary
+  #   - introduction of structs
+  #######################################################################
+  
+  ######################### to be adjusted #########################
+  local WORKAREA_1 = [-0.280,-0.680,-0.001, 0.280, 0.100, 1.000]    # workarea 1 (platform)
+  local WORKAREA_2 = [-1.000,-1.000,-1.000,-0.290, 0.100, 1.000]    # workarea 2 (front right)
+  local WORKAREA_3 = [-1.000, 0.100,-1.000, 0.000, 1.000, 1.000]    # workarea 3 (back right)
+  local WORKAREA_4 = [ 0.000, 0.100,-1.000, 1.000, 1.000, 1.000]    # workarea 4 (back left)
+  local WORKAREA_5 = [ 0.290,-1.000,-1.000, 1.000, 0.100, 1.000]    # workarea 5 (front left)
+  local WORKAREA_6 = [-0.290,-1.000,-1.000, 0.290,-0.560, 1.000]    # workarea 6 (front front)
+  local WORKAREA_7 = [0,0,0,0,0,0]    # reserved
+  local WORKAREA_8 = [0,0,0,0,0,0]    # reserved
+  local WORKAREA_9 = [0,0,0,0,0,0]    # reserved
+  local WORKAREA_10 = [0,0,0,0,0,0]   # reserved
+  
+  local PSE_WA_1 = p[ 0.000,-0.400, 0.300, 0.000, 0.000, 0.000]
+  local PSE_WA_2 = p[-0.300,-0.300, 0.300, 0.000, 0.000, d2r(-90)]
+  local PSE_WA_3 = p[-0.300, 0.300, 0.300, 0.000, 0.000, d2r(-135)]
+  local PSE_WA_4 = p[ 0.300, 0.300, 0.300, 0.000, 0.000, d2r(135)]
+  local PSE_WA_5 = p[ 0.300,-0.300, 0.300, 0.000, 0.000, d2r(90)]
+  local PSE_WA_6 = p[ 0.000,-0.600, 0.300, 0.000, 0.000, 0.000]       # reserved
+  local PSE_WA_7 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+  local PSE_WA_8 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+  local PSE_WA_9 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]       # reserved
+  local PSE_WA_10 = p[ 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]      # reserved
+  
+  local JNT_HOME = [-1.22921,-1.29807,-1.79972,-1.6152, 1.57367, 3.48142]
+  local JNT_STANDARD_C1 = [ 1.57,-1.57, 1.57,-1.57,-1.57,0]
+  local JNT_STANDARD_C2 = [-1.57,-1.57,-1.57,-1.57, 1.57,0]
+  local YAW_MIN_DEG = -110
+  local YAW_MAX_DEG = 110
+  local DISTANCE_TO_CLEARANCE = 0.300
+  local RADIUS_HELPER_POSES = 0.300
+  local RADIUS_TRANSITION_POSES = 0.400
+  local workareas = [WORKAREA_1, WORKAREA_2, WORKAREA_3, WORKAREA_4, WORKAREA_5, WORKAREA_6, WORKAREA_7, WORKAREA_8, WORKAREA_9, WORKAREA_10]
+  local poses = [PSE_WA_1, PSE_WA_2, PSE_WA_3, PSE_WA_4, PSE_WA_5, PSE_WA_6, PSE_WA_7, PSE_WA_8, PSE_WA_9, PSE_WA_10]
+  
+  ######################### end of adjustment #########################
+  
+  local pi = 3.14159265
+  local axis_config_current = 0
+  local axis_config_new = 0
+  local workarea_current = 0
+  local workarea_new = 0
+  global reverse_rotation = False
+  local pose_start = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+  local pose_help = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+  local pose_target = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+  local pose = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+  
+  def get_tool_free_pose(pose_ref=get_actual_tcp_pose(), dir=[0,0,0], move_in_base_frame=False):
+      # get a recovery pose
+      # dir is providing the direction and distance in X, Y and Z
+      # if 'move_in_base_frame' is set, dir will be interpreted as absolute values for a movement in base frame
+  
+      local pose_target = pose_ref
+      local i = 0
+  
+      if (move_in_base_frame):
+          while (i<3):
+              # move only,
+              # if the demanded position is bigger than zero and the current position is below the demanded one or
+              # if the demanded position is smaller than zero and the current position is above the demanded one
+              if ((dir[i]>0 and pose_ref[i]<dir[i]) or (dir[i]<0 and pose_ref[i]>dir[i])):
+                  pose_target[i] = dir[i]
+              end
+              i = i + 1
+          end
+      else:
+          pose_target = pose_trans(pose_ref, p[dir[0], dir[1], dir[2], 0, 0, 0])
+      end
+  
+      return pose_target
+  end
+  
+  def check_workarea(reference_pose):
+      # the actual TCP position is compared to predefined areas (cubic) to determine in which area the robot arm is
+      # a workarea is defined as a list of coordinates, where the first 3 values are X, Y, and Z with the smallest values and
+      # the next 3 values specify X, Y and Z for the biggest values
+  
+      local data_size = size(workareas)
+      local i = 0
+      local size_workarea = p[0,0,0,0,0,0]
+      local pose_workarea = p[0,0,0,0,0,0]
+  
+      while (i < data_size[0]):
+          pose_workarea = pose_trans(inv(p[workareas[i, 0], workareas[i, 1], workareas[i, 2], 0, 0, 0]), reference_pose)
+          size_workarea = pose_sub(p[workareas[i, 3], workareas[i, 4], workareas[i, 5], 0, 0, 0], p[workareas[i, 0], workareas[i, 1], workareas[i, 2], 0, 0, 0])
+          if  ((pose_workarea[0]>0 and pose_workarea[0]<size_workarea[0]) and
+              (pose_workarea[1]>0 and pose_workarea[1]<size_workarea[1]) and
+              (pose_workarea[2]>0 and pose_workarea[2]<size_workarea[2])):
+              return i + 1
+          end
+          i = i + 1
+      end
+      return 0
+  end
+  
+  def check_current_axis_config():
+      # function determnines, if the arm is oriented in one or the other configuration.
+      # it means, that the ellbow joint is flipped and so are the wrist joints.
+  
+      local jnt_current = get_actual_joint_positions()
+  
+      # ellbow has positiv angle
+      if (jnt_current[2]> 0):
+          return 1
+      # ellbow has negativ angle
+      elif (jnt_current[2]< 0):
+          return 2
+      # angle is 0
+      else:
+          return 0
+      end
+  end
+  
+  def switch_axis_config(axis_config):
+      # function to switch betwwen the axis configuration 1 and 2.
+  
+      if (axis_config == 1):
+          return 2
+      elif (axis_config ==2):
+          return 1
+      end
+  end
+  
+  def get_transition_pose_by_workarea(workarea, axis_config):
+      # get the correspondig pose from the list of poses
+  
+      pose.crt = poses[workarea-1]
+      pose.yaw_too_base = get_yaw_too_base(pose.crt)
+      pose.q = get_actual_joint_positions()
+  
+      if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+          pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+      else:
+          popup("no solution found for the transition pose", blocking= True)
+      end
+  
+      return pose
+  end
+  
+  def get_transition_pose_by_reference_pose(ref, radius, axis_config):
+      # get the correspondig pose from the list of poses
+  
+      pose.yaw_too_base = get_yaw_too_base(ref)
+      pose.q = get_actual_joint_positions()
+  
+      # get coordinates of the circle with the same angle as the given pose to the
+      if ref == p[0,0,0,0,0,0]:
+          pose.q = JNT_HOME
+          pose.jnt = JNT_HOME
+          pose.crt = get_forward_kin(pose.jnt)
+          return pose
+      else:
+          pose.crt = p[
+              radius * cos(pose.yaw_too_base-pi/2),
+              radius * sin(pose.yaw_too_base-pi/2),
+              DISTANCE_TO_CLEARANCE,
+              0,
+              0,
+              pose.yaw_too_base + get_locked_yaw()]
+      end
+  
+      if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+          pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+      else:
+          popup("no solution found for the transition pose", blocking= True)
+      end
+  
+      return pose
+  end
+  
+  def get_transition_pose_by_yaw(yaw, radius, axis_config):
+  
+      pose.yaw_too_base = yaw
+      pose.q = get_actual_joint_positions()
+      pose.crt = p[
+          radius * cos(yaw-pi/2),
+          radius * sin(yaw-pi/2),
+          DISTANCE_TO_CLEARANCE,
+          0,
+          0,
+          yaw + get_locked_yaw()]
+  
+      if get_inverse_kin_has_solution(pose.crt, qnear=pose.q):
+          pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+      else:
+          popup("no solution found for the transition pose", blocking= True)
+      end
+  
+      return pose
+  end
+  
+  def get_rounded_mm(value):
+      if (value < 0):
+          return ceil(value*1000)
+      elif (value >= 0):
+          return floor(value*1000)
+      end
+  end
+  
+  def get_yaw_too_base(pose):
+      # get the yaw relative to the base frame
+      local pose_x_mm = 0
+      local pose_y_mm = 0
+      local yaw = 0
+  
+      pose_x_mm = get_rounded_mm(pose[0])
+      pose_y_mm = get_rounded_mm(pose[1])
+  
+      if (pose_x_mm == 0 and pose_y_mm < 0):
+          yaw = 0
+      elif (pose_x_mm == 0 and pose_y_mm > 0):
+          yaw = pi
+      elif (pose_x_mm < 0 and pose_y_mm == 0):
+          yaw = -pi/2
+      elif (pose_x_mm > 0 and pose_y_mm == 0):
+          yaw = pi/2
+      else:
+          yaw = atan2(pose[0], pose[1])
+          if (-pi < yaw) and (yaw < 0):
+              yaw = - yaw - pi
+          elif (0 < yaw) and (yaw < pi):
+              yaw = - yaw + pi
+          end
+      end
+      return yaw
+  end
+  
+  def adjust_axis_rotation(pose):
+  
+      if (0 > pose.yaw_too_base) and (pose.yaw_too_base > d2r(YAW_MIN_DEG)):
+          if (pose.jnt[0] > JNT_HOME[0]):
+              # calculated axis angle is in the wrong value range
+              if axis_config_current == 1:
+                  pose.q[0] = JNT_STANDARD_C1[0]
+              elif axis_config_current == 2:
+                  pose.q[0] = JNT_STANDARD_C2[0]
+              end
+              reverse_rotation = True
+          end
+      elif (0 < pose.yaw_too_base) and (pose.yaw_too_base < d2r(YAW_MAX_DEG)):
+          if (pose.jnt[0] < JNT_HOME[0]):
+              if axis_config_current == 1:
+                  pose.q[0] = JNT_STANDARD_C1[0]
+              elif axis_config_current == 2:
+                  pose.q[0] = JNT_STANDARD_C2[0]
+              end
+              reverse_rotation = True
+          end
+      elif (pose.jnt[0] < -2 * pi):
+          if axis_config_current == 1:
+              pose.q[0] = JNT_STANDARD_C1[0]
+          elif axis_config_current == 2:
+              pose.q[0] = JNT_STANDARD_C2[0]
+          end
+          reverse_rotation = True
+      elif (pose.jnt[0] > 2 * pi):
+          if axis_config_current == 1:
+              pose.q[0] = JNT_STANDARD_C1[0]
+          elif axis_config_current == 2:
+              pose.q[0] = JNT_STANDARD_C2[0]
+          end
+          reverse_rotation = True
+      end
+      return pose.q[0]
+  end
+  
+  def adjust_transition_poses(pose_identifier, keep_rxry=False):
+      # adjust the orientation of the transition poses by determining the the current orientation
+  
+      local pose_current = get_actual_tcp_pose()
+      local jnt_current = get_actual_joint_positions()
+      local rpy_current = rotvec2rpy([pose_current[3],pose_current[4],pose_current[5]])
+      local rotvec_new = [0,0,0]
+  
+      if (pose_identifier == "start"):
+          pose = pose_start
+      elif (pose_identifier == "target"):
+          pose = pose_target
+          pose.q[0] = adjust_axis_rotation(pose)
+      elif (pose_identifier == "helper"):
+          pose = pose_help
+      end
+  
+      if keep_rxry:
+          rotvec_new = rpy2rotvec([rpy_current[0], rpy_current[1], pose.yaw_too_base + get_locked_yaw()])
+          pose.crt = p[pose.crt[0], pose.crt[1], pose.crt[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+  
+          # adjust preferred joint angles ot the current ones
+          pose.q[3] = jnt_current[3]
+          pose.q[4] = jnt_current[4]
+          pose.q[5] = jnt_current[5]
+      end
+  
+      if get_inverse_kin_has_solution(pose.crt, qnear=pose.q) and is_within_safety_limits(pose.crt):
+          pose.jnt = get_inverse_kin(pose.crt, qnear=pose.q)
+      else:
+          popup(str_cat("no solution for ", pose_identifier), error=True, blocking=True)
+      end
+      return pose.jnt
+  end
+  
+  def get_locked_yaw():
+      local pose_current = get_actual_tcp_pose()
+      local rpy_current = rotvec2rpy([pose_current[3],pose_current[4],pose_current[5]])
+      local rotvec_new = rpy2rotvec([rpy_current[0], rpy_current[1], get_yaw_too_base(pose_current)])
+      local pose_reference = p[pose_current[0], pose_current[1], pose_current[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+      local pose_to_reference = pose_trans(pose_inv(pose_reference), pose_current)
+  
+      return pose_to_reference[5]
+  end
+  
+  def get_helper_yaw():
+      local yaw = 0
+  
+      yaw = (pose_start.yaw_too_base + pose_target.yaw_too_base) / 2
+  
+      if reverse_rotation and
+          ((pose_start.yaw_too_base < 0 and
+          pose_target.yaw_too_base < 0) or
+          (pose_start.yaw_too_base > 0 and
+          pose_target.yaw_too_base > 0)):
+            yaw = flip_yaw(yaw)
+      elif (pose_start.yaw_too_base < 0 and
+            pose_start.yaw_too_base < d2r(YAW_MIN_DEG)) and
+            (pose_target.yaw_too_base > 0 and
+            pose_target.yaw_too_base > d2r(YAW_MAX_DEG)):
+              yaw = flip_yaw(yaw)
+      elif (pose_start.yaw_too_base > 0 and
+            pose_start.yaw_too_base > d2r(YAW_MAX_DEG)) and
+            (pose_target.yaw_too_base < 0 and
+            pose_target.yaw_too_base < d2r(YAW_MIN_DEG)):
+              yaw = flip_yaw(yaw)
+      end
+      return yaw
+  end
+  
+  def flip_yaw(yaw):
+      # flips the given yaw 180 degree around
+      if (yaw < 0):
+          return yaw + pi
+      elif (yaw > 0):
+          return yaw - pi
+      end
+  end
+  
+  def clear_poses():
+      pose = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+      pose_start = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+      pose_help = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+      pose_target = struct(crt = p[0,0,0,0,0,0], jnt = [0,0,0,0,0,0], q = [0,0,0,0,0,0], yaw_too_base = 0.0)
+  end
+  
+  def do_transition(reference_pose=p[0,0,0,0,0,0], mode=2, keep_rxry=False, a=1.4, v=1.05, r=0.100):
+      # the robot will evaluate the current and target workarea
+      # after that, the robot will move between the workareas automatically.
+      # parameters:
+      # reference_pose:   a pose/frame were the robot should work next. If nothing is given, base frame will be used as target
+      # keep_rxry:        if true, the robot will keep the orientation of the tool during the movement
+  
+      ################# checking #################
+      axis_config_current = check_current_axis_config()           # 0: unknown, 1: config 1, 2: config 2
+      workarea_current = check_workarea(get_actual_tcp_pose())    # between 0 and the amount of defined workareas
+      workarea_new = check_workarea(reference_pose)               # between 0 and the amount of defined workareas
+      reverse_rotation = False
+  
+      if (workarea_current != 0 and workarea_new != 0) and (workarea_current != workarea_new) or (reference_pose == p[0,0,0,0,0,0]):
+          ################# get axisvalues #################
+          if (mode == 1):
+              pose_start = get_transition_pose_by_workarea(workarea_current, axis_config_current)
+              pose_target = get_transition_pose_by_workarea(workarea_new, axis_config_current)
+          elif (mode == 2):
+              pose_start = get_transition_pose_by_reference_pose(get_actual_tcp_pose(), RADIUS_TRANSITION_POSES, axis_config_current)
+              pose_target = get_transition_pose_by_reference_pose(reference_pose, RADIUS_TRANSITION_POSES, axis_config_current)
+          end
+  
+          global A_Start = pose_start.crt
+          global A_End = pose_target.crt
+          global A_Start_Yaw = r2d(pose_start.yaw_too_base)
+          global A_End_Yaw = r2d(pose_target.yaw_too_base)
+          global A_Start_JNT_1 = r2d(pose_start.jnt[0])
+          global A_End_JNT_1 = r2d(pose_target.jnt[0])
+          global A_Start_JNT = pose_start.jnt
+          global A_End_JNT = pose_target.jnt
+          global A_Help = pose_help.crt
+          global A_Help_Yaw = r2d(pose_help.yaw_too_base)
+          global A_Help_JNT = r2d(pose_help.jnt[0])
+          # sleep(2)
+  
+          ################# adjustments #################
+          pose_start.jnt = adjust_transition_poses("start", keep_rxry)
+          pose_target.jnt = adjust_transition_poses("target", keep_rxry)
+  
+          global A_Start = pose_start.crt
+          global A_End = pose_target.crt
+          global A_Start_Yaw = r2d(pose_start.yaw_too_base)
+          global A_End_Yaw = r2d(pose_target.yaw_too_base)
+          global A_Start_JNT_1 = r2d(pose_start.jnt[0])
+          global A_End_JNT_1 = r2d(pose_target.jnt[0])
+          global A_Start_JNT = pose_start.jnt
+          global A_End_JNT = pose_target.jnt
+  
+          if (pose_start.crt[1] < 0 and pose_target.crt[1] > 0) or (pose_start.crt[1] > 0 and pose_target.crt[1] < 0):
+              pose_help = get_transition_pose_by_yaw(get_helper_yaw(), RADIUS_HELPER_POSES, axis_config_current)
+              pose_help.jnt = adjust_transition_poses("helper", keep_rxry)
+          end
+  
+          global A_Help = pose_help.crt
+          global A_Help_Yaw = r2d(pose_help.yaw_too_base)
+          global A_Help_JNT = r2d(pose_help.jnt[0])
+          global A_Dis_S_H = point_dist(pose_start.crt, pose_help.crt)
+          global A_Dis_H_T = point_dist(pose_help.crt, pose_target.crt)
+          global A_Dis_S_T = point_dist(pose_start.crt, pose_target.crt)
+          # sleep(2)
+  
+          ################# movements #################
+          if (pose_help.jnt != [0,0,0,0,0,0]):
+              if point_dist(get_actual_tcp_pose(), pose_start.crt) > r and point_dist(pose_start.crt, pose_help.crt) > r:
+                  movej(pose_start.jnt, a=a, v=v, r=r)
+                  if (point_dist(pose_start.crt, pose_help.crt) > r) and (point_dist(pose_target.crt, pose_help.crt) > r):
+                      movej(pose_help.jnt, a=a, v=v, r=r)
+                  end
+              end
+          else:
+              if point_dist(get_actual_tcp_pose(), pose_start.crt) > r and point_dist(pose_start.crt, pose_target.crt) > r:
+                  movej(pose_start.jnt, a=a, v=v, r=r)
+              end
+          end
+          movej(pose_target.jnt, a=a, v=v)
+      else:
+          # define error
+      end
+  
+      ################# checking #################
+      axis_config_current = check_current_axis_config()           # 0: unknown, 1: config 1, 2: config 2
+      workarea_current = check_workarea(get_actual_tcp_pose())    # between 0 and the amount of defined workareas
+      clear_poses()
+  end
+  $ 4 "Script: SCRIPT Utility V5.3.script"
+  #*****************************************************
+  # customer          :   tbd
+  # project name      :   tbd
+  #****************************************************
+  # controller        :
+  # software          :
+  #****************************************************
+  # author            :   P. Koehnke (+49 1628859904; p.koehnke@unitedrobotics.group)
+  # Copyright (c)     :   United Robotics Group Health and Food GmbH
+  #                       An der Riede 2
+  #                       28816 Stuhr
+  #                       Germany
+  #****************************************************
+  # description       :   utility programs for the application
+  # version:      	:   3.1
+  # created           :   30.01.2023
+  # updated           :
+  #****************************************************
+  # modifications     :   get_tool_free_pose_2(), get_index_from_list()
+  #
+  # date              :   05.01.2024
+  # name              :   PK
+  # reason            :
+  #****************************************************
+  
+  def found_in_matrix(data, req_id, req_idx):
+      local id = -1
+      local dimensions = size(data)
+      local loop_dataset = 0
+  
+      while (id != req_id and loop_dataset < dimensions[0]):
+          id = data[loop_dataset, 0]
+          if (id == req_id):
+              return data[loop_dataset, req_idx]
+          else:
+              loop_dataset = loop_dataset + 1
+          end
+      end
+  end
+  
+  def found_in_list(value, list):
+      local idx = 0
+  
+      while (idx < length(list)):
+          if (value == list[idx]):
+              return True
+          end
+          idx = idx + 1
+      end
+      return False
+  end
+  
+  def get_index_from_list(list, value = -1):
+      local idx = 0
+  
+      while (idx < length(list)):
+          if (value == -1):
+              if (list[idx] != 0):
+                  return idx
+              end
+          else:
+              if (list[idx] == value):
+                  return idx
+              end
+          end
+          idx = idx + 1
+      end
+      return -1
+  end
+  
+  def pose_RPY2RotVec(pose):
+      local rotvec = rpy2rotvec([d2r(pose[3]), d2r(pose[4]), d2r(pose[5])])
+      return p[pose[0], pose[1], pose[2], rotvec[0], rotvec[1], rotvec[2]]
+  end
+  
+  def pose_RotVec2RPY(pose):
+      local rpy = rotvec2rpy([pose[3], pose[4], pose[5]])
+      return p[pose[0], pose[1], pose[2], r2d(rpy[0]), r2d(rpy[1]), r2d(rpy[2])]
+  end
+  
+  def swivel(frame_ref, angles = [0, 0, 0], pose = p[0, 0, 0, 0, 0, 0]):
+  
+      local rpy_ref = [0, 0, 0]
+      local rpy_new = [0, 0, 0]
+      local rotvec_new = [0, 0, 0]
+      local pose_from = p[0, 0, 0, 0, 0, 0]
+      local pose_to = p[0, 0, 0, 0, 0, 0]
+      local i = 0
+  
+      if (pose == p[0, 0, 0, 0, 0, 0]):
+          pose_to = pose_trans(pose_inv(frame_ref), get_actual_tcp_pose())
+      else:
+          pose_to = pose
+      end
+  
+      rpy_ref = rotvec2rpy(frame_ref[3], frame_ref[4], frame_ref[5])
+  
+      while (i < 3):
+          rpy_new[i] = rpy_ref[i] + d2r(angles[i])
+          i = i + 1
+      end
+  
+      rotvec_new = rpy2rotvec(rpy_new)
+      pose_from = p[0, 0, 0, rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+      pose_to = p[pose_to[0], pose_to[1], pose_to[2], rotvec_new[0], rotvec_new[1], rotvec_new[2]]
+  
+      return pose_trans(pose_from, pose_to)
+  end
+  
+  def get_random_pose(pose_ref, mode = "", range_max = [0, 0, 0]):
+      # modi: "cubic", "rotation"
+      # getting a random pose in the x/y-plane. range can be set for each
+      # translation and rotation.
+      local rpy_random = [0, 0, 0]
+      local rotvec_random = [0, 0, 0]
+      local pose_random = pose_ref
+      local i = 0
+  
+      if (mode == "cubic"):
+          # cubic mode: random pose takes only x, y and z
+          i = 0
+          while (i < 3):
+              pose_random[i] = pose_ref[i] + range_max[i] * (random() - 0.5)
+              i = i + 1
+          end
+          return pose_random
+  
+      elif (mode == "rotation"):
+          i = 0
+          while (i < 3):
+              rpy_random[i] = d2r(range_max[i]) * (random() - 0.5)
+              i = i + 1
+          end
+          rotvec_random = rpy2rotvec(rpy_random)
+          pose_random = pose_trans(p[0, 0, 0, rotvec_random[0], rotvec_random[1], rotvec_random[2]], pose_ref)
+          return pose_random
+  
+      else:
+          # unknown mode, return pose_ref
+          return pose_ref
+      end
+  end
+  
+  def get_pattern_pos_rectangle(counter, direction, pattern, patterninc = [0, 0], patternsize = [0, 0]):
+      # defines the position inside a rectangular pattern
+      # pattern describes, how many objects are in x-direction and how many in y-direction [x, y]
+      # patternsize will give the total length of each direction [x, y]
+      local X_Fac = 0
+      local Y_Fac = 0
+      local max = pattern[0] * pattern[1]
+      local i = 0
+  
+      if (1 > counter or counter > max):
+          counter = 1
+      end
+  
+      if pattern[0] == 0:
+          pattern[0] = 1
+      end
+  
+      if pattern[1] == 0:
+          pattern[1] = 1
+      end
+  
+      if (direction == "Y" or direction == "y"):
+          X_Fac = floor((counter - 1) / pattern[1])
+          Y_Fac = (counter - 1) % pattern[1]
+      elif (direction == "X" or direction == "x"):
+          X_Fac = (counter - 1) % pattern[0]
+          Y_Fac = floor((counter - 1) / pattern[0])
+      end
+  
+      if patternsize != [0, 0]:
+          while i < 2:
+              if pattern[i] > 1:
+                  patterninc[i] = patternsize[i] / (pattern[i] - 1)
+              end
+              i = i + 1
+          end
+      end
+  
+      return p[X_Fac * patterninc[0], Y_Fac * patterninc[1], 0, 0, 0, 0]
+  end
+  
+  def get_pattern_pos_circle(counter, radius, angle, direction, pattern, patternsize = [0, 0]):
+      # get the patternpos for a circular pattern through a counter
+      # need the radius and the angle in radiants
+      local X_Fac = 0
+      local Y_Fac = 0
+      local rad_bow = 0
+      local radius_cal = 0
+      local ref = p[0, 0, 0, 0, 0, 0]
+  
+      if pattern[0] == 0:
+          pattern[0] = 1
+      end
+  
+      if pattern[1] == 0:
+          pattern[1] = 1
+      end
+  
+      if (direction == "Y" or direction == "y"):
+          X_Fac = floor((counter - 1) / pattern[1])
+          Y_Fac = (counter - 1) % pattern[1]
+      elif (direction == "X" or direction == "x"):
+          X_Fac = (counter - 1) % pattern[0]
+          Y_Fac = floor((counter - 1) / pattern[0])
+      end
+  
+      # the opening angle will be calculated in x-direction
+      # works only between -90 and 90 degree
+      if pattern[0] > 1:
+          rad_bow = - angle / (pattern[0] - 1) * X_Fac + angle / 2
+      end
+  
+      if (counter % 2 == 0 and pattern[1] > 1):
+          radius_cal = radius - patternsize[1] / (pattern[1])
+      else:
+          radius_cal = radius + patternsize[1] / (pattern[1])
+      end
+      ref = p[0, radius_cal, 0, 0, 0, 0]
+  
+      return p[ref[0] * cos(rad_bow) - ref[1] * sin(rad_bow), (ref[0] * sin(rad_bow) + ref[1] * cos(rad_bow)) - radius, 0, 0, 0, 0]
+  end
+  
+  def get_pattern_counter(pose, direction, pattern, patterninc = [0, 0], patternsize = [0, 0]):
+      # returns the counter for a pattern from a given cartesian pose
+      local patternpose = p[pose[0], pose[1], 0, 0, 0, 0]
+      local X_Fac = 0
+      local Y_Fac = 0
+      local i = 0
+  
+      if patternsize != [0, 0]:
+          while i < 2:
+              if pattern[i] > 1:
+                  patterninc[i] = patternsize[i] / (pattern[i] - 1)
+              else:
+                  pattern[i] = 0
+              end
+              i = i + 1
+          end
+      end
+  
+      # calculation of the counter in the desired axis-direction
+      if (direction == "x" or direction == "X"):
+          if patterninc[0] > 0:
+              X_Fac = ceil((patternpose[0] + patterninc[0] / 2) / patterninc[0])
+              if X_Fac < 0:
+                  X_Fac = 0
+              end
+          end
+          if patterninc[1] > 0:
+              Y_Fac = floor((patternpose[1] + patterninc[1] / 2) / patterninc[1])
+              if Y_Fac < 0:
+                  Y_Fac = 0
+            end
+          end
+          return Y_Fac * pattern[0] + X_Fac
+      elif (direction == "y" or direction == "Y"):
+          if patterninc[0] > 0:
+              X_Fac = floor((patternpose[0] + patterninc[0] / 2) / patterninc[0])
+          end
+          if patterninc[1] > 0:
+              Y_Fac = ceil((patternpose[1] + patterninc[1] / 2) / patterninc[1])
+          end
+          return X_Fac * pattern[1] + Y_Fac
+      end
+  end
+  
+  def get_plc_reg(mod_sig_name):
+      return integer_to_binary_list(modbus_get_signal_status(mod_sig_name))
+  end
+  
+  def set_plc_reg(mod_sig_name, mod_sig_list):
+      modbus_set_output_register(mod_sig_name, binary_list_to_integer(mod_sig_list), False)
+  end
+  
+  def check_decapping(offset = 0, timeout = 5, abort = False):
+      # checken, ob der Deckel schon ab ist
+      local start = get_actual_tcp_pose()
+      local current_offset = 0
+      local timecounter = 0
+      while (current_offset < offset and not abort):
+          current_offset = pose_dist(start, get_actual_tcp_pose())
+          timecounter = timecounter + 1
+          if (timecounter * 0.5 == timeout):
+              break
+          end
+          sleep(0.5)
+      end
+      stopl(0.5)
+  end
+  
+  def check_capping(torque = 0):
+      # checken, wann der Deckel verschraubt ist
+      force_mode(get_actual_tcp_pose(), [0, 0, 1, 0, 0, 0], [0, 0, -2.0, 0, 0, 0], 2, [0, 0, 0.100, 0, 0, 0])
+  end
+  
+  def is_reachable(frame, poses, offsets = [0, 0, 0]):
+      local idx = 0
+      local pose = p[0, 0, 0, 0, 0, 0]
+  
+      while (idx < length(poses)):
+          pose = poses[idx]
+          pose[0] = pose[0] + offsets[0]
+          pose[1] = pose[1] + offsets[1]
+          pose[2] = pose[2] + offsets[2]
+  
+          if pose != p[0, 0, 0, 0, 0, 0]:
+              if (not get_inverse_kin_has_solution(pose_trans(frame, pose))):
+                  textmsg(str_cat(str_cat("Pose ", to_str(idx + 1)), " is not reachable"))
+                  return False
+              end
+          end
+          idx = idx + 1
+      end
+      return True
+  end
+  
+  def is_within_limits(frame, poses, offsets = [0, 0, 0]):
+      local idx = 0
+      local pose = p[0, 0, 0, 0, 0, 0]
+  
+      while (idx < length(poses)):
+          pose = poses[idx]
+          pose[0] = pose[0] + offsets[0]
+          pose[1] = pose[1] + offsets[1]
+          pose[2] = pose[2] + offsets[2]
+  
+          if is_reachable(frame = frame, poses = poses, offsets = offsets):
+              if (not is_within_safety_limits(get_inverse_kin(pose_trans(frame, pose), get_actual_joint_positions()))):
+                  textmsg(str_cat(str_cat("Pose ", to_str(idx + 1)), "is out of joint limits"))
+                  return False
+              else:
+                  idx = idx + 1
+              end
+          else:
+              return False
+          end
+      end
+      return True
+  end
+  $ 5 "Script: SCRIPT Vision Config V0.2.script"
+  CAM_LM = struct(id=0, type="", size=0, related_itm=0, capture_relation="")
+  global CAM_Result = make_list(0, 0, 50)
+  
+  def create_landmark(id=0, type="", size=0, related_itm=0, capture_relation=""):
+      return struct(id=id, type=type, size=size, related_itm=related_itm, capture_relation=capture_relation)
+  end
+  
+  
+  CAM_LMs = [
+    create_landmark(id=1, type="aruco_7x7", size=0.1, related_itm=1, capture_relation="front_right"),
+    create_landmark(id=4, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left"),
+    create_landmark(id=3, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left"),
+    create_landmark(id=8, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="right"),
+    create_landmark(id=5, type="aruco_7x7", size=0.1, related_itm=5, capture_relation="left"),
+    create_landmark(id=6, type="aruco_7x7", size=0.1, related_itm=2, capture_relation="straight_left")
+  ]
+  
+  CAM_Capture_Poses = struct(
+    front_left = p[0.350,-0.330,0.500,0.353,-0.323,-1.458],
+    left = p[0.350,0.000,0.500,0.353,-0.323,-1.458],
+    back_left = p[0.350,0.220,0.500,0.353,-0.323,-1.458],
+    back_right = p[-0.350,0.000,0.500,0.579,0.240,0.760],
+    right = p[-0.350,-0.300,0.500,0.206,0.206,1.561],
+    front_right = p[-0.350,-0.400,0.500,0.242,0.903,2.480],
+    straight_left = p[0.375,-0.000,0.500,0.815,-0.815,-1.412],
+    front = p[0,0,0,0,0,0]
+  )
+  
+  def get_capture_pose(lm):
+      if (lm.capture_relation == "front_left"):
+          return CAM_Capture_Poses.front_left
+      elif (lm.capture_relation == "left"):
+          return CAM_Capture_Poses.left
+      elif (lm.capture_relation == "back_left"):
+          return CAM_Capture_Poses.back_left
+      elif (lm.capture_relation == "back_right"):
+          return CAM_Capture_Poses.back_right
+      elif (lm.capture_relation == "right"):
+          return CAM_Capture_Poses.right
+      elif (lm.capture_relation == "straight_left"):
+         return CAM_Capture_Poses.straight_left
+      else:
+          # error
+          return get_actual_tcp_pose()
+      end
+  end
+  $ 6 "Script: 001 SCRIPT Errors and Warnings Deifnes V0.2.script"
+  
+  #*****************************************************
+  # customer          :   UK Essen
+  # project name      :   P1132
+  #****************************************************
+  # controller        :
+  # software          :
+  #****************************************************
+  # author            :   E.Petrichenko
+  # Copyright (c)     :   United Robotics Group Health and Food GmbH
+  #                       An der Riede 2
+  #                       28816 Stuhr
+  #                       Germany
+  #****************************************************
+  # description       :   centrifuge actions for the application
+  # version:      	:   0.1
+  # created           :   22.08.2024
+  # updated           :
+  #****************************************************
+  # modifications     :
+  #
+  # date              :
+  # name              :
+  # reason            :
+  #****************************************************
+  
+  
+  #################################### VARIABLES DEFINITIONS ###################################
+  
+  ERROR_POSE_NOT_REACHABLE = 1002
+  ERROR_ROBOT_ARM_NOT_IN_HOME_POSE = 1006
+  ERROR_NO_OBJECT_TO_PICK = 1010
+  ERROR_NOT_DOCKED = 2003
+  ERROR_NOT_REACHABLE_TARGET = 2007
+  ERROR_CHARGING_NOT_STARTED = 2008
+  ERROR_AMR_WRONG_MODE = 2009
+  ERROR_UNKNOWN_POSE = 2010
+  ERROR_NO_LANDMARK = 3002
+  ERROR_WRONG_ORDER = 4002
+  ERROR_CENTRIFUGE_CONNECTION = 5001
+  ERROR_CENTRIFUGE_POWER = 5002
+  ERROR_CENTRIFUGE = 5003
+  ERROR_CENTRIFUGE_LID = 5004
+  ERROR_CANNOT_OPEN_HATCH = 5006
+  ERROR_CANNOT_CLOSE_HATCH = 5008
+  ERROR_CANNOT_ROTATE = 5010
+  ERROR_CANNOT_START = 5011
+  ERROR_WRONG_KEY_POSE = 5012
+  ERROR_MISSIING_CENTRACK = 5013
+  
+  WARNING_POSE_NOT_REACHABLE = 1002
+  WARNING_BATTERY_LEVEL = 2002
+  WARNING_NOT_REACHABLE_TARGET = 2007
+  
+  
+  ERROR = struct(
+      FLAG = False,
+      ID = 0,
+      MSG = "")
+  
+  WARNING = struct(
+      FLAG = False,
+      ID = 0,
+      MSG = "")
+  
+  
+  #################################### FUNCTIONS ###################################
+  
+  def set_error(error_id):
+      ERROR.ID = error_id
+      if (ERROR.ID == 0):
+          ERROR.FLAG = False
+          ERROR.MSG = ""
+      else:
+          ERROR.FLAG = True
+          if(ERROR.ID == ERROR_POSE_NOT_REACHABLE):
+              ERROR.MSG = "Pose is not reachable"
+          elif(ERROR.ID == ERROR_NO_OBJECT_TO_PICK):
+              ERROR.MSG = "No object to pick"
+          elif(ERROR.ID == ERROR_NO_LANDMARK):
+              ERROR.MSG = "No landmark detected"
+          elif(ERROR.ID == ERROR_ROBOT_ARM_NOT_IN_HOME_POSE):
+              ERROR.MSG = "Robot arm cannot go to home pose"
+          elif(ERROR.ID == ERROR_AMR_WRONG_MODE):
+              ERROR.MSG = "AMR is in the wrong mode"
+          elif(ERROR.ID == ERROR_NOT_DOCKED):
+              ERROR.MSG = "Could not dock to the charger"
+          elif(ERROR.ID == ERROR_NOT_REACHABLE_TARGET):
+              ERROR.MSG = "Could not reach the target"
+          elif(ERROR.ID == ERROR_CHARGING_NOT_STARTED):
+              ERROR.MSG = "Could not start charging"
+          elif(ERROR.ID == ERROR_UNKNOWN_POSE):
+              ERROR.MSG = "Unknown navigation target"
+          elif(ERROR.ID == ERROR_CANNOT_OPEN_HATCH):
+              ERROR.MSG = "Centrifuge Cannot open the hatch"
+          elif(ERROR.ID == ERROR_CENTRIFUGE_CONNECTION):
+              ERROR.MSG = "Cannot reach centrifuge"
+          elif (ERROR.ID == ERROR_CANNOT_CLOSE_HATCH):
+              ERROR.MSG = "Centrifuge Cannot close the hatch"
+          elif (ERROR.ID == ERROR_CANNOT_START):
+              ERROR.MSG = "Centrifuge Cannot start"
+          elif (ERROR.ID == ERROR_CANNOT_ROTATE):
+              ERROR.MSG = "Centrifuge Cannot rotate the rotor"
+          elif (ERROR.ID == ERROR_WRONG_ORDER):
+              ERROR.MSG = "Wrong parameter was recieved"
+          elif (ERROR.ID == ERROR_CENTRIFUGE):
+              ERROR.MSG = "Centrifuge is in Error"
+          elif (ERROR.ID == ERROR_WRONG_KEY_POSE):
+              ERROR.MSG = "Key is in the wrong position"
+          elif(ERROR.ID == ERROR_MISSIING_CENTRACK):
+              ERROR.MSG = "Missing rack for centrifuge set"
+          elif(ERROR.ID == ERROR_CENTRIFUGE_POWER):
+              ERROR.MSG = "Centrifuge is turned off"
+          elif(ERROR.ID == ERROR_CENTRIFUGE_LID):
+              ERROR.MSG = "Lid of the centrifuge is opened"
+          else:
+              ERROR.MSG = "Unknown code"
+          end
+          textmsg("ERROR:",ERROR)
+      end
+  end
+  
+  def set_warning(warning_id):
+      WARNING.ID = warning_id
+      if (WARNING.ID == 0):
+          WARNING.FLAG = False
+          WARNING.MSG = ""
+      else:
+          WARNING.FLAG = True
+          if(WARNING.ID == WARNING_POSE_NOT_REACHABLE):
+              WARNING.MSG = "Pose is not reachable"
+          elif(WARNING.ID == WARNING_BATTERY_LEVEL):
+              WARNING.MSG = "Batery level dropped to a certain level"
+          elif(WARNING.ID == WARNING_NOT_REACHABLE_TARGET):
+              WARNING.MSG = "Not reachable location of AMR"
+          else:
+              WARNING.MSG = "Unknown code"
+          end
+          textmsg("WARNING:",WARNING)
+      end
+  end
+  
+  
+  def reset_error():
+    ERROR.ID = 0
+    ERROR.FLAG = False
+    ERROR.MSG = ""
+  end
+  
+  
+  def reset_warning():
+      WARNING.ID = 0
+      WARNING.FLAG = False
+      WARNING.MSG = ""
+    end
+  $ 46 "reset_error()"
+  reset_error()
+  $ 47 "Action≔131"
+  global Action=131
+  $ 48 "ITM_ID≔1"
+  global ITM_ID=1
+  $ 49 "JIG≔7"
+  global JIG=7
+  $ 50 "CMD_Stop≔ False "
+  global CMD_Stop=  False  
+  $ 51 "PSE_T≔get_actual_tcp_pose()"
+  global PSE_T= get_actual_tcp_pose ()
+  $ 52 "MoveJ"
+  $ 53 "PSE_T" "breakAfter"
+  movej(PSE_T, a=1.3962634015954636, v=1.0471975511965976)
+  $ 54 "Set"
+  set_tcp(p[0.0,0.0,0.161,3.1415,0.0,0.0])
+  $ 55 "Robot Program"
+  $ 56 "PreSettings"
+  $ 57 "CAM_LM_Detected≔ False "
+  global CAM_LM_Detected=  False  
+  $ 58 "CAM_Captures≔0"
+  global CAM_Captures=0
+  $ 59 "CAM_Pose≔p[0,0,0,0,0,0]"
+  global CAM_Pose=p[0,0,0,0,0,0]
+  $ 60 "CAM_LM_Refinmnt≔ False "
+  global CAM_LM_Refinmnt=  False  
+  $ 61 "CAM_LM_Refined≔ False "
+  global CAM_LM_Refined=  False  
+  $ 62 "CAM_LM_Deviatn≔p[0,0,0,0,0,0]"
+  global CAM_LM_Deviatn=p[0,0,0,0,0,0]
+  $ 63 "CAM_LM_ID≔0"
+  global CAM_LM_ID=0
+  $ 64 "CAM_Done≔ False "
+  global CAM_Done=  False  
+  $ 65 "CAM_CNT_Obj≔0"
+  global CAM_CNT_Obj=0
+  $ 66 "CAM_Result = []"
+  CAM_Result = []
+  $ 67 "OBJ_Detected≔ False "
+  global OBJ_Detected=  False  
+  $ 68 "FRM_Reference≔p[0,0,0,0,0,0]"
+  global FRM_Reference=p[0,0,0,0,0,0]
+  $ 69 "'=========='"
+  # '=========='
+  $ 70 "Switch Action"
+  switch_1 = Action
+  $ 71 "Case 13"
+  if (13 == switch_1):
+  elif (15 == switch_1):
+    $ 189 "Case 15"
+  elif (131 == switch_1):
+    $ 235 "Case 131"
+    $ 236 "Read (SensoPart)"
+    $ 237 "Action_Info≔'search for landmark'"
+    global Action_Info="search for landmark"
+    $ 238 "CAM_LM≔CAM_LMs[ITM_ID-1]"
+    global CAM_LM=CAM_LMs[ITM_ID-1]
+    $ 239 "CAM_Relation≔CAM_LM.capture_relation"
+    global CAM_Relation=CAM_LM.capture_relation
+    $ 240 "go to capture pose"
+    $ 243 "If ITM_ID≟1 and JIG≟7"
+    if (ITM_ID == 1  and  JIG == 7):
+      $ 244 "PSE_T≔ULM_Cap_SSRack"
+      global PSE_T=ULM_Cap_SSRack
+    else:
+      $ 245 "ElseIf ITM_ID≟5 and JIG≟7"
+      if (ITM_ID == 5  and  JIG == 7):
+        $ 246 "PSE_T≔FRM_Cap_SSTable"
+        global PSE_T=FRM_Cap_SSTable
+      end
+    end
+    $ 247 "do_transition(PSE_T, keep_rxry=False)"
+    do_transition(PSE_T, keep_rxry=False)
+    $ 248 "Set"
+    set_tcp(p[0.0,0.0,0.161,3.1415,0.0,0.0])
+    $ 249 "MoveJ"
+    $ 250 "PSE_T" "breakAfter"
+    movej(PSE_T, a=1.3962634015954636, v=1.7453292519943295)
+    $ 251 "CAM_Pose≔get_actual_tcp_pose()"
+    global CAM_Pose= get_actual_tcp_pose ()
+    $ 252 "Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop"
+    while (  not  CAM_Done  and    not  ERROR.FLAG  and    not  CMD_Stop):
+      $ 253 "adjust capture pose"
+      $ 254 "If CAM_LM_Detected and CAM_LM_Refinmnt"
+      if (CAM_LM_Detected  and  CAM_LM_Refinmnt):
+        $ 255 "PSE_T≔p[0,0,0.300,0,0,0]"
+        global PSE_T=p[0,0,0.300,0,0,0]
+        $ 256 "CAM_Pose≔PSE_T"
+        global CAM_Pose=PSE_T
+        $ 257 "If  not is_reachable(FRM_Reference,[PSE_T])"
+        if (  not  is_reachable(FRM_Reference,[PSE_T])):
+          $ 258 "Error"
+          $ 259 "set_error(ERROR_POSE_NOT_REACHABLE)"
+          set_error(ERROR_POSE_NOT_REACHABLE)
+        end
+        $ 260 "If  not ERROR.FLAG"
+        if (  not  ERROR.FLAG):
+          $ 261 "MoveJ"
+          $ 262 "PSE_T" "breakAfter"
+          set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+          movej(pose_trans(FRM_Reference, PSE_T), a=0.8726646259971648, v=1.3962634015954636)
+          $ 263 "CAM_LM_Refined≔ True "
+          global CAM_LM_Refined=  True  
+        end
+      else:
+        $ 264 "ElseIf  not CAM_LM_Detected and CAM_Captures>0"
+        if (  not  CAM_LM_Detected  and  CAM_Captures>0):
+          $ 265 "MoveL"
+          $ 266 "If FRM_Reference≟p[0,0,0,0,0,0]"
+          if (FRM_Reference == p[0,0,0,0,0,0]):
+            $ 267 "PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode='cubic', range_max=[0.150,0.150,0.020])"
+            global PSE_T=get_random_pose(pose_ref=CAM_Pose, mode="cubic", range_max=[0.150,0.150,0.020])
+          else:
+            $ 268 "Else" "noBreak"
+            $ 269 "PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode='rotation', range_max=[10,10,0])"
+            global PSE_T=get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+            $ 270 "CAM_LM_Refined≔ True "
+            global CAM_LM_Refined=  True  
+          end
+          $ 271 "If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))"
+          if (get_inverse_kin_has_solution( pose_trans (FRM_Reference, PSE_T))):
+            $ 272 "PSE_T" "breakAfter"
+            set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+            movel(pose_trans(FRM_Reference, PSE_T), a=0.03, v=0.05)
+          else:
+            $ 273 "Else" "noBreak"
+            $ 274 "'If random pose is out of reach, set the initial cam pose'"
+            # 'If random pose is out of reach, set the initial cam pose'
+            $ 275 "PSE_T≔CAM_Pose"
+            global PSE_T=CAM_Pose
+          end
+        end
+      end
+      $ 276 "Wait: 2.0"
+      sleep(2.0)
+      $ 277 "trigger"
+      # begin: URCap Program Node
+      #   Source: SensoPart VISOR Robotic, 2.0.0, SensoPart Industriesensorik GmbH
+      #   Type: VISOR Trigger
+      $ 278 "# 1 VISOR Trigger"
+      visor_changeJob(1, "Landmark Detection", 3000)
+      visor_trigger(1, 3000, "arm")
+      # end: URCap Program Node
+      $ 279 "CAM_LM_Deviatn≔visor_getPose3d(1, 0)"
+      global CAM_LM_Deviatn= visor_getPose3d (1, 0)
+      $ 280 "If CAM_LM_Deviatn≠PSE_Z"
+      if (CAM_LM_Deviatn != PSE_Z):
+        $ 281 "CAM_LM_Detected≔ True "
+        global CAM_LM_Detected=  True  
+        $ 282 "CAM_Captures≔0"
+        global CAM_Captures=0
+      else:
+        $ 283 "Else" "noBreak"
+        $ 284 "CAM_LM_Detected≔ False "
+        global CAM_LM_Detected=  False  
+        $ 285 "CAM_Captures≔CAM_Captures+1"
+        global CAM_Captures=CAM_Captures+1
+      end
+      $ 286 "result"
+      $ 287 "If CAM_LM_Detected"
+      if (CAM_LM_Detected):
+        $ 288 "If (CAM_LM_Refinmnt and CAM_LM_Refined) or  not CAM_LM_Refinmnt"
+        if ((CAM_LM_Refinmnt  and  CAM_LM_Refined)  or    not  CAM_LM_Refinmnt):
+          $ 346 "If ITM_ID≟1 and JIG≟7"
+          if (ITM_ID == 1  and  JIG == 7):
+            $ 354 "ULM_SS_Rack≔pose_trans(CAM_LM_Deviatn, ULM_SS_Rack)"
+            global ULM_SS_Rack= pose_trans (CAM_LM_Deviatn, ULM_SS_Rack)
+          else:
+            $ 356 "ElseIf ITM_ID≟5 and JIG≟7"
+            if (ITM_ID == 5  and  JIG == 7):
+              $ 358 "FRM_SS_SSTable[0]=CAM_LM_Deviatn[0]"
+              FRM_SS_SSTable[0]=CAM_LM_Deviatn[0]
+              $ 359 "FRM_SS_SSTable[1]=CAM_LM_Deviatn[1]"
+              FRM_SS_SSTable[1]=CAM_LM_Deviatn[1]
+            end
+          end
+          $ 360 "CAM_Done≔ True "
+          global CAM_Done=  True  
+        end
+      else:
+        $ 361 "ElseIf  not CAM_LM_Detected and CAM_Captures<CAM_PRM_Retries"
+        if (  not  CAM_LM_Detected  and  CAM_Captures<CAM_PRM_Retries):
+          $ 362 "CAM_LM_Refined≔ False "
+          global CAM_LM_Refined=  False  
+        else:
+          $ 363 "ElseIf CAM_Captures≥CAM_PRM_Retries"
+          if (CAM_Captures >= CAM_PRM_Retries):
+            $ 364 "CAM_Done≔ True "
+            global CAM_Done=  True  
+            $ 365 "Error"
+            $ 366 "set_error(ERROR_NO_LANDMARK)"
+            set_error(ERROR_NO_LANDMARK)
+          end
+        end
+      end
+    end
+  elif (151 == switch_1):
+    $ 367 "Case 151"
+    $ 368 "Detect (SensoPart)"
+    $ 369 "go to capture pose"
+    $ 370 "FRM_Reference≔ULM_Input"
+    global FRM_Reference=ULM_Input
+    $ 372 "PSE_T≔ULM_Cap_SSRack"
+    global PSE_T=ULM_Cap_SSRack
+    $ 373 "do_transition(pose_trans(FRM_Reference, PSE_T), keep_rxry=False)"
+    do_transition( pose_trans (FRM_Reference, PSE_T), keep_rxry=False)
+    $ 374 "JNT_Q≔get_actual_joint_positions()"
+    global JNT_Q= get_actual_joint_positions ()
+    $ 375 "JNT_Q≔[JNT_Q[0], JNT_Q[1], JNT_Q[2], JNT_Q[3], JNT_Q[4], 0]"
+    global JNT_Q=[JNT_Q[0], JNT_Q[1], JNT_Q[2], JNT_Q[3], JNT_Q[4], 0]
+    $ 376 "Set"
+    set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+    $ 377 "movej(get_inverse_kin(pose_trans(FRM_Reference, PSE_T), qnear=JNT_Q))"
+    movej(get_inverse_kin( pose_trans (FRM_Reference, PSE_T), qnear=JNT_Q))
+    $ 378 "CAM_Pose≔pose_trans(pose_inv(FRM_Reference), get_actual_tcp_pose())"
+    global CAM_Pose= pose_trans ( pose_inv (FRM_Reference),  get_actual_tcp_pose ())
+    $ 379 "Loop  not CAM_Done and  not ERROR.FLAG and  not CMD_Stop"
+    while (  not  CAM_Done  and    not  ERROR.FLAG  and    not  CMD_Stop):
+      $ 380 "If  not OBJ_Detected and CAM_Captures>0"
+      if (  not  OBJ_Detected  and  CAM_Captures>0):
+        $ 381 "MoveL"
+        $ 382 "If FRM_Reference≟p[0,0,0,0,0,0]"
+        if (FRM_Reference == p[0,0,0,0,0,0]):
+          $ 384 "PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode='rotation', range_max=[15,15,0])"
+          global PSE_T=get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[15,15,0])
+        else:
+          $ 385 "Else" "noBreak"
+          $ 386 "PSE_T≔get_random_pose(pose_ref=CAM_Pose, mode='rotation', range_max=[10,10,0])"
+          global PSE_T=get_random_pose(pose_ref=CAM_Pose, mode="rotation", range_max=[10,10,0])
+        end
+        $ 387 "If get_inverse_kin_has_solution(pose_trans(FRM_Reference, PSE_T))"
+        if (get_inverse_kin_has_solution( pose_trans (FRM_Reference, PSE_T))):
+          $ 388 "PSE_T" "breakAfter"
+          set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+          movel(pose_trans(FRM_Reference, PSE_T), a=0.03, v=0.05)
+        else:
+          $ 389 "Else" "noBreak"
+          $ 390 "'If random pose is out of reach, set the initial cam pose'"
+          # 'If random pose is out of reach, set the initial cam pose'
+          $ 391 "PSE_T≔CAM_Pose"
+          global PSE_T=CAM_Pose
+          $ 392 "PSE_T" "breakAfter"
+          set_tcp(p[0.0,0.0,0.161,0.0,0.0,0.0])
+          movel(pose_trans(FRM_Reference, PSE_T), a=0.03, v=0.05)
+        end
+      end
+      $ 393 "Wait: 0.5"
+      sleep(0.5)
+      $ 394 "Set"
+      set_tcp(p[0.0,0.0,0.161,3.1415,0.0,0.0])
+      # begin: URCap Program Node
+      #   Source: SensoPart VISOR Robotic, 2.0.0, SensoPart Industriesensorik GmbH
+      #   Type: VISOR Trigger
+      $ 395 "# 1 VISOR Trigger"
+      visor_changeJob(1, "Object Detection Single", 3000)
+      visor_trigger(1, 3000, "arm")
+      # end: URCap Program Node
+      $ 396 "If visor_isResponseOk(1)"
+      if ( visor_isResponseOk (1)):
+        $ 397 "CAM_CNT_Obj≔visor_partsFound(1)"
+        global CAM_CNT_Obj= visor_partsFound (1)
+        $ 398 "CAM_OBJ_Pose≔visor_getPose3d(1, 0)"
+        global CAM_OBJ_Pose= visor_getPose3d (1, 0)
+        $ 399 "If CAM_CNT_Obj>0"
+        if (CAM_CNT_Obj>0):
+          $ 400 "CAM_OBJ_Color≔visor_getAdditionalData(1, 0)"
+          global CAM_OBJ_Color= visor_getAdditionalData (1, 0)
+          $ 401 "CAM_DetectScore≔to_num(visor_getAdditionalData(1, 1))/1000"
+          global CAM_DetectScore=to_num( visor_getAdditionalData (1, 1))/1000
+          $ 402 "OBJ_Detected≔ True "
+          global OBJ_Detected=  True  
+        end
+      else:
+        $ 403 "Else" "noBreak"
+        $ 404 "CAM_Captures≔CAM_Captures+1"
+        global CAM_Captures=CAM_Captures+1
+      end
+      $ 405 "If OBJ_Detected"
+      if (OBJ_Detected):
+        $ 406 "Get object data"
+        $ 407 "PRC_CntDetect≔0"
+        global PRC_CntDetect=0
+        $ 408 "Loop PRC_CntDetect<CAM_CNT_Obj"
+        while (PRC_CntDetect<CAM_CNT_Obj):
+          $ 409 "get object and jig number"
+          $ 410 "If ITM_ID≟1 and JIG≟7"
+          if (ITM_ID == 1  and  JIG == 7):
+            $ 411 "FRM_Reference≔ULM_Cap_SSRack"
+            global FRM_Reference=ULM_Cap_SSRack
+          else:
+            $ 412 "ElseIf ITM_ID≟5 and JIG≟7"
+            if (ITM_ID == 5  and  JIG == 7):
+              $ 413 "FRM_Reference≔FRM_Cap_SSTable"
+              global FRM_Reference=FRM_Cap_SSTable
+            end
+          end
+          $ 416 "PSE_T≔pose_trans(pose_inv(FRM_Reference), CAM_OBJ_Pose)"
+          global PSE_T= pose_trans ( pose_inv (FRM_Reference), CAM_OBJ_Pose)
+          $ 417 "CAM_Result.append(get_pattern_counter(PSE_T, 'X', pattern=[10, 5], patternsize=[0.181, 0.081]))"
+          CAM_Result.append(get_pattern_counter(PSE_T, "X", pattern=[10, 5], patternsize=[0.181, 0.081]))
+          $ 419 "PRC_CntDetect≔PRC_CntDetect+1"
+          global PRC_CntDetect=PRC_CntDetect+1
+        end
+        $ 420 "CAM_Done≔ True "
+        global CAM_Done=  True  
+      else:
+        $ 421 "ElseIf CAM_Captures≥CAM_PRM_Retries"
+        if (CAM_Captures >= CAM_PRM_Retries):
+          $ 422 "CAM_Done≔ True "
+          global CAM_Done=  True  
+        else:
+          $ 423 "Else" "noBreak"
+          $ 424 "CAM_Captures≔CAM_Captures+1"
+          global CAM_Captures=CAM_Captures+1
+        end
+      end
+    end
+  end
+  $ 425 "'=========='"
+  # '=========='
+  $ 426 "PostSettings"
+  $ 427 "FRM_Reference≔p[0,0,0,0,0,0]"
+  global FRM_Reference=p[0,0,0,0,0,0]
+  $ 428 "Set"
+  set_tcp(p[0.0,0.0,0.161,3.1415,0.0,0.0])
+  $ 429 "CAM_Pose≔p[0,0,0,0,0,0]"
+  global CAM_Pose=p[0,0,0,0,0,0]
+  $ 430 "Action≔0"
+  global Action=0
+  $ 431 "Action_Info≔''"
+  global Action_Info=""
+end

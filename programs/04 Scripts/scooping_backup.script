@@ -1,0 +1,80 @@
+def scooping_init():
+	global W_EMPTY = 51.654
+	global W_FULL = 300.045
+
+	global H_INNER = 0.15
+	global diameter = 0.07
+	global spatula_depth = 0.02
+	global scoop_radius_default = diameter/2 - spatula_depth
+
+	global spatula_len = 0.170
+	global TCP_to_tip = 0.020
+	global depth_saftey = 0.005
+	global container_height = 0.120	
+	global reach_margin = 0.03
+
+	global angle_min = 8.0
+	global angle_max = 78.0
+	global gain_per_percent = 0.8
+
+	global level_bias_below_center = 0.02
+
+	global clearance = 0.01
+	global level = 0.0
+end
+
+def clamp(x, lo, hi):
+	if(x<lo):
+		return lo
+	elif (x>hi):
+		return hi
+	else:
+		return x
+	end
+end
+
+def compute_level_percent(W_now):
+	level = 100.0* (W_now -W_EMPTY)/ (W_FULL-W_EMPTY)
+	return clamp(level, 0.0, 100.0)
+end
+
+def compute_tilt_deg(level_percent):
+	angle = angle_min + gain_per_percent*(100.0-level_percent)
+	return clamp(angle, angle_min, angle_max)
+end
+
+
+def compute_scoop_depth(level):
+	local z_at_0 = 0.02
+	local z_at_100 = 0.125
+	z_tip = z_at_0 + (z_at_100 - z_at_0)*(level/100.0)
+
+	z_tcp = z_tip
+	return z_tcp
+end
+
+def my_abs(val):
+	if (val<0):
+		return -val
+	else:
+		return val
+	end
+end
+
+
+def auto_tilt_and_scoop(W_now, target_weight, Weight_value):
+	level = compute_level_percent(W_now)
+
+	global angle_deg = compute_tilt_deg(level)
+	
+	global scoop_depth = compute_scoop_depth(level)
+
+	scoop_radius = scoop_radius_default
+	tilt_init_reference()
+	tilt_to(angle_deg)
+	sync()
+
+	P_center = get_actual_tcp_pose()
+
+	scoop_powder(P_center)
+end

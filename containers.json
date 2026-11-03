@@ -1,0 +1,68 @@
+[
+    {
+        "container_id": 101,
+        "height_w_cap_mm": 152.0,
+        "height_wo_cap_mm": 149.0,
+        "mouth_diameter_mm": 66.5,
+        "mouth_shoulder_height_mm": 24.0,
+        "length_mm": 0.0,
+        "diameter_mm": 70.0,
+        "empty_weight_g": 64.4,
+        "shape": "cylindrical"
+    },
+    {
+        "container_id": 102,
+        "height_w_cap_mm": 158.0,
+        "height_wo_cap_mm": 155.0,
+        "mouth_diameter_mm": 39.0,
+        "mouth_shoulder_height_mm": 44.0,
+        "length_mm": 0.0,
+        "diameter_mm": 77.0,
+        "empty_weight_g": 69.2,
+        "shape": "cylindrical"
+    },
+    {
+        "container_id": 103,
+        "height_w_cap_mm": 134.0,
+        "height_wo_cap_mm": 128.0,
+        "mouth_diameter_mm": 33.0,
+        "mouth_shoulder_height_mm": 30.0,
+        "length_mm": 0.0,
+        "diameter_mm": 61.0,
+        "empty_weight_g": 37.4,
+        "shape": "cylindrical"
+    },
+    {
+        "container_id": 201,
+        "height_w_cap_mm": 167.0,
+        "height_wo_cap_mm": 162.0,
+        "mouth_diameter_mm": 42.5,
+        "mouth_shoulder_height_mm": 56.0,
+        "length_mm": 75.0,
+        "diameter_mm": 0.0,
+        "empty_weight_g": 62.0,
+        "shape": "cubical"
+    },
+    {
+        "container_id": 202,
+        "height_w_cap_mm": 135.0,
+        "height_wo_cap_mm": 129.5,
+        "mouth_diameter_mm": 35.0,
+        "mouth_shoulder_height_mm": 46.4,
+        "length_mm": 59.0,
+        "diameter_mm": 0.0,
+        "empty_weight_g": 39.8,
+        "shape": "cubical"
+    },
+    {
+        "container_id": 203,
+        "height_w_cap_mm": 110.0,
+        "height_wo_cap_mm": 106.0,
+        "mouth_diameter_mm": 54.0,
+        "mouth_shoulder_height_mm": 40.0,
+        "length_mm": 80.5,
+        "diameter_mm": 0.0,
+        "empty_weight_g": 45.6,
+        "shape": "cubical"
+    }
+]
